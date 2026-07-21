@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { IAuthRepository } from './auth.repository';
-import { AuthResponse, User } from './auth.types';
+import { AuthResponse, LoginCredentials, RegisterData, User } from './auth.types';
 import { AppError } from '../../common/errors/AppError';
 
 const tokenStore = new Map<string, User>();
@@ -13,25 +13,28 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 export interface IAuthService {
-  login(data: { email: string; password: string }): Promise<AuthResponse>;
-  register(data: { email: string; password: string; name: string }): Promise<AuthResponse>;
+  login(credentials: LoginCredentials): Promise<AuthResponse>;
+  register(data: RegisterData): Promise<AuthResponse>;
 }
 
 export class AuthService implements IAuthService {
   constructor(private readonly authRepository: IAuthRepository) {}
 
-  async login(data: { email: string; password: string }): Promise<AuthResponse> {
-    const user = await this.authRepository.findByEmail(data.email);
-    if (!user || user.password !== data.password) {
+  async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    const user = await this.authRepository.findByEmail(credentials.email);
+    if (!user || user.password !== credentials.password) {
       throw new Error('Invalid credentials');
     }
-    const publicUser = this.toPublicUser(user);
-    const token = randomUUID();
-    tokenStore.set(token, publicUser);
-    return { user: publicUser, token };
+    return this.issueToken(user);
   }
 
-  async register(data: { email: string; password: string; name: string }): Promise<AuthResponse> {
+  async register(data: RegisterData): Promise<AuthResponse> {
+    this.validateRegistration(data);
+    const stored = await this.authRepository.create(data);
+    return this.issueToken(stored);
+  }
+
+  private validateRegistration(data: RegisterData): void {
     if (!data.name) {
       throw new AppError('name is required', 400);
     }
@@ -47,23 +50,10 @@ export class AuthService implements IAuthService {
     if (data.password.length < MIN_PASSWORD_LENGTH) {
       throw new AppError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`, 400);
     }
-
-    const stored = await this.authRepository.create(data);
-    const publicUser = this.toPublicUser(stored);
-    const token = randomUUID();
-    tokenStore.set(token, publicUser);
-    return { user: publicUser, token };
   }
 
-  private toPublicUser(user: {
-    id: string;
-    email: string;
-    name: string | null;
-    role: string;
-    createdAt: Date;
-    updatedAt: Date;
-  }): User {
-    return {
+  private issueToken(user: User & { password: string }): AuthResponse {
+    const publicUser: User = {
       id: user.id,
       email: user.email,
       name: user.name,
@@ -71,5 +61,8 @@ export class AuthService implements IAuthService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
+    const token = randomUUID();
+    tokenStore.set(token, publicUser);
+    return { user: publicUser, token };
   }
 }

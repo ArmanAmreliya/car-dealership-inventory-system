@@ -1,4 +1,4 @@
-import { User } from './auth.types';
+import { RegisterData, User } from './auth.types';
 import { AppError } from '../../common/errors/AppError';
 
 interface StoredUser extends User {
@@ -7,7 +7,7 @@ interface StoredUser extends User {
 
 export interface IAuthRepository {
   findByEmail(email: string): Promise<StoredUser | null>;
-  create(data: { email: string; password: string; name: string }): Promise<StoredUser>;
+  create(data: RegisterData): Promise<StoredUser>;
 }
 
 export class AuthRepository implements IAuthRepository {
@@ -17,7 +17,7 @@ export class AuthRepository implements IAuthRepository {
     return this.users.find(u => u.email === email) ?? null;
   }
 
-  async create(data: { email: string; password: string; name: string }): Promise<StoredUser> {
+  async create(data: RegisterData): Promise<StoredUser> {
     const existing = await this.findByEmail(data.email);
     if (existing) {
       throw new AppError('Email already registered', 409);
