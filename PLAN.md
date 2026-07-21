@@ -8,7 +8,7 @@ The backend is complete and serves as the ultimate source of truth. The frontend
 
 ---
 
-# 1. Project Overview
+## 1. Project Overview
 
 ### Project Purpose
 DealerFlow is an enterprise-grade Car Dealership Inventory System created for managing vehicle stock, tracking inventory availability, handling purchases, and offering analytical oversight to dealership operators and staff.
@@ -43,7 +43,7 @@ Automotive Dealership Management & Inventory Procurement:
 
 ---
 
-# 2. Backend Overview
+## 2. Backend Overview
 
 The existing backend is built on a clean, layered TypeScript architecture using Express, Prisma, and PostgreSQL.
 
@@ -134,7 +134,7 @@ model Purchase {
 
 ---
 
-# 3. API Integration Strategy
+## 3. API Integration Strategy
 
 ### Base URL & Versioning
 - **Base URL**: Configured via environment variable (`VITE_API_BASE_URL`).
@@ -198,7 +198,7 @@ apiClient.interceptors.response.use(
 
 ---
 
-# 4. Frontend Tech Stack
+## 4. Frontend Tech Stack
 
 | Technology | Purpose | Selection Justification |
 | :--- | :--- | :--- |
@@ -217,7 +217,7 @@ apiClient.interceptors.response.use(
 
 ---
 
-# 5. Design System
+## 5. Design System
 
 The frontend should follow a small, consistent design system so new screens feel cohesive.
 
@@ -230,7 +230,7 @@ The frontend should follow a small, consistent design system so new screens feel
 - **Dark mode strategy**: support a theme toggle by using CSS variables for surface, text, border, and accent colors.
 - **Responsive breakpoints**: mobile first with `sm`, `md`, and `lg` breakpoints matching Tailwind conventions.
 
-# 6. Folder Structure
+## 6. Folder Structure
 
 ```
 src/
@@ -311,7 +311,7 @@ src/
 
 ---
 
-# 6. Data Flow
+## 7. Data Flow
 
 Use a single vertical data flow so future frontend work stays predictable:
 
@@ -333,7 +333,7 @@ UI
 
 Components should stay focused on rendering; hooks manage data fetching and mutations; services keep API contracts centralized.
 
-# 7. Application Architecture
+## 8. Application Architecture
 
 DealerFlow implements a clean, layered architecture separating user interface presentation from network communications and backend operations.
 
@@ -367,7 +367,7 @@ DealerFlow implements a clean, layered architecture separating user interface pr
 
 ---
 
-# 7. Routing Plan
+## 9. Routing Plan
 
 All application routes are defined declaratively in `src/routes/AppRoutes.tsx`.
 
@@ -387,7 +387,7 @@ All application routes are defined declaratively in `src/routes/AppRoutes.tsx`.
 
 ---
 
-# 8. Authentication Flow
+## 10. Authentication Flow
 
 The authentication lifecycle relies on JWT tokens issued by the backend upon successful login or registration.
 
@@ -438,7 +438,7 @@ The authentication lifecycle relies on JWT tokens issued by the backend upon suc
 
 ---
 
-# 9. Feature Breakdown
+## 11. Feature Breakdown
 
 ### 1. Authentication Feature (`features/auth`)
 - **Purpose**: Authenticate users, register new accounts, and manage session persistence.
@@ -487,7 +487,7 @@ The authentication lifecycle relies on JWT tokens issued by the backend upon suc
 
 ---
 
-# 10. UI Components
+## 12. UI Components
 
 Reusable UI components reside in `src/components/ui/` and `src/components/feedback/`.
 
@@ -513,7 +513,7 @@ Reusable UI components reside in `src/components/ui/` and `src/components/feedba
 
 ---
 
-# 11. State Management
+## 13. State Management
 
 DealerFlow adopts a clear three-tiered state management model:
 
@@ -567,7 +567,7 @@ Recommended defaults: `staleTime: 1000 * 60 * 2` (2 minutes) and `refetchOnWindo
 
 ---
 
-# 12. API Mapping
+## 14. API Mapping
 
 This table provides a complete, 1-to-1 mapping between backend endpoints and frontend features:
 
@@ -587,7 +587,7 @@ This table provides a complete, 1-to-1 mapping between backend endpoints and fro
 
 ---
 
-# 13. Forms
+## 15. Forms
 
 All forms utilize **React Hook Form** paired with **Zod** schema resolvers.
 
@@ -619,7 +619,7 @@ All forms utilize **React Hook Form** paired with **Zod** schema resolvers.
 
 ---
 
-# 14. Error Handling
+## 16. Error Handling
 
 DealerFlow handles operational, validation, and network errors gracefully:
 
@@ -652,7 +652,7 @@ redirect to /login   to input field alerts modal (e.g. Sold out)
 
 ---
 
-# 15. Loading Strategy
+## 17. Loading Strategy
 
 To ensure a smooth user experience, DealerFlow avoids blank screens and layout shifts using structural placeholders:
 
@@ -668,7 +668,7 @@ To ensure a smooth user experience, DealerFlow avoids blank screens and layout s
 
 ---
 
-# 16. Responsive Design
+## 18. Responsive Design
 
 DealerFlow adopts a Mobile-First responsive design system powered by Tailwind CSS.
 
@@ -679,7 +679,7 @@ DealerFlow adopts a Mobile-First responsive design system powered by Tailwind CS
 
 ---
 
-# 17. Accessibility (a11y)
+## 19. Accessibility (a11y)
 
 DealerFlow follows WCAG 2.1 AA accessibility guidelines:
 
@@ -691,7 +691,7 @@ DealerFlow follows WCAG 2.1 AA accessibility guidelines:
 
 ---
 
-# 18. Coding Standards
+## 20. Coding Standards
 
 The implementation should follow these rules throughout the frontend work:
 
@@ -704,7 +704,7 @@ The implementation should follow these rules throughout the frontend work:
 - Reuse hooks instead of duplicating request logic.
 - Keep shared UI primitives in the component layer.
 
-# 19. AI Workflow
+## 21. AI Workflow
 
 When implementing the frontend with AI assistance:
 
@@ -714,7 +714,7 @@ When implementing the frontend with AI assistance:
 - Prefer updating existing files over creating new ones.
 - Ask for clarification if an API mismatch is detected instead of silently inventing a contract.
 
-# 20. Git Strategy
+## 22. Git Strategy
 
 Use small, focused commits with the following prefixes:
 
@@ -728,11 +728,11 @@ fix(api):
 chore(frontend):
 ```
 
-# 21. Synchronization Note
+## 23. Synchronization Note
 
 > Whenever the backend API changes, update this PLAN.md before implementing new frontend features.
 
-# 22. Development Roadmap
+## 24. Development Roadmap
 
 The implementation is divided into 8 distinct, feature-driven milestones.
 
@@ -786,7 +786,7 @@ The implementation is divided into 8 distinct, feature-driven milestones.
 
 ---
 
-# 23. Engineering Principles
+## 25. Engineering Principles
 
 Future implementation work must adhere strictly to these principles:
 
@@ -800,7 +800,7 @@ Future implementation work must adhere strictly to these principles:
 
 ---
 
-# 24. Definition of Done
+## 26. Definition of Done
 
 A frontend feature or milestone is defined as complete only when all the following criteria are met:
 
