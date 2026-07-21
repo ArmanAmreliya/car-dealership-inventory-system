@@ -15,6 +15,6 @@ export class AuthService implements IAuthService {
   }
 
   async register(_data: any): Promise<AuthResponse> {
-    throw new Error('Not implemented');
+    return {} as AuthResponse;
   }
 }
