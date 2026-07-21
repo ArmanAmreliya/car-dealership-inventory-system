@@ -20,6 +20,33 @@ export interface VehicleFilters {
 }
 
 /**
+ * Create vehicle input
+ */
+export interface CreateVehicleInput {
+  vin: string;
+  make: string;
+  model: string;
+  year: number;
+  price: number;
+  mileage?: number;
+  color?: string;
+}
+
+/**
+ * Update vehicle input
+ * All fields are optional
+ */
+export interface UpdateVehicleInput {
+  vin?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  price?: number;
+  mileage?: number;
+  color?: string;
+}
+
+/**
  * Sorted vehicle list response
  */
 export interface VehicleListResponse {
