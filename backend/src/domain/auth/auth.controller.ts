@@ -18,8 +18,12 @@ export class AuthController {
     }
   };
 
-  register = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    await this.authService.register(req.body);
-    res.status(501).json({ message: 'Not implemented' });
+  register = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const result = await this.authService.register(req.body);
+      res.status(201).json(result);
+    } catch (err) {
+      next(err);
+    }
   };
 }

@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '../../src/app/app';
 
 describe('POST /api/v1/auth/register', () => {
-  it('should return 501 Not Implemented currently', async () => {
+  it('should return 201 and auth payload on success', async () => {
     const response = await request(app)
       .post('/api/v1/auth/register')
       .send({
@@ -11,8 +11,14 @@ describe('POST /api/v1/auth/register', () => {
         name: 'Test User',
       });
 
-    expect(response.status).toBe(501);
-    expect(response.body).toEqual({ message: 'Not implemented' });
+    expect(response.status).toBe(201);
+    expect(response.body).toHaveProperty('token');
+    expect(response.body.user).toEqual(
+      expect.objectContaining({
+        email: 'test@example.com',
+        name: 'Test User',
+      }),
+    );
   });
 
   it('should return 409 Conflict when trying to register an already registered email', async () => {

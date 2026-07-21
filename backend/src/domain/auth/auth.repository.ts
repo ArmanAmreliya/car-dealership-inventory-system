@@ -1,4 +1,5 @@
 import { User } from './auth.types';
+import { AppError } from '../../common/errors/AppError';
 
 interface StoredUser extends User {
   password: string;
@@ -17,6 +18,11 @@ export class AuthRepository implements IAuthRepository {
   }
 
   async create(data: { email: string; password: string; name: string }): Promise<StoredUser> {
+    const existing = await this.findByEmail(data.email);
+    if (existing) {
+      throw new AppError('Email already registered', 409);
+    }
+
     const user: StoredUser = {
       id: `mock-id-${this.users.length + 1}`,
       email: data.email,
