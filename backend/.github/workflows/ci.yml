@@ -50,7 +50,7 @@ jobs:
 
       - name: Coverage report
         run: npm run test:coverage
-        continue-on-error: true   # informational; does not fail the build
+        continue-on-error: true # informational; does not fail the build
 
       - name: Build
         run: npm run build

@@ -3,7 +3,7 @@ services:
     image: postgres:16-alpine
     container_name: dealerflow_db
     ports:
-      - "5432:5432"
+      - '5432:5432'
     environment:
       POSTGRES_DB: dealerflow
       POSTGRES_USER: postgres
@@ -12,7 +12,7 @@ services:
       - dealerflow_data:/var/lib/postgresql/data
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d dealerflow"]
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d dealerflow']
       interval: 10s
       timeout: 5s
       retries: 5
