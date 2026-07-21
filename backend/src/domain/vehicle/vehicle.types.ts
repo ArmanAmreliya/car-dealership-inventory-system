@@ -11,6 +11,16 @@ export interface Vehicle {
   isAvailable?: boolean;
 }
 
+export interface VehicleUpdate {
+  make?: string;
+  model?: string;
+  year?: number;
+  price?: number;
+  mileage?: number;
+  color?: string;
+  isAvailable?: boolean;
+}
+
 export interface VehicleFilters {
   make?: string;
   model?: string;

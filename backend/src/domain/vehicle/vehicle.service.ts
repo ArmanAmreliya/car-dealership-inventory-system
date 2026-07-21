@@ -1,9 +1,35 @@
 import type { IVehicleRepository } from './vehicle.repository';
-import type { Vehicle, VehicleFilters } from './vehicle.types';
+import type { Vehicle, VehicleFilters, VehicleUpdate } from './vehicle.types';
 import { AppError } from '../../common/errors/AppError';
+
+export interface CreateVehicleData {
+  make: string;
+  model: string;
+  year: number;
+  price: number;
+  vin: string;
+  mileage?: number;
+  color?: string;
+}
 
 export class VehicleService {
   constructor(private readonly vehicleRepository: IVehicleRepository) {}
+
+  create(data: CreateVehicleData): Vehicle {
+    const vehicle: Vehicle = {
+      id: this.vehicleRepository.nextId(),
+      make: data.make,
+      model: data.model,
+      year: data.year,
+      price: data.price,
+      vin: data.vin,
+      mileage: data.mileage ?? 0,
+      color: data.color ?? '',
+      createdAt: new Date(),
+    };
+    this.vehicleRepository.save(vehicle);
+    return vehicle;
+  }
 
   list(filters?: VehicleFilters): Vehicle[] {
     return this.vehicleRepository.findAll(filters);
@@ -20,10 +46,20 @@ export class VehicleService {
     return vehicle;
   }
 
+  async update(id: string, fields: VehicleUpdate): Promise<Vehicle> {
+    this.validateId(id);
+
+    const vehicle = await this.vehicleRepository.update(id, fields);
+    if (!vehicle) {
+      throw new AppError(`Vehicle with ID "${id}" not found`, 404);
+    }
+
+    return vehicle;
+  }
+
   private validateId(id: string): void {
     if (!id || id.trim() === '') {
       throw new AppError('Invalid vehicle ID', 400);
     }
   }
 }
-

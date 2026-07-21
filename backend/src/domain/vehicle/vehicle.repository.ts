@@ -1,10 +1,11 @@
-import type { Vehicle, VehicleFilters } from './vehicle.types';
+import type { Vehicle, VehicleFilters, VehicleUpdate } from './vehicle.types';
 
 export interface IVehicleRepository {
   save(vehicle: Vehicle): void;
   nextId(): string;
   findAll(filters?: VehicleFilters): Vehicle[];
   findById(id: string): Promise<Vehicle | null>;
+  update(id: string, fields: VehicleUpdate): Promise<Vehicle | null>;
 }
 
 export class VehicleRepository implements IVehicleRepository {
@@ -50,5 +51,13 @@ export class VehicleRepository implements IVehicleRepository {
     const vehicle = this.vehicles.find((v) => v.id === id);
     return vehicle ?? null;
   }
-}
 
+  async update(id: string, fields: VehicleUpdate): Promise<Vehicle | null> {
+    const index = this.vehicles.findIndex((v) => v.id === id);
+    if (index === -1) {
+      return null;
+    }
+    this.vehicles[index] = { ...this.vehicles[index], ...fields };
+    return this.vehicles[index];
+  }
+}
