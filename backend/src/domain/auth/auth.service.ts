@@ -65,7 +65,7 @@ export class AuthService implements IAuthService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
-    
+
     const token = generateAccessToken({
       userId: user.id,
       email: user.email,

@@ -16,7 +16,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
   const token = authHeader.substring(7);
   try {
     const payload = verifyAccessToken(token);
-    
+
     (req as AuthenticatedRequest).user = {
       id: payload.userId,
       email: payload.email,
@@ -25,7 +25,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    
+
     next();
   } catch {
     res.status(401).json({ status: 'error', message: 'Unauthorized' });
