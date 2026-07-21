@@ -1,5 +1,6 @@
 import type { IVehicleRepository } from './vehicle.repository';
 import type { Vehicle, VehicleFilters } from './vehicle.types';
+import { AppError } from '../../common/errors/AppError';
 
 export class VehicleService {
   constructor(private readonly vehicleRepository: IVehicleRepository) {}
@@ -8,7 +9,18 @@ export class VehicleService {
     return this.vehicleRepository.findAll(filters);
   }
 
-  async getById(_id: string): Promise<Vehicle | null> {
-    throw new Error('Not implemented');
+  async getById(id: string): Promise<Vehicle> {
+    if (!id || id.trim() === '') {
+      throw new AppError('Invalid vehicle ID', 400);
+    }
+
+    const vehicle = await this.vehicleRepository.findById(id);
+
+    if (!vehicle) {
+      throw new AppError(`Vehicle with ID "${id}" not found`, 404);
+    }
+
+    return vehicle;
   }
 }
+

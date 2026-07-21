@@ -45,5 +45,10 @@ export class VehicleRepository implements IVehicleRepository {
       return true;
     });
   }
+
+  async findById(id: string): Promise<Vehicle | null> {
+    const vehicle = this.vehicles.find((v) => v.id === id);
+    return vehicle ?? null;
+  }
 }
 
