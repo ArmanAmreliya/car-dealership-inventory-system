@@ -7,6 +7,7 @@ import { AuthRepository } from '../domain/auth/auth.repository';
 import { VehicleRepository } from '../domain/vehicle/vehicle.repository';
 import { createVehicleRouter } from '../domain/vehicle/vehicle.routes';
 import { createInventoryRouter } from '../domain/inventory/inventory.routes';
+import { createPurchaseRouter } from '../domain/purchase/purchase.routes';
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use('/v1/auth', createAuthRouter(authController));
 const vehicleRepository = new VehicleRepository();
 router.use('/v1/vehicles', createVehicleRouter(vehicleRepository));
 router.use('/v1/inventory', createInventoryRouter(vehicleRepository));
+router.use('/v1/purchases', createPurchaseRouter(vehicleRepository));
 
 export default router;
