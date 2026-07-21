@@ -26,7 +26,7 @@ interface VehicleFormProps {
   /**
    * Callback when form is submitted successfully
    */
-  onSubmit: (data: VehicleCreateInput | VehicleUpdateInput) => void;
+  onSubmit: (data: FieldValues) => void;
 
   /**
    * Is the mutation pending
