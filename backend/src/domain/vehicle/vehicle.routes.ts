@@ -3,12 +3,13 @@ import { Router } from 'express';
 import type { AuthenticatedRequest } from '../../middleware/authenticate';
 import { authenticate } from '../../middleware/authenticate';
 import { VehicleRepository } from './vehicle.repository';
+import type { IVehicleRepository } from './vehicle.repository';
 import { VehicleService } from './vehicle.service';
 import { VehicleController } from './vehicle.controller';
 
-export const createVehicleRouter = (): Router => {
+export const createVehicleRouter = (vehicleRepository: IVehicleRepository = new VehicleRepository()): Router => {
   const router = Router();
-  const vehicleService = new VehicleService(new VehicleRepository());
+  const vehicleService = new VehicleService(vehicleRepository);
   const vehicleController = new VehicleController(vehicleService);
 
   router.post(
