@@ -12,24 +12,22 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     res.status(401).json({ status: 'error', message: 'Unauthorized' });
     return;
   }
-  const token = authHeader.slice(7);
+
+  const token = authHeader.substring(7);
   try {
     const payload = verifyAccessToken(token);
-    // Since verifyAccessToken succeeded, mock a User object from the payload.
-    // The request handler or other parts expect a complete User object.
-    const user: User = {
+    
+    (req as AuthenticatedRequest).user = {
       id: payload.userId,
       email: payload.email,
       role: payload.role,
-      name: null, // JWT payload doesn't contain name, or we can look it up if repository was async and injected.
-      // Since it's an in-memory/JWT setup without database lookup inside middleware, we map from payload.
+      name: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    (req as AuthenticatedRequest).user = user;
+    
     next();
   } catch {
     res.status(401).json({ status: 'error', message: 'Unauthorized' });
-    return;
   }
 };
