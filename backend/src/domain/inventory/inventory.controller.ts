@@ -16,16 +16,7 @@ export class InventoryController {
 
   updateStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const update = req.body as Partial<StockUpdate>;
-
-      if (update.stockQuantity === undefined || update.stockQuantity === null) {
-        res.status(400).json({ status: 'error', message: 'stockQuantity is required' });
-        return;
-      }
-
-      const item = await this.inventoryService.updateStock(req.params.id, {
-        stockQuantity: update.stockQuantity,
-      });
+      const item = await this.inventoryService.updateStock(req.params.id, req.body as StockUpdate);
       res.status(200).json(item);
     } catch (err) {
       next(err);

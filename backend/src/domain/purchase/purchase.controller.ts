@@ -7,14 +7,7 @@ export class PurchaseController {
 
   purchase = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const body = req.body as Partial<PurchaseRequest>;
-
-      if (!body.vehicleId) {
-        res.status(400).json({ status: 'error', message: 'vehicleId is required' });
-        return;
-      }
-
-      const record = await this.purchaseService.purchase({ vehicleId: body.vehicleId });
+      const record = await this.purchaseService.purchase(req.body as PurchaseRequest);
       res.status(201).json(record);
     } catch (err) {
       next(err);

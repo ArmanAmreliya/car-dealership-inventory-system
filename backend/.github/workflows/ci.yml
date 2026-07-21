@@ -2,39 +2,55 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main, develop]
 
 jobs:
-  build:
+  ci:
+    name: Lint · Type-check · Test · Build
     runs-on: ubuntu-latest
 
     defaults:
       run:
         working-directory: backend
 
+    env:
+      NODE_ENV: test
+      JWT_SECRET: ci-test-secret
+
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-    - name: Use Node.js 22
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
 
-    - name: Install dependencies
-      run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-    - name: Run lint
-      run: npm run lint
+      - name: Lint
+        run: npm run lint
 
-    - name: Run format check
-      run: npm run format:check
+      - name: Format check
+        run: npm run format:check
 
-    - name: Run tests
-      run: npm run test
+      - name: Type-check
+        run: npx tsc --noEmit
 
-    - name: Build project
-      run: npm run build
+      - name: Unit tests
+        run: npx jest --config jest.unit.config.ts --no-coverage --runInBand
+
+      - name: Integration tests
+        run: npx jest --config jest.integration.config.ts --no-coverage --runInBand
+
+      - name: Coverage report
+        run: npm run test:coverage
+        continue-on-error: true   # informational; does not fail the build
+
+      - name: Build
+        run: npm run build

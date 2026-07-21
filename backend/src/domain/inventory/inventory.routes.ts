@@ -1,6 +1,8 @@
 import { Router } from 'express';
 import type { IVehicleRepository } from '../vehicle/vehicle.repository';
 import { authenticate } from '../../middleware/authenticate';
+import { validate } from '../../middleware/validate';
+import { stockUpdateSchema } from '../../common/validation/schemas';
 import { InventoryService } from './inventory.service';
 import { InventoryController } from './inventory.controller';
 
@@ -10,7 +12,7 @@ export const createInventoryRouter = (vehicleRepository: IVehicleRepository): Ro
   const inventoryController = new InventoryController(inventoryService);
 
   router.get('/', authenticate, inventoryController.getStatus);
-  router.patch('/:id', authenticate, inventoryController.updateStock);
+  router.patch('/:id', authenticate, validate(stockUpdateSchema), inventoryController.updateStock);
 
   return router;
 };
