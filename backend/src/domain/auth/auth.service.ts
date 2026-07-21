@@ -1,5 +1,12 @@
+import { randomUUID } from 'crypto';
 import { IAuthRepository } from './auth.repository';
 import { AuthResponse, User } from './auth.types';
+
+const tokenStore = new Map<string, User>();
+
+export function getUserByToken(token: string): User | undefined {
+  return tokenStore.get(token);
+}
 
 export interface IAuthService {
   login(data: { email: string; password: string }): Promise<AuthResponse>;
@@ -14,10 +21,10 @@ export class AuthService implements IAuthService {
     if (!user || user.password !== data.password) {
       throw new Error('Invalid credentials');
     }
-    return {
-      user: this.toPublicUser(user),
-      token: 'mock-token',
-    };
+    const publicUser = this.toPublicUser(user);
+    const token = randomUUID();
+    tokenStore.set(token, publicUser);
+    return { user: publicUser, token };
   }
 
   async register(data: { email: string; password: string; name: string }): Promise<AuthResponse> {
