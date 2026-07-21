@@ -2,12 +2,34 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── CSS custom properties ─────────────────────────────────────────────── */
+
 :root {
   color-scheme: light;
+
+  /* Layout */
+  --sidebar-width: 16rem; /* 256px / w-64 */
+  --navbar-height: 4rem;  /* 64px  / h-16 */
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-base: 200ms ease;
+  --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* ── Typography & rendering ────────────────────────────────────────────── */
+
+html {
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent layout shift when scrollbar appears */
+  scrollbar-gutter: stable;
 }
 
 body {
@@ -19,11 +41,133 @@ body {
     -apple-system,
     BlinkMacSystemFont,
     'Segoe UI',
+    Roboto,
     sans-serif;
   background-color: #f8fafc;
   color: #0f172a;
+  line-height: 1.5;
 }
 
-* {
+.dark body {
+  background-color: #0f172a;
+  color: #f1f5f9;
+}
+
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+/* ── Focus management ──────────────────────────────────────────────────── */
+
+/*
+ * Remove the default focus ring for mouse/touch users while keeping
+ * a clear ring for keyboard users (WCAG 2.4.7 Focus Visible — AA).
+ */
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Dark-mode focus ring */
+.dark :focus-visible {
+  outline-color: #60a5fa;
+}
+
+/* ── Interactive element base ──────────────────────────────────────────── */
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+button:disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* ── Scrollbar styling (Webkit) ────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #334155;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #475569;
+}
+
+/* ── Typography scale ──────────────────────────────────────────────────── */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+}
+
+/* ── Responsive image defaults ─────────────────────────────────────────── */
+
+img,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+/* ── Skip-to-content link (accessibility) ─────────────────────────────── */
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.5rem 1rem;
+  background: #3b82f6;
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: 0 0 6px 6px;
+  transition: top var(--transition-base);
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
+
+/* ── Smooth page transitions ───────────────────────────────────────────── */
+
+#root {
+  isolation: isolate;
+}
+
+/* ── Print ─────────────────────────────────────────────────────────────── */
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
 }
