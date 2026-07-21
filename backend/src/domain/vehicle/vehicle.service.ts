@@ -10,17 +10,20 @@ export class VehicleService {
   }
 
   async getById(id: string): Promise<Vehicle> {
-    if (!id || id.trim() === '') {
-      throw new AppError('Invalid vehicle ID', 400);
-    }
+    this.validateId(id);
 
     const vehicle = await this.vehicleRepository.findById(id);
-
     if (!vehicle) {
       throw new AppError(`Vehicle with ID "${id}" not found`, 404);
     }
 
     return vehicle;
+  }
+
+  private validateId(id: string): void {
+    if (!id || id.trim() === '') {
+      throw new AppError('Invalid vehicle ID', 400);
+    }
   }
 }
 

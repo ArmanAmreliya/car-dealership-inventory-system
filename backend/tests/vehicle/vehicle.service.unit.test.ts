@@ -38,6 +38,7 @@ describe('VehicleService.list()', () => {
       save: jest.fn(),
       nextId: jest.fn(),
       findAll: jest.fn(),
+      findById: jest.fn(),
     };
     vehicleService = new VehicleService(mockRepository);
   });
