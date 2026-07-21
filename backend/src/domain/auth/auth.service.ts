@@ -1,13 +1,7 @@
-import { randomUUID } from 'crypto';
 import { IAuthRepository } from './auth.repository';
 import { AuthResponse, LoginCredentials, RegisterData, User } from './auth.types';
 import { AppError } from '../../common/errors/AppError';
-
-const tokenStore = new Map<string, User>();
-
-export function getUserByToken(token: string): User | undefined {
-  return tokenStore.get(token);
-}
+import { generateAccessToken } from '../../lib/jwt';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
@@ -61,8 +55,13 @@ export class AuthService implements IAuthService {
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
     };
-    const token = randomUUID();
-    tokenStore.set(token, publicUser);
+    
+    const token = generateAccessToken({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    });
+
     return { user: publicUser, token };
   }
 }
