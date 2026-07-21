@@ -164,15 +164,29 @@ const options: swaggerJsdoc.Options = {
           security: [],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/RegisterBody' } } },
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/RegisterBody' } },
+            },
           },
           responses: {
             201: {
               description: 'User registered',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } } },
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
+              },
             },
-            400: { description: 'Validation error', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
-            409: { description: 'Email already registered', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+            400: {
+              description: 'Validation error',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } },
+              },
+            },
+            409: {
+              description: 'Email already registered',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } },
+              },
+            },
           },
         },
       },
@@ -188,7 +202,9 @@ const options: swaggerJsdoc.Options = {
           responses: {
             200: {
               description: 'Successful login',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } } },
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
+              },
             },
             400: { description: 'Missing credentials' },
             401: { description: 'Invalid credentials' },
@@ -201,10 +217,15 @@ const options: swaggerJsdoc.Options = {
           summary: 'Create a vehicle',
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateVehicleBody' } } },
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CreateVehicleBody' } },
+            },
           },
           responses: {
-            201: { description: 'Vehicle created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } } },
+            201: {
+              description: 'Vehicle created',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
+            },
             400: { description: 'Validation error' },
             401: { description: 'Unauthorized' },
           },
@@ -223,7 +244,11 @@ const options: swaggerJsdoc.Options = {
           responses: {
             200: {
               description: 'Array of vehicles',
-              content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } } } },
+              content: {
+                'application/json': {
+                  schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } },
+                },
+              },
             },
             401: { description: 'Unauthorized' },
           },
@@ -235,7 +260,10 @@ const options: swaggerJsdoc.Options = {
           summary: 'Get a vehicle by ID',
           parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
           responses: {
-            200: { description: 'Vehicle found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } } },
+            200: {
+              description: 'Vehicle found',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
+            },
             401: { description: 'Unauthorized' },
             404: { description: 'Not found' },
           },
@@ -246,10 +274,15 @@ const options: swaggerJsdoc.Options = {
           parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateVehicleBody' } } },
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateVehicleBody' } },
+            },
           },
           responses: {
-            200: { description: 'Vehicle updated', content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } } },
+            200: {
+              description: 'Vehicle updated',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
+            },
             400: { description: 'Validation error' },
             401: { description: 'Unauthorized' },
             404: { description: 'Not found' },
@@ -271,7 +304,12 @@ const options: swaggerJsdoc.Options = {
           tags: ['Inventory'],
           summary: 'Get current inventory status',
           responses: {
-            200: { description: 'Inventory status', content: { 'application/json': { schema: { $ref: '#/components/schemas/InventoryStatus' } } } },
+            200: {
+              description: 'Inventory status',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/InventoryStatus' } },
+              },
+            },
             401: { description: 'Unauthorized' },
           },
         },
@@ -283,10 +321,17 @@ const options: swaggerJsdoc.Options = {
           parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/StockUpdateBody' } } },
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/StockUpdateBody' } },
+            },
           },
           responses: {
-            200: { description: 'Stock updated', content: { 'application/json': { schema: { $ref: '#/components/schemas/InventoryItem' } } } },
+            200: {
+              description: 'Stock updated',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/InventoryItem' } },
+              },
+            },
             400: { description: 'Validation error' },
             401: { description: 'Unauthorized' },
             404: { description: 'Vehicle not found' },
@@ -299,10 +344,17 @@ const options: swaggerJsdoc.Options = {
           summary: 'Purchase a vehicle',
           requestBody: {
             required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/PurchaseBody' } } },
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/PurchaseBody' } },
+            },
           },
           responses: {
-            201: { description: 'Purchase completed', content: { 'application/json': { schema: { $ref: '#/components/schemas/PurchaseRecord' } } } },
+            201: {
+              description: 'Purchase completed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/PurchaseRecord' } },
+              },
+            },
             400: { description: 'Validation error' },
             401: { description: 'Unauthorized' },
             404: { description: 'Vehicle not found' },
