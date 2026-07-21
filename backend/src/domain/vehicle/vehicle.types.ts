@@ -29,4 +29,3 @@ export interface VehicleFilters {
   minPrice?: number;
   maxPrice?: number;
 }
-

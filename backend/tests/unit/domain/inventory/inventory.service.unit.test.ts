@@ -131,14 +131,18 @@ describe('InventoryService', () => {
     it('throws AppError 404 when vehicle is not found', async () => {
       mockRepository.update.mockResolvedValue(null);
 
-      await expect(inventoryService.updateStock('ghost', { stockQuantity: 1 })).rejects.toThrow(AppError);
+      await expect(inventoryService.updateStock('ghost', { stockQuantity: 1 })).rejects.toThrow(
+        AppError,
+      );
       await expect(inventoryService.updateStock('ghost', { stockQuantity: 1 })).rejects.toThrow(
         'Vehicle with ID "ghost" not found',
       );
     });
 
     it('throws AppError 400 for empty vehicle ID', async () => {
-      await expect(inventoryService.updateStock('', { stockQuantity: 1 })).rejects.toThrow(AppError);
+      await expect(inventoryService.updateStock('', { stockQuantity: 1 })).rejects.toThrow(
+        AppError,
+      );
       await expect(inventoryService.updateStock('', { stockQuantity: 1 })).rejects.toThrow(
         'Invalid vehicle ID',
       );
@@ -146,7 +150,9 @@ describe('InventoryService', () => {
     });
 
     it('throws AppError 400 for negative stockQuantity', async () => {
-      await expect(inventoryService.updateStock('v-001', { stockQuantity: -1 })).rejects.toThrow(AppError);
+      await expect(inventoryService.updateStock('v-001', { stockQuantity: -1 })).rejects.toThrow(
+        AppError,
+      );
       await expect(inventoryService.updateStock('v-001', { stockQuantity: -1 })).rejects.toThrow(
         'Stock quantity cannot be negative',
       );
@@ -156,7 +162,9 @@ describe('InventoryService', () => {
     it('propagates repository failures', async () => {
       mockRepository.update.mockRejectedValue(new Error('DB error'));
 
-      await expect(inventoryService.updateStock('v-001', { stockQuantity: 1 })).rejects.toThrow('DB error');
+      await expect(inventoryService.updateStock('v-001', { stockQuantity: 1 })).rejects.toThrow(
+        'DB error',
+      );
     });
   });
 });

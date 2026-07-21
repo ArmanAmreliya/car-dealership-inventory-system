@@ -37,9 +37,7 @@ async function createVehicle(token: string): Promise<string> {
 
 describe('POST /api/v1/purchases', () => {
   it('should return 401 when no token is provided', async () => {
-    const response = await request(app)
-      .post('/api/v1/purchases')
-      .send({ vehicleId: 'any' });
+    const response = await request(app).post('/api/v1/purchases').send({ vehicleId: 'any' });
 
     expect(response.status).toBe(401);
     expect(response.body.status).toBe('error');
