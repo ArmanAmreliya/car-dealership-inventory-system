@@ -6,6 +6,7 @@ export interface IVehicleRepository {
   findAll(filters?: VehicleFilters): Vehicle[];
   findById(id: string): Promise<Vehicle | null>;
   update(id: string, fields: VehicleUpdate): Promise<Vehicle | null>;
+  delete(id: string): Promise<boolean>;
 }
 
 export class VehicleRepository implements IVehicleRepository {
@@ -59,5 +60,14 @@ export class VehicleRepository implements IVehicleRepository {
     }
     this.vehicles[index] = { ...this.vehicles[index], ...fields };
     return this.vehicles[index];
+  }
+
+  async delete(id: string): Promise<boolean> {
+    const index = this.vehicles.findIndex((v) => v.id === id);
+    if (index === -1) {
+      return false;
+    }
+    this.vehicles.splice(index, 1);
+    return true;
   }
 }

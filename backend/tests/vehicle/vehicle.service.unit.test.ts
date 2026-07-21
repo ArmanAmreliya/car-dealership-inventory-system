@@ -40,6 +40,7 @@ describe('VehicleService.list()', () => {
       findAll: jest.fn(),
       findById: jest.fn(),
       update: jest.fn(),
+      delete: jest.fn(),
     };
     vehicleService = new VehicleService(mockRepository);
   });

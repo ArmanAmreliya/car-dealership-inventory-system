@@ -47,4 +47,13 @@ export class VehicleController {
       next(err);
     }
   };
+
+  delete = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      await this.vehicleService.delete(req.params.id);
+      res.status(204).send();
+    } catch (err) {
+      next(err);
+    }
+  };
 }

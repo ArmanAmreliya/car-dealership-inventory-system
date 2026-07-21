@@ -57,6 +57,15 @@ export class VehicleService {
     return vehicle;
   }
 
+  async delete(id: string): Promise<void> {
+    this.validateId(id);
+
+    const deleted = await this.vehicleRepository.delete(id);
+    if (!deleted) {
+      throw new AppError(`Vehicle with ID "${id}" not found`, 404);
+    }
+  }
+
   private validateId(id: string): void {
     if (!id || id.trim() === '') {
       throw new AppError('Invalid vehicle ID', 400);

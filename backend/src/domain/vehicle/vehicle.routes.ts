@@ -32,5 +32,12 @@ export const createVehicleRouter = (): Router => {
       vehicleController.update(req as AuthenticatedRequest, res, next),
   );
 
+  router.delete(
+    '/:id',
+    authenticate,
+    (req: Request, res: Response, next: NextFunction) =>
+      vehicleController.delete(req as AuthenticatedRequest, res, next),
+  );
+
   return router;
 };
