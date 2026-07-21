@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { IAuthService } from './auth.service';
+import type { Request, Response, NextFunction } from 'express';
+import type { IAuthService } from './auth.service';
 
 export class AuthController {
   constructor(private readonly authService: IAuthService) {}

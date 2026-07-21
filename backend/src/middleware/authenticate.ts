@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken } from '../lib/jwt';
-import { User } from '../domain/auth/auth.types';
+import type { User } from '../domain/auth/auth.types';
 
 export interface AuthenticatedRequest extends Request {
   user: User;

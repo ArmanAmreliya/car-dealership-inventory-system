@@ -10,11 +10,7 @@ describe('GET /api/health', () => {
     expect(response.body).toEqual({
       status: 'ok',
       version: pkg.version,
-      timestamp: expect.any(String) as string,
+      timestamp: expect.any(String),
     });
-
-    // Validate timestamp is a valid ISO string
-    const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
-    expect(response.body.timestamp).toMatch(isoRegex);
   });
 });

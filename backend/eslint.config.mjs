@@ -4,7 +4,13 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: ['dist/**', 'node_modules/**', 'jest.config.ts'],
+    ignores: [
+      'dist/**',
+      'node_modules/**',
+      'jest.config.ts',
+      'jest.integration.config.ts',
+      'jest.unit.config.ts',
+    ],
   },
   {
     files: ['**/*.ts'],
@@ -33,7 +39,10 @@ export default [
       ...typescriptEslint.configs.recommended.rules,
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/explicit-function-return-type': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/consistent-type-imports': 'error',
       'no-console': 'warn',
     },

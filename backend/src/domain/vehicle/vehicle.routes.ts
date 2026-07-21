@@ -1,5 +1,7 @@
-import { Router, Request, Response, NextFunction } from 'express';
-import { authenticate, AuthenticatedRequest } from '../../middleware/authenticate';
+import type { Request, Response, NextFunction } from 'express';
+import { Router } from 'express';
+import type { AuthenticatedRequest } from '../../middleware/authenticate';
+import { authenticate } from '../../middleware/authenticate';
 import { VehicleRepository } from './vehicle.repository';
 import { VehicleController } from './vehicle.controller';
 

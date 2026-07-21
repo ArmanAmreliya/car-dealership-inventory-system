@@ -1,4 +1,4 @@
-import { Vehicle } from './vehicle.types';
+import type { Vehicle } from './vehicle.types';
 
 export interface IVehicleRepository {
   save(vehicle: Vehicle): void;

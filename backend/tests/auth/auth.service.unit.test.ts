@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { generateAccessToken, verifyAccessToken, TokenPayload } from '../../src/lib/jwt';
+import type { TokenPayload } from '../../src/lib/jwt';
+import { generateAccessToken, verifyAccessToken } from '../../src/lib/jwt';
 
 const validPayload: TokenPayload = {
   userId: 'user-123',

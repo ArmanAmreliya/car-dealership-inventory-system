@@ -1,4 +1,4 @@
-import { RegisterData, User } from './auth.types';
+import type { RegisterData, User } from './auth.types';
 import { AppError } from '../../common/errors/AppError';
 import { prisma } from '../../infrastructure/prisma';
 

@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt';
-import { IAuthRepository } from './auth.repository';
-import { AuthResponse, LoginCredentials, RegisterData, User } from './auth.types';
+import type { IAuthRepository } from './auth.repository';
+import type { AuthResponse, LoginCredentials, RegisterData, User } from './auth.types';
 import { AppError } from '../../common/errors/AppError';
 import { generateAccessToken } from '../../lib/jwt';
 

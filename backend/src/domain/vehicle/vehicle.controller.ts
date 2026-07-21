@@ -1,7 +1,7 @@
-import { Response, NextFunction } from 'express';
-import { AuthenticatedRequest } from '../../middleware/authenticate';
-import { IVehicleRepository } from './vehicle.repository';
-import { Vehicle } from './vehicle.types';
+import type { Response, NextFunction } from 'express';
+import type { AuthenticatedRequest } from '../../middleware/authenticate';
+import type { IVehicleRepository } from './vehicle.repository';
+import type { Vehicle } from './vehicle.types';
 
 interface CreateVehicleBody {
   make?: string;
