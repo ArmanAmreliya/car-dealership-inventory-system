@@ -1,8 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../../middleware/authenticate';
+import { IVehicleRepository } from './vehicle.repository';
 import { Vehicle } from './vehicle.types';
-
-const vehicles: Vehicle[] = [];
 
 interface CreateVehicleBody {
   make?: string;
@@ -15,6 +14,8 @@ interface CreateVehicleBody {
 }
 
 export class VehicleController {
+  constructor(private readonly vehicleRepository: IVehicleRepository) {}
+
   create = (req: AuthenticatedRequest, res: Response, _next: NextFunction): void => {
     const { make, model, year, price, vin, mileage, color } = req.body as CreateVehicleBody;
 
@@ -24,7 +25,7 @@ export class VehicleController {
     }
 
     const vehicle: Vehicle = {
-      id: `vehicle-${vehicles.length + 1}`,
+      id: this.vehicleRepository.nextId(),
       make,
       model,
       year,
@@ -35,7 +36,7 @@ export class VehicleController {
       createdAt: new Date(),
     };
 
-    vehicles.push(vehicle);
+    this.vehicleRepository.save(vehicle);
     res.status(201).json(vehicle);
   };
 }
