@@ -8,4 +8,15 @@ export interface Vehicle {
   mileage: number;
   color: string;
   createdAt: Date;
+  isAvailable?: boolean;
 }
+
+export interface VehicleFilters {
+  make?: string;
+  model?: string;
+  year?: number;
+  availability?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
+}
+

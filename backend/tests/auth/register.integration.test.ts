@@ -3,10 +3,11 @@ import app from '../../src/app/app';
 
 describe('POST /api/v1/auth/register', () => {
   it('should return 201 and auth payload on success', async () => {
+    const email = `test-${Date.now()}@example.com`;
     const response = await request(app)
       .post('/api/v1/auth/register')
       .send({
-        email: 'test@example.com',
+        email,
         password: 'password123',
         name: 'Test User',
       });
@@ -15,17 +16,18 @@ describe('POST /api/v1/auth/register', () => {
     expect(response.body).toHaveProperty('token');
     expect(response.body.user).toEqual(
       expect.objectContaining({
-        email: 'test@example.com',
+        email,
         name: 'Test User',
       }),
     );
   });
 
   it('should return 409 Conflict when trying to register an already registered email', async () => {
+    const email = `duplicate-${Date.now()}@example.com`;
     await request(app)
       .post('/api/v1/auth/register')
       .send({
-        email: 'duplicate@example.com',
+        email,
         password: 'password123',
         name: 'First User',
       });
@@ -33,7 +35,7 @@ describe('POST /api/v1/auth/register', () => {
     const response = await request(app)
       .post('/api/v1/auth/register')
       .send({
-        email: 'duplicate@example.com',
+        email,
         password: 'password123',
         name: 'Second User',
       });

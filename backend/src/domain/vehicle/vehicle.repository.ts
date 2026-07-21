@@ -1,8 +1,9 @@
-import type { Vehicle } from './vehicle.types';
+import type { Vehicle, VehicleFilters } from './vehicle.types';
 
 export interface IVehicleRepository {
   save(vehicle: Vehicle): void;
   nextId(): string;
+  findAll(filters?: VehicleFilters): Vehicle[];
 }
 
 export class VehicleRepository implements IVehicleRepository {
@@ -15,4 +16,33 @@ export class VehicleRepository implements IVehicleRepository {
   nextId(): string {
     return `vehicle-${this.vehicles.length + 1}`;
   }
+
+  findAll(filters?: VehicleFilters): Vehicle[] {
+    if (!filters) {
+      return [...this.vehicles];
+    }
+
+    return this.vehicles.filter((v) => {
+      if (filters.make && v.make.toLowerCase() !== filters.make.toLowerCase()) {
+        return false;
+      }
+      if (filters.model && v.model.toLowerCase() !== filters.model.toLowerCase()) {
+        return false;
+      }
+      if (filters.year !== undefined && v.year !== filters.year) {
+        return false;
+      }
+      if (filters.availability !== undefined && (v.isAvailable ?? true) !== filters.availability) {
+        return false;
+      }
+      if (filters.minPrice !== undefined && v.price < filters.minPrice) {
+        return false;
+      }
+      if (filters.maxPrice !== undefined && v.price > filters.maxPrice) {
+        return false;
+      }
+      return true;
+    });
+  }
 }
+
