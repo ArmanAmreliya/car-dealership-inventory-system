@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import { IAuthRepository } from './auth.repository';
 import { AuthResponse, LoginCredentials, RegisterData, User } from './auth.types';
 import { AppError } from '../../common/errors/AppError';
@@ -5,6 +6,7 @@ import { generateAccessToken } from '../../lib/jwt';
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
+const BCRYPT_SALT_ROUNDS = 10;
 
 export interface IAuthService {
   login(credentials: LoginCredentials): Promise<AuthResponse>;
@@ -16,7 +18,11 @@ export class AuthService implements IAuthService {
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const user = await this.authRepository.findByEmail(credentials.email);
-    if (!user || user.password !== credentials.password) {
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+    const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
+    if (!isPasswordValid) {
       throw new Error('Invalid credentials');
     }
     return this.issueToken(user);
@@ -24,7 +30,11 @@ export class AuthService implements IAuthService {
 
   async register(data: RegisterData): Promise<AuthResponse> {
     this.validateRegistration(data);
-    const stored = await this.authRepository.create(data);
+    const hashedPassword = await bcrypt.hash(data.password, BCRYPT_SALT_ROUNDS);
+    const stored = await this.authRepository.create({
+      ...data,
+      password: hashedPassword,
+    });
     return this.issueToken(stored);
   }
 
