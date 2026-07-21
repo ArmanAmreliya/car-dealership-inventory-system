@@ -1,5 +1,5 @@
 import request from 'supertest';
-import app from '@app/app';
+import app from '../src/app/app';
 import pkg from '../package.json';
 
 describe('GET /api/health', () => {
@@ -12,5 +12,9 @@ describe('GET /api/health', () => {
       version: pkg.version,
       timestamp: expect.any(String) as string,
     });
+
+    // Validate timestamp is a valid ISO string
+    const isoRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
+    expect(response.body.timestamp).toMatch(isoRegex);
   });
 });
