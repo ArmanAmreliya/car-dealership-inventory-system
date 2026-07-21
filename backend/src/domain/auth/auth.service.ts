@@ -1,45 +1,38 @@
 import { IAuthRepository } from './auth.repository';
-import { AuthResponse } from './auth.types';
-
-export const mockUsers: any[] = [];
+import { AuthResponse, User } from './auth.types';
 
 export interface IAuthService {
-  login(data: any): Promise<AuthResponse>;
-  register(data: any): Promise<AuthResponse>;
+  login(data: { email: string; password: string }): Promise<AuthResponse>;
+  register(data: { email: string; password: string; name: string }): Promise<AuthResponse>;
 }
 
 export class AuthService implements IAuthService {
   constructor(private readonly authRepository: IAuthRepository) {}
 
-  async login(data: any): Promise<AuthResponse> {
-    const user = mockUsers.find(u => u.email === data.email);
+  async login(data: { email: string; password: string }): Promise<AuthResponse> {
+    const user = await this.authRepository.findByEmail(data.email);
     if (!user || user.password !== data.password) {
       throw new Error('Invalid credentials');
     }
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        createdAt: user.createdAt,
-        updatedAt: user.updatedAt,
-      },
+      user: this.toPublicUser(user),
       token: 'mock-token',
     };
   }
 
-  async register(data: any): Promise<AuthResponse> {
-    const newUser = {
-      id: 'mock-id',
-      email: data.email,
-      password: data.password,
-      name: data.name,
-      role: 'user',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-    mockUsers.push(newUser);
+  async register(data: { email: string; password: string; name: string }): Promise<AuthResponse> {
+    await this.authRepository.create(data);
     return {} as AuthResponse;
+  }
+
+  private toPublicUser(user: { id: string; email: string; name: string | null; role: string; createdAt: Date; updatedAt: Date }): User {
+    return {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
+    };
   }
 }

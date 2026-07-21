@@ -5,7 +5,7 @@ export class AuthController {
   constructor(private readonly authService: IAuthService) {}
 
   login = async (req: Request, res: Response, _next: NextFunction): Promise<void> => {
-    const { email, password } = req.body;
+    const { email, password } = req.body as { email?: string; password?: string };
     if (!email || !password) {
       res.status(400).json({ status: 'error', message: 'Missing email or password' });
       return;
@@ -13,7 +13,7 @@ export class AuthController {
     try {
       const authPayload = await this.authService.login({ email, password });
       res.status(200).json(authPayload);
-    } catch (error) {
+    } catch {
       res.status(401).json({ status: 'error', message: 'Invalid credentials' });
     }
   };
