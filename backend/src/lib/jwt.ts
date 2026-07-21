@@ -1,4 +1,4 @@
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 
 export interface TokenPayload {
   userId: string;
@@ -7,13 +7,12 @@ export interface TokenPayload {
 }
 
 const JWT_SECRET = process.env['JWT_SECRET'] ?? 'test-secret';
-const ACCESS_TOKEN_EXPIRY = '15m';
+const SIGN_OPTIONS: SignOptions = { expiresIn: '15m' };
 
 export function generateAccessToken(payload: TokenPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: ACCESS_TOKEN_EXPIRY });
+  return jwt.sign(payload, JWT_SECRET, SIGN_OPTIONS);
 }
 
 export function verifyAccessToken(token: string): TokenPayload {
-  const decoded = jwt.verify(token, JWT_SECRET) as TokenPayload;
-  return decoded;
+  return jwt.verify(token, JWT_SECRET) as TokenPayload;
 }
