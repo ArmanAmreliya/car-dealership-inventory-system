@@ -14,4 +14,28 @@ describe('POST /api/v1/auth/register', () => {
     expect(response.status).toBe(501);
     expect(response.body).toEqual({ message: 'Not implemented' });
   });
+
+  it('should return 409 Conflict when trying to register an already registered email', async () => {
+    await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        email: 'duplicate@example.com',
+        password: 'password123',
+        name: 'First User',
+      });
+
+    const response = await request(app)
+      .post('/api/v1/auth/register')
+      .send({
+        email: 'duplicate@example.com',
+        password: 'password123',
+        name: 'Second User',
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body).toEqual({
+      status: 'error',
+      message: 'Email already registered',
+    });
+  });
 });
