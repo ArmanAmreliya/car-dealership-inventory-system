@@ -16,7 +16,10 @@ async function registerAndLogin(email: string): Promise<string> {
   return res.body.token as string;
 }
 
-async function createVehicle(token: string, overrides: Record<string, unknown> = {}): Promise<Record<string, unknown>> {
+async function createVehicle(
+  token: string,
+  overrides: Record<string, unknown> = {},
+): Promise<Record<string, unknown>> {
   const body = {
     make: 'Toyota',
     model: 'Camry',
@@ -44,9 +47,7 @@ describe('PUT /api/v1/vehicles/:id', () => {
   });
 
   it('returns 401 when no token is provided', async () => {
-    const response = await request(app)
-      .put('/api/v1/vehicles/any-id')
-      .send({ price: 20000 });
+    const response = await request(app).put('/api/v1/vehicles/any-id').send({ price: 20000 });
 
     expect(response.status).toBe(401);
     expect(response.body.status).toBe('error');

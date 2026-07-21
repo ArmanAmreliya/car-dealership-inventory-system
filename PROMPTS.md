@@ -65,3 +65,42 @@ Reflection
 
 Observed engineering practices, testing style, repository organization, and commit history. No implementation was copied.
 
+---
+
+# Session 4
+
+Goal
+
+Implement Vehicle Domain CRUD, Inventory Management, and Purchase Workflow with TDD.
+
+AI Tool
+
+Antigravity AI (Claude Sonnet 4.6)
+
+Outcome
+
+Built domain services, repositories, controllers, routers, unit test suites, and integration test suites adhering to TDD red-green-refactor cycles.
+
+Reflection
+
+Ensured separation of concerns, single shared repository state across modules, and operational error handling.
+
+---
+
+# Session 5
+
+Goal
+
+Complete Backend Production Readiness and Final Verification Audit.
+
+AI Tool
+
+Antigravity AI (Claude Sonnet 4.6 & Gemini 3.5 Flash)
+
+Outcome
+
+Added Zod validation middleware, Morgan HTTP logging, Swagger/OpenAPI spec (`/api/docs`), multi-stage GitHub Actions CI, formatted codebase with Prettier, resolved type-import ESLint errors, and verified 100% test pass rate.
+
+Reflection
+
+Ensured zero blocking issues, zero type errors, zero lint warnings, zero dead code, and full compliance with assessment quality standards.

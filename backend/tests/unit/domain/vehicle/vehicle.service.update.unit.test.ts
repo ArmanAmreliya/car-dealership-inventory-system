@@ -39,7 +39,10 @@ describe('VehicleService.update()', () => {
 
     const result = await vehicleService.update('v-001', { price: 22000, isAvailable: false });
 
-    expect(mockRepository.update).toHaveBeenCalledWith('v-001', { price: 22000, isAvailable: false });
+    expect(mockRepository.update).toHaveBeenCalledWith('v-001', {
+      price: 22000,
+      isAvailable: false,
+    });
     expect(result).toEqual(updated);
   });
 

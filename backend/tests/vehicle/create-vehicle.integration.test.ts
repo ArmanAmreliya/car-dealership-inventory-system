@@ -28,9 +28,7 @@ async function registerAndLogin(email: string): Promise<string> {
 
 describe('POST /api/v1/vehicles', () => {
   it('should return 401 Unauthorized when no token is provided', async () => {
-    const response = await request(app)
-      .post('/api/v1/vehicles')
-      .send(validVehicle);
+    const response = await request(app).post('/api/v1/vehicles').send(validVehicle);
 
     expect(response.status).toBe(401);
     expect(response.body.status).toBe('error');
