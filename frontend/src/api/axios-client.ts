@@ -30,14 +30,14 @@ export const apiClient: AxiosInstance = axios.create({
  * Token is read from localStorage and added to Authorization header as Bearer token.
  */
 apiClient.interceptors.request.use(
-  (config) => {
+  (config: any) => {
     const token = getStoredToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
+  (error: any) => {
     return Promise.reject(error);
   }
 );
@@ -50,7 +50,7 @@ apiClient.interceptors.request.use(
  * - Other errors: Passes through to caller for feature-level handling
  */
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response: any) => response,
   (error: AxiosError) => {
     if (error.response?.status === 401) {
       // Clear authentication state on unauthorized response
