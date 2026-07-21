@@ -5,7 +5,7 @@ export class AuthController {
   constructor(private readonly authService: IAuthService) {}
 
   login = async (_req: Request, _res: Response, _next: NextFunction): Promise<void> => {
-    this.authService.login({});
+    void this.authService;
     throw new Error('Not implemented');
   };
 

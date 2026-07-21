@@ -10,7 +10,7 @@ export class AuthService implements IAuthService {
   constructor(private readonly authRepository: IAuthRepository) {}
 
   async login(_data: any): Promise<AuthResponse> {
-    this.authRepository.findByEmail('');
+    void this.authRepository;
     throw new Error('Not implemented');
   }
 
