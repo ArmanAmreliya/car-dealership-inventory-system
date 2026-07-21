@@ -29,6 +29,7 @@ const config: Config = {
       statements: 80,
     },
   },
+  testPathIgnorePatterns: ['/node_modules/', '/dist/'],
   verbose: true,
   clearMocks: true,
   transform: {
