@@ -8,10 +8,11 @@ export const createVehicleSchema = z.object({
     .int()
     .min(1886, 'year must be 1886 or later')
     .max(new Date().getFullYear() + 2, 'year is too far in the future'),
-  price: z
-    .number({ message: 'price must be a number' })
-    .positive('price must be positive'),
-  vin: z.string({ message: 'vin is required' }).min(1, 'vin is required').max(17, 'VIN must be at most 17 characters'),
+  price: z.number({ message: 'price must be a number' }).positive('price must be positive'),
+  vin: z
+    .string({ message: 'vin is required' })
+    .min(1, 'vin is required')
+    .max(17, 'VIN must be at most 17 characters'),
   mileage: z.number().nonnegative('mileage cannot be negative').optional(),
   color: z.string().optional(),
 });

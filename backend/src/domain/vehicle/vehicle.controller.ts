@@ -13,7 +13,10 @@ export class VehicleController {
   };
 
   list = (req: AuthenticatedRequest, res: Response, _next: NextFunction): void => {
-    const { make, model, year, availability, minPrice, maxPrice } = req.query as Record<string, string>;
+    const { make, model, year, availability, minPrice, maxPrice } = req.query as Record<
+      string,
+      string
+    >;
 
     const filters: VehicleFilters = {};
     if (make) filters.make = make;

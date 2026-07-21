@@ -9,7 +9,9 @@ import type { IVehicleRepository } from './vehicle.repository';
 import { VehicleService } from './vehicle.service';
 import { VehicleController } from './vehicle.controller';
 
-export const createVehicleRouter = (vehicleRepository: IVehicleRepository = new VehicleRepository()): Router => {
+export const createVehicleRouter = (
+  vehicleRepository: IVehicleRepository = new VehicleRepository(),
+): Router => {
   const router = Router();
   const vehicleService = new VehicleService(vehicleRepository);
   const vehicleController = new VehicleController(vehicleService);
@@ -22,18 +24,12 @@ export const createVehicleRouter = (vehicleRepository: IVehicleRepository = new 
       vehicleController.create(req as AuthenticatedRequest, res, next),
   );
 
-  router.get(
-    '/',
-    authenticate,
-    (req: Request, res: Response, next: NextFunction) =>
-      vehicleController.list(req as AuthenticatedRequest, res, next),
+  router.get('/', authenticate, (req: Request, res: Response, next: NextFunction) =>
+    vehicleController.list(req as AuthenticatedRequest, res, next),
   );
 
-  router.get(
-    '/:id',
-    authenticate,
-    (req: Request, res: Response, next: NextFunction) =>
-      vehicleController.getById(req as AuthenticatedRequest, res, next),
+  router.get('/:id', authenticate, (req: Request, res: Response, next: NextFunction) =>
+    vehicleController.getById(req as AuthenticatedRequest, res, next),
   );
 
   router.put(
@@ -44,11 +40,8 @@ export const createVehicleRouter = (vehicleRepository: IVehicleRepository = new 
       vehicleController.update(req as AuthenticatedRequest, res, next),
   );
 
-  router.delete(
-    '/:id',
-    authenticate,
-    (req: Request, res: Response, next: NextFunction) =>
-      vehicleController.delete(req as AuthenticatedRequest, res, next),
+  router.delete('/:id', authenticate, (req: Request, res: Response, next: NextFunction) =>
+    vehicleController.delete(req as AuthenticatedRequest, res, next),
   );
 
   return router;
