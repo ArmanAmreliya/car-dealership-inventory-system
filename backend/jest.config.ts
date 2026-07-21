@@ -31,10 +31,13 @@ const config: Config = {
   },
   verbose: true,
   clearMocks: true,
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-    },
+  transform: {
+    '^.+\\.tsx?$': [
+      'ts-jest',
+      {
+        tsconfig: 'tsconfig.json',
+      },
+    ],
   },
 };
 
