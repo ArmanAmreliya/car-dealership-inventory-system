@@ -4,6 +4,7 @@ export interface IVehicleRepository {
   save(vehicle: Vehicle): void;
   nextId(): string;
   findAll(filters?: VehicleFilters): Vehicle[];
+  findById(id: string): Promise<Vehicle | null>;
 }
 
 export class VehicleRepository implements IVehicleRepository {

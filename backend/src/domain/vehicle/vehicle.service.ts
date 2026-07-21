@@ -7,4 +7,8 @@ export class VehicleService {
   list(filters?: VehicleFilters): Vehicle[] {
     return this.vehicleRepository.findAll(filters);
   }
+
+  async getById(_id: string): Promise<Vehicle | null> {
+    throw new Error('Not implemented');
+  }
 }
