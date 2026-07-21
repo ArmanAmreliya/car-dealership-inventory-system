@@ -30,6 +30,8 @@ export interface VehicleDTO {
   model: string;
   year: number;
   price: number;
+  mileage?: number;
+  color?: string;
   createdAt: string;
   updatedAt: string;
 }
