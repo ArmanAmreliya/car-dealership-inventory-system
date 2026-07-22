@@ -43,10 +43,11 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
         onSuccess?.();
       },
       onError: (error: any) => {
+        console.error('[RegisterForm submission error]:', error);
         const apiErrorMessage =
           error?.response?.data?.message ||
           error?.message ||
-          'Failed to create account. Please try again.';
+          'Failed to create account. Please check network connection and try again.';
         toast.error(apiErrorMessage);
       },
     });

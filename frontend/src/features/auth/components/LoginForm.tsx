@@ -42,6 +42,7 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
         onSuccess?.();
       },
       onError: (error: any) => {
+        console.error('[LoginForm submission error]:', error);
         const apiErrorMessage =
           error?.response?.data?.message ||
           error?.message ||
