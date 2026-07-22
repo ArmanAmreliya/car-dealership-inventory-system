@@ -13,6 +13,7 @@ import { DashboardPage } from '../pages/DashboardPage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { paths } from './paths';
+import { App } from '../app/App';
 
 /**
  * Browser router configuration
@@ -33,13 +34,7 @@ export const appRouter = createBrowserRouter([
   },
   {
     path: paths.root,
-    element: (
-      <ProtectedRoute>
-        <DashboardLayout pageTitle="Dashboard">
-          <DashboardPage />
-        </DashboardLayout>
-      </ProtectedRoute>
-    ),
+    element: <App />,
   },
   {
     path: paths.dashboard,

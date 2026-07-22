@@ -11,32 +11,23 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRegister } from '../hooks/useRegister';
 import { RegisterInput } from '../types/auth.types';
+import { toast } from 'sonner';
 
 /**
  * Register form validation schema
  */
 const registerSchema = z.object({
   name: z.string().min(1, 'Name is required'),
-  email: z.string().min(1, 'Email is required').email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
+  password: z.string().min(1, 'Password is required'),
 });
 
 interface RegisterFormProps {
   onSuccess?: () => void;
 }
 
-/**
- * RegisterForm Component
- *
- * @param onSuccess - Optional callback fired on successful registration
- *
- * @example
- * ```tsx
- * <RegisterForm onSuccess={() => navigate('/dashboard')} />
- * ```
- */
 export function RegisterForm({ onSuccess }: RegisterFormProps) {
-  const { mutate: register, isPending, error } = useRegister();
+  const { mutate: register, isPending } = useRegister();
   const {
     register: formRegister,
     handleSubmit,
@@ -48,18 +39,24 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
   const onSubmit = (data: RegisterInput) => {
     register(data, {
       onSuccess: () => {
+        toast.success('Successfully created account!');
         onSuccess?.();
+      },
+      onError: (error: any) => {
+        const apiErrorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          'Failed to create account. Please try again.';
+        toast.error(apiErrorMessage);
       },
     });
   };
 
-  const apiErrorMessage = error?.response?.data?.message;
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Name Field */}
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="name" className="block text-sm font-medium text-neutral-700">
           Full Name
         </label>
         <input
@@ -67,64 +64,57 @@ export function RegisterForm({ onSuccess }: RegisterFormProps) {
           type="text"
           placeholder="John Doe"
           {...formRegister('name')}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1.5 block w-full px-4 py-3 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm placeholder-neutral-400 transition-colors"
           disabled={isPending}
         />
         {errors.name && (
-          <p className="mt-1 text-sm text-red-600">{errors.name.message}</p>
+          <p className="mt-1.5 text-xs text-red-600 font-medium">{errors.name.message}</p>
         )}
       </div>
 
       {/* Email Field */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Email
+        <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
+          Email Address
         </label>
         <input
           id="email"
           type="email"
-          placeholder="user@example.com"
+          placeholder="you@email.com"
           {...formRegister('email')}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1.5 block w-full px-4 py-3 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm placeholder-neutral-400 transition-colors"
           disabled={isPending}
         />
         {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+          <p className="mt-1.5 text-xs text-red-600 font-medium">{errors.email.message}</p>
         )}
       </div>
 
       {/* Password Field */}
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+        <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
           Password
         </label>
         <input
           id="password"
           type="password"
-          placeholder="••••••••"
+          placeholder="********"
           {...formRegister('password')}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1.5 block w-full px-4 py-3 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm placeholder-neutral-400 transition-colors"
           disabled={isPending}
         />
         {errors.password && (
-          <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+          <p className="mt-1.5 text-xs text-red-600 font-medium">{errors.password.message}</p>
         )}
       </div>
-
-      {/* API Error */}
-      {apiErrorMessage && (
-        <div className="rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-700">{apiErrorMessage}</p>
-        </div>
-      )}
 
       {/* Submit Button */}
       <button
         type="submit"
         disabled={isPending}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-[#00C49F] hover:bg-[#00B08F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
       >
-        {isPending ? 'Creating account...' : 'Create account'}
+        {isPending ? 'Creating account...' : 'Create Account'}
       </button>
     </form>
   );

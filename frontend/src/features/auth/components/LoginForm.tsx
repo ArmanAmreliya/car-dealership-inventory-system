@@ -11,12 +11,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useLogin } from '../hooks/useLogin';
 import { LoginInput } from '../types/auth.types';
+import { toast } from 'sonner';
 
 /**
  * Login form validation schema
  */
 const loginSchema = z.object({
-  email: z.string().min(1, 'Email is required').email('Invalid email address'),
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email address'),
   password: z.string().min(1, 'Password is required'),
 });
 
@@ -24,18 +25,8 @@ interface LoginFormProps {
   onSuccess?: () => void;
 }
 
-/**
- * LoginForm Component
- *
- * @param onSuccess - Optional callback fired on successful login
- *
- * @example
- * ```tsx
- * <LoginForm onSuccess={() => navigate('/dashboard')} />
- * ```
- */
 export function LoginForm({ onSuccess }: LoginFormProps) {
-  const { mutate: login, isPending, error } = useLogin();
+  const { mutate: login, isPending } = useLogin();
   const {
     register,
     handleSubmit,
@@ -47,65 +38,69 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   const onSubmit = (data: LoginInput) => {
     login(data, {
       onSuccess: () => {
+        toast.success('Successfully logged in!');
         onSuccess?.();
+      },
+      onError: (error: any) => {
+        const apiErrorMessage =
+          error?.response?.data?.message ||
+          error?.message ||
+          'Invalid email or password';
+        toast.error(apiErrorMessage);
       },
     });
   };
 
-  const apiErrorMessage = error?.response?.data?.message;
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Email Field */}
       <div>
-        <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-          Email
+        <label htmlFor="email" className="block text-sm font-medium text-neutral-700">
+          Email Address
         </label>
         <input
           id="email"
           type="email"
-          placeholder="user@example.com"
+          placeholder="you@email.com"
           {...register('email')}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1.5 block w-full px-4 py-3 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm placeholder-neutral-400 transition-colors"
           disabled={isPending}
         />
         {errors.email && (
-          <p className="mt-1 text-sm text-red-600">{errors.email.message}</p>
+          <p className="mt-1.5 text-xs text-red-600 font-medium">{errors.email.message}</p>
         )}
       </div>
 
       {/* Password Field */}
       <div>
-        <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-          Password
-        </label>
+        <div className="flex justify-between items-center">
+          <label htmlFor="password" className="block text-sm font-medium text-neutral-700">
+            Password
+          </label>
+          <a href="#forgot" className="text-xs text-blue-500 hover:text-blue-600 hover:underline">
+            Forgot Password?
+          </a>
+        </div>
         <input
           id="password"
           type="password"
-          placeholder="••••••••"
+          placeholder="********"
           {...register('password')}
-          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          className="mt-1.5 block w-full px-4 py-3 border border-neutral-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm placeholder-neutral-400 transition-colors"
           disabled={isPending}
         />
         {errors.password && (
-          <p className="mt-1 text-sm text-red-600">{errors.password.message}</p>
+          <p className="mt-1.5 text-xs text-red-600 font-medium">{errors.password.message}</p>
         )}
       </div>
-
-      {/* API Error */}
-      {apiErrorMessage && (
-        <div className="rounded-md bg-red-50 p-4">
-          <p className="text-sm text-red-700">{apiErrorMessage}</p>
-        </div>
-      )}
 
       {/* Submit Button */}
       <button
         type="submit"
         disabled={isPending}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-[#00C49F] hover:bg-[#00B08F] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
       >
-        {isPending ? 'Signing in...' : 'Sign in'}
+        {isPending ? 'Logging in...' : 'Log-In'}
       </button>
     </form>
   );
