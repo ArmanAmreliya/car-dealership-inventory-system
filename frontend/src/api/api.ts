@@ -106,8 +106,16 @@ export const vehicleService = {
    * Get Cloudinary upload signature
    */
   getUploadSignature: async () => {
-    const response = await apiClient.get<UploadSignatureDTO>('/v1/vehicles/upload-signature');
-    return response.data;
+    try {
+      const response = await apiClient.get<UploadSignatureDTO>('/v1/vehicles/upload-signature');
+      return response.data;
+    } catch (err: any) {
+      if (err?.response?.status === 404) {
+        const fallbackResponse = await apiClient.get<UploadSignatureDTO>('/v1/upload-signature');
+        return fallbackResponse.data;
+      }
+      throw err;
+    }
   },
 
   /**

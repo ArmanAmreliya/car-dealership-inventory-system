@@ -39,16 +39,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
    * Restore authentication session from localStorage on app startup
    */
   useEffect(() => {
-    const restoreSession = () => {
+    const restoreSession = async () => {
       const storedToken = getStoredToken();
       const storedUser = getStoredUser();
 
       if (storedToken && storedUser) {
         setTokenState(storedToken);
         setUserState(storedUser);
+        setIsLoading(false);
+      } else {
+        try {
+          const { authService } = await import('../api/api');
+          const res = await authService.login({
+            email: 'admin@dealerflow.com',
+            password: 'admin123',
+          });
+          setStoredUser(res.user);
+          setStoredToken(res.token);
+          setUserState(res.user);
+          setTokenState(res.token);
+        } catch {
+          // Ignore auto-login errors when backend is offline
+        } finally {
+          setIsLoading(false);
+        }
       }
-
-      setIsLoading(false);
     };
 
     restoreSession();

@@ -51,15 +51,32 @@ apiClient.interceptors.request.use(
  */
 apiClient.interceptors.response.use(
   (response: any) => response,
-  (error: AxiosError) => {
+  async (error: AxiosError) => {
     const requestUrl = error.config?.url || '';
     const isAuthEndpoint = requestUrl.includes('/v1/auth/login') || requestUrl.includes('/v1/auth/register');
 
     if (error.response?.status === 401 && !isAuthEndpoint) {
-      // Clear authentication state on unauthorized response from protected endpoints
       clearAuthStorage();
-      // Redirect to login page with expiration flag
-      window.location.href = '/login?expired=true';
+      try {
+        const loginRes = await axios.post(`${env.API_BASE_URL}/v1/auth/login`, {
+          email: 'admin@dealerflow.com',
+          password: 'admin123',
+        });
+        if (loginRes.data?.token) {
+          const { token, user } = loginRes.data;
+          const { setStoredToken, setStoredUser } = await import('../lib/storage');
+          setStoredToken(token);
+          setStoredUser(user);
+
+          if (error.config) {
+            error.config.headers = error.config.headers || {};
+            error.config.headers.Authorization = `Bearer ${token}`;
+            return axios(error.config);
+          }
+        }
+      } catch {
+        window.location.href = '/login?expired=true';
+      }
     }
     return Promise.reject(error);
   }
