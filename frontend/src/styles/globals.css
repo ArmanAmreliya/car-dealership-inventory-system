@@ -7,14 +7,16 @@
 :root {
   color-scheme: light;
 
-  /* Layout */
-  --sidebar-width: 16rem; /* 256px / w-64 */
-  --navbar-height: 4rem;  /* 64px  / h-16 */
+  /* Layout dimensions */
+  --sidebar-expanded-width: 17.5rem; /* 280px */
+  --sidebar-collapsed-width: 5.5rem; /* 88px */
+  --navbar-height: 4rem; /* 64px */
 
   /* Transitions */
-  --transition-fast: 150ms ease;
-  --transition-base: 200ms ease;
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 200ms cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 400ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .dark {
@@ -28,7 +30,6 @@ html {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Prevent layout shift when scrollbar appears */
   scrollbar-gutter: stable;
 }
 
@@ -43,14 +44,14 @@ body {
     'Segoe UI',
     Roboto,
     sans-serif;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: #F8FAFC;
+  color: #0F172A;
   line-height: 1.5;
 }
 
 .dark body {
-  background-color: #0f172a;
-  color: #f1f5f9;
+  background-color: #0B0F19;
+  color: #F8FAFC;
 }
 
 *,
@@ -59,25 +60,20 @@ body {
   box-sizing: border-box;
 }
 
-/* ── Focus management ──────────────────────────────────────────────────── */
+/* ── Focus management (WCAG AA 2.4.7) ────────────────────────────────── */
 
-/*
- * Remove the default focus ring for mouse/touch users while keeping
- * a clear ring for keyboard users (WCAG 2.4.7 Focus Visible — AA).
- */
 :focus {
   outline: none;
 }
 
 :focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #0D9488;
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
-/* Dark-mode focus ring */
 .dark :focus-visible {
-  outline-color: #60a5fa;
+  outline-color: #2DD4BF;
 }
 
 /* ── Interactive element base ──────────────────────────────────────────── */
@@ -92,7 +88,7 @@ button:disabled,
   cursor: not-allowed;
 }
 
-/* ── Scrollbar styling (Webkit) ────────────────────────────────────────── */
+/* ── Custom Scrollbar (Sleek Chrome/Safari/Firefox) ───────────────────── */
 
 ::-webkit-scrollbar {
   width: 6px;
@@ -104,12 +100,12 @@ button:disabled,
 }
 
 ::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background-color: #CBD5E1;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  background-color: #94A3B8;
 }
 
 .dark ::-webkit-scrollbar-thumb {
@@ -120,23 +116,29 @@ button:disabled,
   background-color: #475569;
 }
 
-/* ── Typography scale ──────────────────────────────────────────────────── */
+/* ── Typography scale & heading hierarchy ─────────────────────────────── */
 
 h1, h2, h3, h4, h5, h6 {
   font-weight: 600;
   line-height: 1.25;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.02em;
 }
 
-/* ── Responsive image defaults ─────────────────────────────────────────── */
+/* ── Custom Glassmorphism & UI utilities ──────────────────────────────── */
 
-img,
-svg {
-  display: block;
-  max-width: 100%;
+.glass-panel {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
-/* ── Skip-to-content link (accessibility) ─────────────────────────────── */
+.dark .glass-panel {
+  background: rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── Skip-to-content link ─────────────────────────────────────────────── */
 
 .skip-link {
   position: absolute;
@@ -144,30 +146,21 @@ svg {
   left: 1rem;
   z-index: 9999;
   padding: 0.5rem 1rem;
-  background: #3b82f6;
-  color: #fff;
+  background: #0D9488;
+  color: #FFF;
   font-size: 0.875rem;
   font-weight: 600;
-  border-radius: 0 0 6px 6px;
+  border-radius: 0 0 8px 8px;
   transition: top var(--transition-base);
 }
 
 .skip-link:focus {
   top: 0;
-  outline: 2px solid #fff;
+  outline: 2px solid #FFF;
   outline-offset: 2px;
 }
-
-/* ── Smooth page transitions ───────────────────────────────────────────── */
 
 #root {
   isolation: isolate;
 }
 
-/* ── Print ─────────────────────────────────────────────────────────────── */
-
-@media print {
-  .no-print {
-    display: none !important;
-  }
-}
