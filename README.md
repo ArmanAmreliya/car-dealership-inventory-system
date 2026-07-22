@@ -30,10 +30,6 @@ DealerFlow helps dealerships manage:
 - Secure auth and role-based protected API access
 - Production-ready landing experience for dealership browsing
 
-## Screenshot
-
-![DealerFlow UI Preview](./Screenshot%202026-07-23%20003743.png)
-
 ## Environment Essentials
 
 ### Backend
@@ -74,3 +70,67 @@ pnpm dev
 - Frontend is deployed on Vercel with SPA routing support.
 - Backend is deployed on Render and serves the API and Swagger docs.
 - The repo is structured for clean separation between frontend, backend, and Prisma schema.
+
+## My AI Usage
+
+I used GitHub Copilot as a development assistant throughout the project to help with:
+- scaffolding API and frontend structure
+- drafting test cases and validation logic
+- debugging deployment/runtime issues
+- refining UI copy and component organization
+- improving README and project documentation
+
+All generated suggestions were manually reviewed, adapted to the existing architecture, and validated through the project’s test and build workflows before being kept.
+
+## Testing
+
+Backend:
+
+```bash
+cd backend
+npm test
+```
+
+Frontend verification:
+
+```bash
+cd frontend
+pnpm lint
+pnpm build
+```
+
+## Architecture
+
+Frontend
+- React
+- TypeScript
+- Tailwind CSS
+
+Backend
+- Express
+- Prisma
+- PostgreSQL
+- JWT
+
+## Project Structure
+
+```text
+frontend/
+backend/
+prisma/
+PROMPTS.md
+README.md
+```
+
+## API Endpoints
+
+Key API areas covered by the project:
+
+- Authentication: `POST /api/auth/register`, `POST /api/auth/login`
+- Vehicles: `POST /api/vehicles`, `GET /api/vehicles`, `GET /api/vehicles/search`, `PUT /api/vehicles/:id`, `DELETE /api/vehicles/:id`
+- Inventory: `GET /api/inventory`, `PATCH /api/inventory/:id`
+- Purchases: `POST /api/purchases`
+- Docs: `GET /api/docs`
+
+## Screenshot
+![DealerFlow UI Preview](./Screenshot%202026-07-23%20003743.png)
