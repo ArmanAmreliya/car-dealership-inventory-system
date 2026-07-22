@@ -1,10 +1,3 @@
-/**
- * Application Routes Configuration
- *
- * Defines all application routes with public and protected access levels.
- * Uses React Router v7 with nested route definitions.
- */
-
 import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '../components/guards/ProtectedRoute';
 import { LoginPage } from '../pages/LoginPage';
@@ -22,14 +15,6 @@ import { DashboardLayout } from '../layouts/DashboardLayout';
 import { paths } from './paths';
 import { App } from '../app/App';
 
-/**
- * Browser router configuration
- *
- * Route hierarchy:
- * - Public routes: /login, /register
- * - Protected routes: All dashboard features wrapped in ProtectedRoute
- * - Catch-all: /404 and any undefined routes
- */
 export const appRouter = createBrowserRouter([
   {
     path: paths.login,
@@ -47,7 +32,7 @@ export const appRouter = createBrowserRouter([
     path: paths.dashboard,
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Dashboard">
+        <DashboardLayout pageTitle="Command Center">
           <DashboardPage />
         </DashboardLayout>
       </ProtectedRoute>
@@ -57,7 +42,9 @@ export const appRouter = createBrowserRouter([
     path: paths.vehicles,
     element: (
       <ProtectedRoute>
-        <VehiclesListPage />
+        <DashboardLayout pageTitle="Vehicles">
+          <VehiclesListPage />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -65,7 +52,9 @@ export const appRouter = createBrowserRouter([
     path: paths.vehiclesNew,
     element: (
       <ProtectedRoute>
-        <VehicleCreatePage />
+        <DashboardLayout pageTitle="New Vehicle">
+          <VehicleCreatePage />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -73,7 +62,9 @@ export const appRouter = createBrowserRouter([
     path: '/vehicles/:id',
     element: (
       <ProtectedRoute>
-        <VehicleDetailPage />
+        <DashboardLayout pageTitle="Vehicle Specifications">
+          <VehicleDetailPage />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -81,7 +72,9 @@ export const appRouter = createBrowserRouter([
     path: '/vehicles/:id/edit',
     element: (
       <ProtectedRoute>
-        <VehicleEditPage />
+        <DashboardLayout pageTitle="Edit Vehicle">
+          <VehicleEditPage />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -89,7 +82,9 @@ export const appRouter = createBrowserRouter([
     path: paths.inventory,
     element: (
       <ProtectedRoute>
-        <InventoryPage />
+        <DashboardLayout pageTitle="Inventory Control">
+          <InventoryPage />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -97,7 +92,9 @@ export const appRouter = createBrowserRouter([
     path: paths.purchases,
     element: (
       <ProtectedRoute>
-        <PurchasesPage />
+        <DashboardLayout pageTitle="Purchase History">
+          <PurchasesPage />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -105,7 +102,9 @@ export const appRouter = createBrowserRouter([
     path: '/purchases/new',
     element: (
       <ProtectedRoute>
-        <CreatePurchasePage />
+        <DashboardLayout pageTitle="Create Purchase Order">
+          <CreatePurchasePage />
+        </DashboardLayout>
       </ProtectedRoute>
     ),
   },
@@ -118,3 +117,4 @@ export const appRouter = createBrowserRouter([
     element: <NotFoundPage />,
   },
 ]);
+

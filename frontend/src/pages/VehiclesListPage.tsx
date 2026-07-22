@@ -1,26 +1,17 @@
-/**
- * VehiclesListPage — Premium Enterprise Edition
- *
- * Main page for browsing, filtering, and managing the vehicle inventory.
- * Features:
- *   - Stats header with vehicle count metrics
- *   - Premium search + filter bar
- *   - Sortable data table with skeleton loading
- *   - Delete confirmation dialog
- *   - Gradient "Add Vehicle" CTA
- */
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { DashboardLayout } from '../layouts/DashboardLayout';
+import { PlusCircle, Car, DollarSign, Layers, Calendar } from 'lucide-react';
 import { VehicleFilterBar } from '../features/vehicles/components/VehicleFilterBar';
 import { VehicleTable } from '../features/vehicles/components/VehicleTable';
 import { VehicleGridCard } from '../features/vehicles/components/VehicleGridCard';
 import { ViewToggle } from '../features/vehicles/components/ViewToggle';
+import { VehicleEditDrawer } from '../features/vehicles/components/VehicleEditDrawer';
+import { VehicleImageGalleryModal } from '../features/vehicles/components/VehicleImageGalleryModal';
 import { DeleteVehicleDialog } from '../features/vehicles/components/DeleteVehicleDialog';
-import { useVehicles } from '../features/vehicles/hooks/useVehicles';
-import { useDeleteVehicle } from '../features/vehicles/hooks/useVehicles';
+
+import { EmptyVehicles } from '../components/feedback/EmptyState';
+import { useVehicles, useDeleteVehicle } from '../features/vehicles/hooks/useVehicles';
 import { VehicleFilters } from '../features/vehicles/types/vehicle.types';
 import { VehicleDTO } from '../api/api';
 import { paths } from '../routes/paths';
@@ -29,7 +20,27 @@ export function VehiclesListPage() {
   const navigate = useNavigate();
 
   // ── View mode state ───────────────────────────────────────────────────────────
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>(() => {
+    try {
+      return (localStorage.getItem('dealerflow_vehicles_view_mode') as 'grid' | 'list') || 'grid';
+    } catch {
+      return 'grid';
+    }
+  });
+
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem('dealerflow_vehicles_view_mode', mode);
+    } catch {
+      // ignore
+    }
+  };
+
+  // ── Edit Drawer & Gallery State ────────────────────────────────────────────
+  const [editingVehicle, setEditingVehicle] = useState<VehicleDTO | null>(null);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+  const [galleryVehicle, setGalleryVehicle] = useState<VehicleDTO | null>(null);
 
   // ── Filter state ────────────────────────────────────────────────────────────
   const [filters, setFilters] = useState<VehicleFilters>({});
@@ -69,8 +80,9 @@ export function VehiclesListPage() {
     });
   };
 
-  const handleDeleteCancel = () => {
-    setDeleteTarget(null);
+  const handleEditQuick = (vehicle: VehicleDTO) => {
+    setEditingVehicle(vehicle);
+    setIsEditDrawerOpen(true);
   };
 
   // ── Derived stats ───────────────────────────────────────────────────────────
@@ -86,154 +98,170 @@ export function VehiclesListPage() {
     new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n);
 
   return (
-    <DashboardLayout pageTitle="Vehicles">
-      <div className="p-6 lg:p-8">
-        <div className="mx-auto max-w-7xl">
-          {/* ── Page header ──────────────────────────────────────────────── */}
-          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
-                Vehicle Inventory
-              </h1>
-              <p className="mt-1 text-sm text-neutral-500">
-                Manage your vehicle catalog — add, edit, or remove vehicles from your inventory.
-              </p>
-            </div>
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            Vehicle Fleet Catalogue
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+            Manage, inspect, and update dealership vehicle inventory.
+          </p>
+        </div>
 
-            <div className="flex items-center gap-3">
-              <ViewToggle mode={viewMode} onModeChange={setViewMode} />
-              <button
-                type="button"
-                onClick={() => navigate(paths.vehiclesNew)}
-                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-accent-600 to-accent-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-accent-500/20 transition-all hover:from-accent-700 hover:to-accent-800 hover:shadow-accent-500/30 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                </svg>
-                Add Vehicle
-              </button>
-            </div>
-          </div>
-
-          {/* ── Stats bar ────────────────────────────────────────────────── */}
-          {!isLoading && !isError && totalVehicles > 0 && (
-            <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <StatCard
-                label="Total Vehicles"
-                value={String(totalVehicles)}
-                icon={
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                  </svg>
-                }
-                accent="blue"
-              />
-              <StatCard
-                label="Avg. Price"
-                value={formatCurrency(avgPrice)}
-                icon={
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                }
-                accent="emerald"
-              />
-              <StatCard
-                label="Makes"
-                value={String(uniqueMakes)}
-                icon={
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
-                  </svg>
-                }
-                accent="violet"
-              />
-              <StatCard
-                label="Newest Year"
-                value={String(latestYear)}
-                icon={
-                  <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
-                  </svg>
-                }
-                accent="amber"
-              />
-            </div>
-          )}
-
-          {/* ── Filter bar ─────────────────────────────────────────────────── */}
-          <VehicleFilterBar onFiltersChange={setFilters} isLoading={isLoading} />
-
-          {/* ── Error state ────────────────────────────────────────────────── */}
-          {isError && (
-            <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 p-5">
-              <div className="flex items-start gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-100">
-                  <svg className="h-5 w-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                  </svg>
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-sm font-bold text-red-800">Failed to load vehicles</h3>
-                  <p className="mt-1 text-sm text-red-600">
-                    {extractMessage(error) ?? 'An unexpected error occurred. Please try again.'}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => refetch()}
-                  className="shrink-0 rounded-xl border border-red-200 bg-white px-4 py-2 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
-                >
-                  Retry
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* ── Vehicle display ──────────────────────────────────────────────── */}
-          {viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {isLoading ? (
-                <div className="col-span-full flex flex-col items-center justify-center py-20">
-                  <div className="relative mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-neutral-50 p-2 ring-1 ring-neutral-100">
-                    <svg className="h-16 w-16 text-neutral-300 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-                    </svg>
-                  </div>
-                  <p className="text-sm font-semibold text-neutral-800">Loading vehicles…</p>
-                </div>
-              ) : vehicles.length === 0 ? (
-                <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
-                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100">
-                    <svg className="h-7 w-7 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-                    </svg>
-                  </div>
-                  <h3 className="text-sm font-semibold text-neutral-900">No vehicles found</h3>
-                  <p className="mt-1 text-sm text-neutral-500">Try adjusting your filters or add a new vehicle.</p>
-                </div>
-              ) : (
-                vehicles.map((vehicle) => (
-                  <VehicleGridCard
-                    key={vehicle.id}
-                    vehicle={vehicle}
-                    onEditRequest={() => navigate(paths.vehicleEdit(vehicle.id))}
-                    onInventoryRequest={() => navigate(paths.inventory)}
-                  />
-                ))
-              )}
-            </div>
-          ) : (
-            <VehicleTable
-              vehicles={vehicles}
-              isLoading={isLoading}
-              onDeleteRequest={handleDeleteRequest}
-            />
-          )}
+        <div className="flex items-center gap-3">
+          <ViewToggle mode={viewMode} onModeChange={handleViewModeChange} />
+          <button
+            type="button"
+            onClick={() => navigate(paths.vehiclesNew)}
+            className="inline-flex shrink-0 items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-teal-500/20 hover:from-teal-600 hover:to-teal-700 transition-all"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Add Vehicle
+          </button>
         </div>
       </div>
 
-      {/* ── Delete confirmation dialog ─────────────────────────────────────── */}
+      {/* Stats Bar */}
+      {!isLoading && !isError && totalVehicles > 0 && (
+        <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <StatCard
+            label="Total Fleet"
+            value={String(totalVehicles)}
+            icon={<Car className="h-5 w-5 text-teal-600 dark:text-teal-400" />}
+            bg="bg-teal-50 dark:bg-teal-950/50"
+          />
+          <StatCard
+            label="Average Price"
+            value={formatCurrency(avgPrice)}
+            icon={<DollarSign className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />}
+            bg="bg-emerald-50 dark:bg-emerald-950/50"
+          />
+          <StatCard
+            label="Manufacturers"
+            value={String(uniqueMakes)}
+            icon={<Layers className="h-5 w-5 text-purple-600 dark:text-purple-400" />}
+            bg="bg-purple-50 dark:bg-purple-950/50"
+          />
+          <StatCard
+            label="Latest Model Year"
+            value={String(latestYear)}
+            icon={<Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />}
+            bg="bg-amber-50 dark:bg-amber-950/50"
+          />
+        </div>
+      )}
+
+      {/* Filter Bar */}
+      <VehicleFilterBar onFiltersChange={setFilters} isLoading={isLoading} />
+
+      {/* Error Banner */}
+      {isError && (
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 p-5 dark:border-rose-900/50 dark:bg-rose-950/40">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h3 className="text-sm font-bold text-rose-900 dark:text-rose-200">Failed to load vehicles</h3>
+              <p className="mt-1 text-xs text-rose-700 dark:text-rose-300">
+                {extractMessage(error) ?? 'An unexpected network error occurred.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="rounded-xl border border-rose-200 bg-white px-4 py-2 text-xs font-bold text-rose-700 shadow-subtle hover:bg-rose-50"
+            >
+              Retry
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Vehicle Display Area */}
+      {viewMode === 'grid' ? (
+        isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="animate-pulse rounded-3xl border border-slate-200 bg-white p-5 h-72 shadow-card dark:border-slate-800 dark:bg-slate-900/50" />
+            ))}
+          </div>
+        ) : vehicles.length === 0 ? (
+          <EmptyVehicles onAction={() => navigate(paths.vehiclesNew)} />
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {vehicles.map((vehicle) => (
+              <VehicleGridCard
+                key={vehicle.id}
+                vehicle={vehicle}
+                onEditRequest={handleEditQuick}
+                onInventoryRequest={() => navigate(paths.inventory)}
+                onImageGalleryRequest={(v) => setGalleryVehicle(v)}
+              />
+            ))}
+          </div>
+        )
+      ) : (
+        <VehicleTable
+          vehicles={vehicles}
+          isLoading={isLoading}
+          onDeleteRequest={handleDeleteRequest}
+        />
+      )}
+
+      {/* Quick Edit Drawer */}
+      <VehicleEditDrawer
+        isOpen={isEditDrawerOpen}
+        onClose={() => setIsEditDrawerOpen(false)}
+        vehicle={editingVehicle || undefined}
+      >
+        {editingVehicle && (
+          <div className="flex flex-col gap-6 p-6">
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/50">
+              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">Vehicle Details</p>
+              <div className="space-y-2">
+                {[
+                  ['Make', editingVehicle.make],
+                  ['Model', editingVehicle.model],
+                  ['Year', String(editingVehicle.year)],
+                  ['VIN', editingVehicle.vin],
+                  ['Color', editingVehicle.color || '—'],
+                  ['Price', new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(editingVehicle.price)],
+                ].map(([label, value]) => (
+                  <div key={label} className="flex items-center justify-between">
+                    <span className="text-xs text-slate-400 dark:text-slate-500">{label}</span>
+                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 font-mono">{value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setIsEditDrawerOpen(false); navigate(paths.vehicleEdit(editingVehicle.id)); }}
+              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 py-3 text-sm font-bold text-white shadow-lg shadow-teal-500/20 hover:from-teal-600 hover:to-teal-700 transition-all"
+            >
+              Open Full Edit Form
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsEditDrawerOpen(false)}
+              className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+            >
+              Cancel
+            </button>
+          </div>
+        )}
+      </VehicleEditDrawer>
+
+      {/* Fullscreen Photo Gallery Modal */}
+      {galleryVehicle && (
+        <VehicleImageGalleryModal
+          isOpen={!!galleryVehicle}
+          onClose={() => setGalleryVehicle(null)}
+          vehicle={galleryVehicle}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
       {deleteTarget && (
         <DeleteVehicleDialog
           vehicleId={deleteTarget.id}
@@ -242,58 +270,26 @@ export function VehiclesListPage() {
           isDeleting={isDeleting}
           error={extractMessage(deleteError)}
           onConfirm={handleDeleteConfirm}
-          onCancel={handleDeleteCancel}
+          onCancel={() => setDeleteTarget(null)}
         />
       )}
-    </DashboardLayout>
+    </div>
   );
 }
 
-// ── Stat Card ────────────────────────────────────────────────────────────────
-
-interface StatCardProps {
-  label: string;
-  value: string;
-  icon: React.ReactNode;
-  accent: 'blue' | 'emerald' | 'violet' | 'amber';
-}
-
-const accentStyles = {
-  blue: {
-    bg: 'bg-blue-50',
-    icon: 'text-blue-500',
-    ring: 'ring-blue-100',
-  },
-  emerald: {
-    bg: 'bg-emerald-50',
-    icon: 'text-emerald-500',
-    ring: 'ring-emerald-100',
-  },
-  violet: {
-    bg: 'bg-violet-50',
-    icon: 'text-violet-500',
-    ring: 'ring-violet-100',
-  },
-  amber: {
-    bg: 'bg-amber-50',
-    icon: 'text-amber-500',
-    ring: 'ring-amber-100',
-  },
-};
-
-function StatCard({ label, value, icon, accent }: StatCardProps) {
-  const styles = accentStyles[accent];
+function StatCard({ label, value, icon, bg }: { label: string; value: string; icon: React.ReactNode; bg: string }) {
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-slate-200/80 bg-white p-4 shadow-card dark:border-slate-800 dark:bg-slate-900/60">
       <div className="flex items-center gap-3">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${styles.bg} ring-4 ${styles.ring}`}>
-          <span className={styles.icon}>{icon}</span>
+        <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${bg}`}>
+          {icon}
         </div>
-        <div>
-          <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{label}</p>
-          <p className="text-lg font-bold text-slate-900">{value}</p>
+        <div className="min-w-0">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 truncate">{label}</p>
+          <p className="text-base font-extrabold text-slate-900 dark:text-slate-100 truncate">{value}</p>
         </div>
       </div>
     </div>
   );
 }
+

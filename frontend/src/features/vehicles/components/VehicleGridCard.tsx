@@ -1,20 +1,15 @@
-/**
- * VehicleGridCard Component
- *
- * Large responsive card with 16:9 vehicle image.
- * Visual-first design with photography dominating the UI.
- * Follows neutral + teal accent design system.
- */
-
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
+import { Eye, Edit3, Package, Calendar, Gauge, Tag, Sparkles } from 'lucide-react';
 import { VehicleDTO } from '../../../api/api';
 import { paths } from '../../../routes/paths';
-import { Eye, Edit, Package } from 'lucide-react';
 
 interface VehicleGridCardProps {
   vehicle: VehicleDTO;
   onEditRequest?: (vehicle: VehicleDTO) => void;
   onInventoryRequest?: (vehicle: VehicleDTO) => void;
+  onImageGalleryRequest?: (vehicle: VehicleDTO) => void;
 }
 
 const formatPrice = (n: number) =>
@@ -23,92 +18,102 @@ const formatPrice = (n: number) =>
 const formatMileage = (n: number) =>
   `${new Intl.NumberFormat('en-US').format(n)} mi`;
 
-export function VehicleGridCard({ vehicle, onEditRequest, onInventoryRequest }: VehicleGridCardProps) {
+export function VehicleGridCard({
+  vehicle,
+  onEditRequest,
+  onInventoryRequest,
+  onImageGalleryRequest,
+}: VehicleGridCardProps) {
   const navigate = useNavigate();
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition-all duration-300 hover:shadow-xl hover:border-neutral-300">
-      {/* 16:9 Vehicle Image */}
-      <div className="relative aspect-[16/9] overflow-hidden bg-neutral-100">
+    <motion.div
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.2 }}
+      className="group relative flex flex-col overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-card hover:border-teal-500/30 hover:shadow-popover transition-all dark:border-slate-800 dark:bg-slate-900/60"
+    >
+      {/* 16:9 Hero Image Showcase */}
+      <div className="relative aspect-[16/9] overflow-hidden bg-slate-950">
         {vehicle.imageUrl ? (
           <img
             src={vehicle.imageUrl}
             alt={`${vehicle.make} ${vehicle.model}`}
             className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onClick={() => onImageGalleryRequest?.(vehicle)}
           />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-neutral-100">
-            <Package className="h-12 w-12 text-neutral-300" />
+          <div className="flex h-full w-full items-center justify-center bg-slate-900">
+            <Package className="h-12 w-12 text-slate-700" />
           </div>
         )}
-        
-        {/* Status Badge */}
-        <div className="absolute top-3 left-3">
-          <span className="inline-flex items-center rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-neutral-900 backdrop-blur-sm shadow-sm">
+
+        {/* Year Badge */}
+        <div className="absolute top-3 left-3 flex items-center gap-2">
+          <span className="inline-flex items-center gap-1 rounded-xl bg-slate-950/80 backdrop-blur-md px-3 py-1 text-xs font-bold text-white shadow-sm">
+            <Calendar className="h-3 w-3 text-teal-400" />
             {vehicle.year}
+          </span>
+        </div>
+
+        {/* Price Tag Overlay */}
+        <div className="absolute bottom-3 right-3">
+          <span className="inline-flex items-center rounded-xl bg-gradient-to-r from-teal-500 to-teal-600 px-3.5 py-1.5 text-xs font-extrabold text-white shadow-md shadow-teal-500/30">
+            {formatPrice(vehicle.price)}
           </span>
         </div>
       </div>
 
-      {/* Content */}
-      <div className="p-5">
-        {/* Header: Make/Model + Price */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="min-w-0 flex-1">
-            <h3 className="text-lg font-bold text-neutral-900 truncate">
-              {vehicle.make} {vehicle.model}
-            </h3>
-            <p className="mt-0.5 font-mono text-xs text-neutral-400 tracking-wider truncate">
-              {vehicle.vin}
-            </p>
-          </div>
-          <span className="shrink-0 text-lg font-bold text-accent-600">
-            {formatPrice(vehicle.price)}
-          </span>
+      {/* Card Content Body */}
+      <div className="flex flex-1 flex-col p-5">
+        <div className="mb-3">
+          <h3 className="text-base font-bold tracking-tight text-slate-900 dark:text-slate-100 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors truncate">
+            {vehicle.make} {vehicle.model}
+          </h3>
+          <p className="mt-0.5 font-mono text-[11px] text-slate-400 tracking-wider truncate">
+            VIN: {vehicle.vin}
+          </p>
         </div>
 
-        {/* Details */}
-        <div className="flex items-center gap-4 text-sm text-neutral-600 mb-4">
+        {/* Key Attributes Bar */}
+        <div className="flex items-center gap-3 text-xs text-slate-500 dark:text-slate-400 mb-5">
           {vehicle.mileage != null && (
-            <span className="font-medium">{formatMileage(vehicle.mileage)}</span>
+            <span className="flex items-center gap-1.5 font-medium">
+              <Gauge className="h-3.5 w-3.5 text-slate-400" />
+              {formatMileage(vehicle.mileage)}
+            </span>
           )}
           {vehicle.color && (
-            <span className="capitalize">{vehicle.color}</span>
+            <span className="flex items-center gap-1.5 capitalize font-medium">
+              <Tag className="h-3.5 w-3.5 text-slate-400" />
+              {vehicle.color}
+            </span>
           )}
         </div>
 
-        {/* Quick Actions */}
-        <div className="flex items-center gap-2 pt-3 border-t border-neutral-100">
+        {/* Action Buttons */}
+        <div className="mt-auto flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
           <button
             type="button"
             onClick={() => navigate(paths.vehicleDetail(vehicle.id))}
-            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-100 px-3 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-200 transition-colors"
+            className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 px-3 py-2.5 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
           >
-            <Eye className="h-4 w-4" />
-            View
+            <Eye className="h-3.5 w-3.5" />
+            Inspect
           </button>
+
           {onEditRequest && (
             <button
               type="button"
               onClick={() => onEditRequest(vehicle)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent-50 px-3 py-2 text-sm font-medium text-accent-700 hover:bg-accent-100 transition-colors"
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-xl bg-teal-50 dark:bg-teal-950/50 px-3 py-2.5 text-xs font-semibold text-teal-700 dark:text-teal-300 hover:bg-teal-100 dark:hover:bg-teal-900/60 transition-colors"
             >
-              <Edit className="h-4 w-4" />
-              Edit
-            </button>
-          )}
-          {onInventoryRequest && (
-            <button
-              type="button"
-              onClick={() => onInventoryRequest(vehicle)}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-2 text-sm font-medium text-white hover:bg-neutral-800 transition-colors"
-            >
-              <Package className="h-4 w-4" />
-              Stock
+              <Edit3 className="h-3.5 w-3.5" />
+              Quick Edit
             </button>
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
+
