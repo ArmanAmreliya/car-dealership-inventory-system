@@ -44,11 +44,10 @@ export function VehicleSelectionCard({
       whileHover={{ y: -4, transition: { duration: 0.15 } }}
       whileTap={{ scale: 0.98 }}
       onClick={() => onSelect(vehicle)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border transition-all cursor-pointer bg-white ${
-        isSelected
-          ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-lg shadow-blue-500/5'
-          : 'border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-md'
-      }`}
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border transition-all cursor-pointer bg-white ${isSelected
+        ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-lg shadow-blue-500/5'
+        : 'border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-md'
+        }`}
     >
       {/* Selection Check Indicator */}
       {isSelected && (
@@ -65,10 +64,9 @@ export function VehicleSelectionCard({
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
-          <div className="flex h-full w-full items-center justify-center bg-slate-800 text-slate-400">
-            <Car className="h-12 w-12 stroke-[1.5] text-slate-500" />
-          </div>
-        )}
+        <div className="flex h-full w-full items-center justify-center bg-slate-800 text-slate-400">
+          <Car className="h-12 w-12 stroke-[1.5] text-slate-500" />
+        </div>
 
         {/* Year Pill Overlay */}
         <div className="absolute bottom-3 left-3 rounded-md bg-slate-900/70 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-white">
@@ -108,11 +106,10 @@ export function VehicleSelectionCard({
         <div className="mt-5">
           <button
             type="button"
-            className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold transition-all ${
-              isSelected
-                ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-                : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/80'
-            }`}
+            className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold transition-all ${isSelected
+              ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+              : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/80'
+              }`}
           >
             {isSelected ? 'Vehicle Selected' : 'Select Vehicle'}
             <ArrowRight className={`h-3.5 w-3.5 transition-transform ${isSelected ? 'translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
