@@ -17,6 +17,7 @@ import { VehicleDetailsCard } from '../features/vehicles/components/VehicleDetai
 import { DeleteVehicleDialog } from '../features/vehicles/components/DeleteVehicleDialog';
 import { useVehicle } from '../features/vehicles/hooks/useVehicle';
 import { useDeleteVehicle } from '../features/vehicles/hooks/useVehicles';
+import { PageLoader } from '../components/common/PageLoader';
 import { paths } from '../routes/paths';
 
 export function VehicleDetailPage() {
@@ -76,52 +77,11 @@ export function VehicleDetailPage() {
     );
   }
 
-  // ── Loading skeleton ────────────────────────────────────────────────────────
+  // ── Loading state with car.gif ─────────────────────────────────────────────
   if (isLoading) {
     return (
       <DashboardLayout pageTitle="Vehicle Details">
-        <div className="p-6 lg:p-8">
-          <div className="mx-auto max-w-4xl animate-pulse">
-            {/* Back button skeleton */}
-            <div className="mb-6 h-8 w-36 rounded-lg bg-slate-200" />
-
-            {/* Header skeleton */}
-            <div className="mb-8 flex items-start justify-between">
-              <div className="space-y-2.5">
-                <div className="h-8 w-64 rounded-lg bg-slate-200" />
-                <div className="h-4 w-40 rounded-lg bg-slate-100" />
-              </div>
-              <div className="flex gap-3">
-                <div className="h-10 w-24 rounded-xl bg-slate-200" />
-                <div className="h-10 w-24 rounded-xl bg-slate-200" />
-              </div>
-            </div>
-
-            {/* Card skeleton */}
-            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-              <div className="bg-slate-800 px-8 py-8">
-                <div className="flex items-start justify-between">
-                  <div className="space-y-3">
-                    <div className="h-7 w-52 rounded-lg bg-slate-700" />
-                    <div className="h-4 w-40 rounded-lg bg-slate-700" />
-                  </div>
-                  <div className="h-10 w-28 rounded-2xl bg-slate-700" />
-                </div>
-              </div>
-              <div className="px-8 py-8">
-                <div className="h-4 w-28 rounded-full bg-slate-200 mb-5" />
-                <div className="grid grid-cols-3 gap-4">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="rounded-xl bg-slate-50 p-4 space-y-2">
-                      <div className="h-2.5 w-12 rounded-full bg-slate-200" />
-                      <div className="h-5 w-24 rounded-full bg-slate-100" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <PageLoader message="Loading vehicle details…" />
       </DashboardLayout>
     );
   }
