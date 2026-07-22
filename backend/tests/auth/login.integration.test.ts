@@ -27,7 +27,7 @@ describe('POST /api/v1/auth/login', () => {
 
   it('should return 401 Unauthorized when email is not found', async () => {
     const response = await request(app).post('/api/v1/auth/login').send({
-      email: 'nonexistent@example.com',
+      email: `nonexistent-${Date.now()}@example.com`,
       password: 'password123',
     });
 

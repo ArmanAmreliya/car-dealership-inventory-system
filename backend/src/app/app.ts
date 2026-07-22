@@ -9,6 +9,18 @@ const app = express();
 
 app.use(express.json());
 
+// Enable CORS for frontend clients
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+    return;
+  }
+  next();
+});
+
 // HTTP request logging (disabled in test to keep output clean)
 if (process.env.NODE_ENV !== 'test') {
   app.use(httpLogger);

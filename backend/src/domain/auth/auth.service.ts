@@ -4,8 +4,6 @@ import type { AuthResponse, LoginCredentials, RegisterData, User } from './auth.
 import { AppError } from '../../common/errors/AppError';
 import { generateAccessToken } from '../../lib/jwt';
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const MIN_PASSWORD_LENGTH = 8;
 const BCRYPT_SALT_ROUNDS = 10;
 
 export interface IAuthService {
@@ -17,42 +15,52 @@ export class AuthService implements IAuthService {
   constructor(private readonly authRepository: IAuthRepository) {}
 
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    const user = await this.authRepository.findByEmail(credentials.email);
-    if (!user) {
-      throw new Error('Invalid credentials');
+    const email = credentials.email?.trim().toLowerCase();
+    if (!email || !credentials.password) {
+      throw new AppError('Invalid email or password', 401);
     }
+
+    const user = await this.authRepository.findByEmail(email);
+    if (!user) {
+      throw new AppError('Invalid email or password', 401);
+    }
+
     const isPasswordValid = await bcrypt.compare(credentials.password, user.password);
     if (!isPasswordValid) {
-      throw new Error('Invalid credentials');
+      throw new AppError('Invalid email or password', 401);
     }
     return this.issueToken(user);
   }
 
   async register(data: RegisterData): Promise<AuthResponse> {
-    this.validateRegistration(data);
-    const hashedPassword = await bcrypt.hash(data.password, BCRYPT_SALT_ROUNDS);
-    const stored = await this.authRepository.create({
+    const normalizedData = {
       ...data,
+      email: data.email?.trim().toLowerCase() || '',
+    };
+    this.validateRegistration(normalizedData);
+    const hashedPassword = await bcrypt.hash(normalizedData.password, BCRYPT_SALT_ROUNDS);
+    const stored = await this.authRepository.create({
+      ...normalizedData,
       password: hashedPassword,
     });
     return this.issueToken(stored);
   }
 
   private validateRegistration(data: RegisterData): void {
-    if (!data.name) {
+    if (!data.name || !data.name.trim()) {
       throw new AppError('name is required', 400);
     }
-    if (!data.email) {
+    if (!data.email || !data.email.trim()) {
       throw new AppError('email is required', 400);
     }
     if (!data.password) {
       throw new AppError('password is required', 400);
     }
-    if (!EMAIL_REGEX.test(data.email)) {
+    if (!data.email.includes('@')) {
       throw new AppError('Invalid email format', 400);
     }
-    if (data.password.length < MIN_PASSWORD_LENGTH) {
-      throw new AppError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters`, 400);
+    if (data.password.length < 6) {
+      throw new AppError('Password must be at least 6 characters long', 400);
     }
   }
 

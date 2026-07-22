@@ -52,8 +52,11 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
   (response: any) => response,
   (error: AxiosError) => {
-    if (error.response?.status === 401) {
-      // Clear authentication state on unauthorized response
+    const requestUrl = error.config?.url || '';
+    const isAuthEndpoint = requestUrl.includes('/v1/auth/login') || requestUrl.includes('/v1/auth/register');
+
+    if (error.response?.status === 401 && !isAuthEndpoint) {
+      // Clear authentication state on unauthorized response from protected endpoints
       clearAuthStorage();
       // Redirect to login page with expiration flag
       window.location.href = '/login?expired=true';
