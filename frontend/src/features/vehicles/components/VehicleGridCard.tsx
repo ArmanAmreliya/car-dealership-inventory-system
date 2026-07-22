@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { Eye, Edit3, Package, Calendar, Gauge, Tag } from 'lucide-react';
 import { VehicleDTO } from '../../../api/api';
 import { paths } from '../../../routes/paths';
+import { resolveVehicleImage } from '../../../utils/vehicleImage';
 
 interface VehicleGridCardProps {
   vehicle: VehicleDTO;
@@ -55,6 +56,7 @@ export function VehicleGridCard({
   const navigate = useNavigate();
   const [imgLoaded, setImgLoaded] = useState(false);
   const badge = deriveStatusBadge(vehicle);
+  const imageUrl = resolveVehicleImage(vehicle);
 
   return (
     <motion.div
@@ -68,28 +70,22 @@ export function VehicleGridCard({
         className="relative aspect-[16/9] overflow-hidden bg-slate-950 cursor-pointer"
         onClick={() => onImageGalleryRequest?.(vehicle)}
       >
-        {vehicle.imageUrl ? (
-          <>
-            {/* Shimmer skeleton while loading */}
-            {!imgLoaded && (
-              <div className="absolute inset-0 z-10 animate-pulse bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 bg-[length:200%_100%]" style={{ animation: 'shimmer 1.5s ease-in-out infinite' }} />
-            )}
-            <img
-              src={vehicle.imageUrl}
-              alt={`${vehicle.make} ${vehicle.model}`}
-              className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
-                imgLoaded ? 'opacity-100' : 'opacity-0'
-              }`}
-              onLoad={() => setImgLoaded(true)}
-            />
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
-          </>
-        ) : (
-          <div className="flex h-full w-full items-center justify-center bg-slate-900">
-            <Package className="h-12 w-12 text-slate-700" />
-          </div>
-        )}
+        <>
+          {/* Shimmer skeleton while loading */}
+          {!imgLoaded && (
+            <div className="absolute inset-0 z-10 animate-pulse bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 bg-[length:200%_100%]" style={{ animation: 'shimmer 1.5s ease-in-out infinite' }} />
+          )}
+          <img
+            src={imageUrl}
+            alt={`${vehicle.make} ${vehicle.model}`}
+            className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
+              imgLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            onLoad={() => setImgLoaded(true)}
+          />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/60 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
+        </>
 
         {/* Status Badge (top-left) */}
         <div className="absolute top-3 left-3 flex items-center gap-2 z-20">

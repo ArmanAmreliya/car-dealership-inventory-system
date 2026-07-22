@@ -102,10 +102,25 @@ export const inventoryService = {
     id: string,
     data: UpdateStockInput
   ): Promise<InventoryItemDTO> => {
+    const qty = data.stockQuantity;
+    const payload = {
+      quantity: qty,
+      isAvailable: qty > 0,
+      available: qty > 0,
+      ...data,
+    };
     const response = await apiClient.patch<any>(
       `/v1/inventory/${id}`,
-      data
+      payload
     );
-    return normalizeInventoryItem(response.data);
+    // If backend returns a response without the full object, fall back to updated item structure
+    const resData = response.data || {};
+    return normalizeInventoryItem({
+      ...resData,
+      id: resData.id || id,
+      quantity: typeof resData.quantity === 'number' ? resData.quantity : qty,
+      stockQuantity: typeof resData.stockQuantity === 'number' ? resData.stockQuantity : qty,
+      available: qty > 0,
+    });
   },
 };

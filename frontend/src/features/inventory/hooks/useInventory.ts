@@ -71,41 +71,11 @@ export function useInventory(): UseQueryResult<InventoryResponse, AxiosError> {
   return useQuery({
     queryKey: inventoryQueryKeys.list(),
     queryFn: () => inventoryService.getInventory(),
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 0,
     refetchOnWindowFocus: true,
   });
 }
 
-// ── Mutations ──────────────────────────────────────────────────────────────
-
-/**
- * useUpdateStock
- *
- * Mutation for PATCH /api/v1/inventory/:id.
- * Accepts `{ id, data: { stockQuantity } }` and returns the updated item.
- *
- * On success:
- * - Writes the updated item directly into the inventory list cache
- *   (optimistic-style cache write without a round-trip).
- * - Invalidates the full inventory list to pull fresh aggregate totals.
- * - Invalidates the vehicles root key so vehicle queries reflect the
- *   latest availability flag (per PLAN.md invalidation rules).
- *
- * @returns TanStack Query mutation result
- *
- * @example
- * ```tsx
- * const { mutate: updateStock, isPending, error } = useUpdateStock();
- *
- * updateStock(
- *   { id: item.id, data: { stockQuantity: 5 } },
- *   {
- *     onSuccess: () => toast.success('Stock updated.'),
- *     onError: (err) => toast.error(err.message),
- *   }
- * );
- * ```
- */
 export function useUpdateStock(): UseMutationResult<
   InventoryItemDTO,
   AxiosError,
@@ -125,18 +95,31 @@ export function useUpdateStock(): UseMutationResult<
           if (!prev) return prev;
           return {
             ...prev,
-            items: prev.items.map((item) =>
-              item.id === updatedItem.id ? updatedItem : item
-            ),
+            items: prev.items.map((item) => {
+              const isMatch =
+                item.id === updatedItem.id ||
+                item.vehicleId === updatedItem.id ||
+                item.vehicleId === updatedItem.vehicleId ||
+                item.id === updatedItem.vehicleId;
+              return isMatch
+                ? {
+                    ...item,
+                    ...updatedItem,
+                    quantity: updatedItem.quantity,
+                    available: updatedItem.available,
+                    vehicle: item.vehicle || updatedItem.vehicle,
+                  }
+                : item;
+            }),
           };
         }
       );
 
-      // Refetch to get fresh aggregate totals from the server
-      queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.list() });
+      // Refetch to get fresh aggregate totals from the server immediately
+      queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.all, refetchType: 'all' });
 
       // Keep vehicle queries in sync (availability flag may have changed)
-      queryClient.invalidateQueries({ queryKey: vehicleRootKey });
+      queryClient.invalidateQueries({ queryKey: vehicleRootKey, refetchType: 'all' });
     },
   });
 }

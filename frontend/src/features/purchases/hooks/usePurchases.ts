@@ -25,6 +25,7 @@ import {
 import { AxiosError } from 'axios';
 import { purchaseService } from '../services/purchase.service';
 import { PurchaseDTO, CreatePurchaseInput, PurchaseError } from '../types/purchase.types';
+import { VehicleDTO } from '../../../api/api';
 
 // ── Query key factory ──────────────────────────────────────────────────────
 
@@ -129,12 +130,23 @@ export function useExecutePurchase(): UseMutationResult<
     mutationFn: (data: CreatePurchaseInput) =>
       purchaseService.createPurchase(data),
 
-    onSuccess: () => {
-      // Refresh vehicle availability — purchase may have marked it sold
-      queryClient.invalidateQueries({ queryKey: vehicleRootKey });
+    onSuccess: (receipt, variables) => {
+      const vId = receipt.vehicleId || variables.vehicleId;
 
-      // Refresh inventory stock counts
-      queryClient.invalidateQueries({ queryKey: inventoryRootKey });
+      // Optimistically remove/mark unavailable in vehicle query cache
+      queryClient.setQueriesData<VehicleDTO[]>({ queryKey: vehicleRootKey }, (old) => {
+        if (!old || !Array.isArray(old)) return old;
+        return old.filter((v) => v.id !== vId);
+      });
+
+      // Refresh vehicle availability immediately — purchase marked vehicle sold in DB
+      queryClient.invalidateQueries({ queryKey: vehicleRootKey, refetchType: 'all' });
+
+      // Refresh inventory stock counts in DB immediately
+      queryClient.invalidateQueries({ queryKey: inventoryRootKey, refetchType: 'all' });
+
+      // Refresh purchase root key
+      queryClient.invalidateQueries({ queryKey: purchaseQueryKeys.all, refetchType: 'all' });
     },
   });
 }

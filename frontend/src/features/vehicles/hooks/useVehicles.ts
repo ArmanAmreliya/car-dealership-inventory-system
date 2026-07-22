@@ -45,25 +45,11 @@ export function useVehicles(
   return useQuery({
     queryKey: vehicleQueryKeys.list(filters),
     queryFn: () => vehicleService.listVehicles(filters),
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 0,
     refetchOnWindowFocus: true,
   });
 }
 
-/**
- * Hook for creating a vehicle
- *
- * @returns Mutation object with mutate function and states
- *
- * @example
- * ```tsx
- * const { mutate: createVehicle, isPending } = useCreateVehicle();
- * 
- * const handleCreate = (data: CreateVehicleInput) => {
- *   createVehicle(data);
- * };
- * ```
- */
 export function useCreateVehicle(): UseMutationResult<
   VehicleDTO,
   AxiosError,
@@ -74,26 +60,11 @@ export function useCreateVehicle(): UseMutationResult<
   return useMutation({
     mutationFn: (data: CreateVehicleInput) => vehicleService.createVehicle(data),
     onSuccess: () => {
-      // Invalidate vehicle list to trigger refetch
-      queryClient.invalidateQueries({ queryKey: vehicleQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: vehicleQueryKeys.all, refetchType: 'all' });
     },
   });
 }
 
-/**
- * Hook for updating a vehicle
- *
- * @returns Mutation object with mutate function and states
- *
- * @example
- * ```tsx
- * const { mutate: updateVehicle, isPending } = useUpdateVehicle();
- * 
- * const handleUpdate = (id: string, data: UpdateVehicleInput) => {
- *   updateVehicle({ id, data });
- * };
- * ```
- */
 export function useUpdateVehicle(): UseMutationResult<
   VehicleDTO,
   AxiosError,
@@ -104,28 +75,12 @@ export function useUpdateVehicle(): UseMutationResult<
   return useMutation({
     mutationFn: ({ id, data }) => vehicleService.updateVehicle(id, data),
     onSuccess: (updatedVehicle) => {
-      // Update specific vehicle in cache
       queryClient.setQueryData(vehicleQueryKeys.detail(updatedVehicle.id), updatedVehicle);
-      // Invalidate vehicle list to trigger refetch
-      queryClient.invalidateQueries({ queryKey: vehicleQueryKeys.lists() });
+      queryClient.invalidateQueries({ queryKey: vehicleQueryKeys.all, refetchType: 'all' });
     },
   });
 }
 
-/**
- * Hook for deleting a vehicle
- *
- * @returns Mutation object with mutate function and states
- *
- * @example
- * ```tsx
- * const { mutate: deleteVehicle, isPending } = useDeleteVehicle();
- * 
- * const handleDelete = (id: string) => {
- *   deleteVehicle(id);
- * };
- * ```
- */
 export function useDeleteVehicle(): UseMutationResult<
   void,
   AxiosError,
@@ -136,8 +91,7 @@ export function useDeleteVehicle(): UseMutationResult<
   return useMutation({
     mutationFn: (id: string) => vehicleService.deleteVehicle(id),
     onSuccess: () => {
-      // Invalidate all vehicle queries to trigger refetch
-      queryClient.invalidateQueries({ queryKey: vehicleQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: vehicleQueryKeys.all, refetchType: 'all' });
     },
   });
 }
