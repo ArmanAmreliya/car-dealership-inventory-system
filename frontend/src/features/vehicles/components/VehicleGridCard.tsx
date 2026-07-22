@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Eye, Edit3, Package, Calendar, Gauge, Tag } from 'lucide-react';
+import { Eye, Edit3, Calendar, Gauge, Tag } from 'lucide-react';
 import { VehicleDTO } from '../../../api/api';
 import { paths } from '../../../routes/paths';
 import { resolveVehicleImage } from '../../../utils/vehicleImage';
@@ -50,7 +50,6 @@ const BADGE_STYLES: Record<BadgeVariant, string> = {
 export function VehicleGridCard({
   vehicle,
   onEditRequest,
-  onInventoryRequest,
   onImageGalleryRequest,
 }: VehicleGridCardProps) {
   const navigate = useNavigate();
@@ -78,9 +77,8 @@ export function VehicleGridCard({
           <img
             src={imageUrl}
             alt={`${vehicle.make} ${vehicle.model}`}
-            className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${
-              imgLoaded ? 'opacity-100' : 'opacity-0'
-            }`}
+            className={`h-full w-full object-cover transition-all duration-500 group-hover:scale-110 ${imgLoaded ? 'opacity-100' : 'opacity-0'
+              }`}
             onLoad={() => setImgLoaded(true)}
           />
           {/* Gradient overlay */}

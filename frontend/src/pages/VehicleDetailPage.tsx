@@ -12,7 +12,6 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { DashboardLayout } from '../layouts/DashboardLayout';
 import { VehicleDetailsCard } from '../features/vehicles/components/VehicleDetailsCard';
 import { DeleteVehicleDialog } from '../features/vehicles/components/DeleteVehicleDialog';
 import { useVehicle } from '../features/vehicles/hooks/useVehicle';
@@ -53,98 +52,88 @@ export function VehicleDetailPage() {
   // ── Invalid ID ──────────────────────────────────────────────────────────────
   if (!id) {
     return (
-      <DashboardLayout pageTitle="Vehicle Details">
-        <div className="p-6 lg:p-8">
-          <div className="mx-auto max-w-2xl">
-            <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 px-8 py-12 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
-                <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                </svg>
-              </div>
-              <h2 className="text-lg font-bold text-red-900">Invalid Vehicle ID</h2>
-              <p className="mt-2 text-sm text-red-600">No vehicle ID was provided in the URL.</p>
-              <button
-                onClick={() => navigate(paths.vehicles)}
-                className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition-colors"
-              >
-                Back to Vehicles
-              </button>
+      <div className="p-6 lg:p-8">
+        <div className="mx-auto max-w-2xl">
+          <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 px-8 py-12 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
+              <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
             </div>
+            <h2 className="text-lg font-bold text-red-900">Invalid Vehicle ID</h2>
+            <p className="mt-2 text-sm text-red-600">No vehicle ID was provided in the URL.</p>
+            <button
+              onClick={() => navigate(paths.vehicles)}
+              className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition-colors"
+            >
+              Back to Vehicles
+            </button>
           </div>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   // ── Loading state with car.gif ─────────────────────────────────────────────
   if (isLoading) {
-    return (
-      <DashboardLayout pageTitle="Vehicle Details">
-        <PageLoader message="Loading vehicle details…" />
-      </DashboardLayout>
-    );
+    return <PageLoader message="Loading vehicle details…" />;
   }
 
   // ── Fetch error ─────────────────────────────────────────────────────────────
   if (fetchError) {
     return (
-      <DashboardLayout pageTitle="Vehicle Details">
-        <div className="p-6 lg:p-8">
-          <div className="mx-auto max-w-2xl">
-            <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 px-8 py-12 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
-                <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
-                </svg>
-              </div>
-              <h2 className="text-lg font-bold text-red-900">Failed to Load Vehicle</h2>
-              <p className="mt-2 text-sm text-red-600">
-                {extractMessage(fetchError) ?? 'An error occurred while fetching the vehicle.'}
-              </p>
-              <button
-                onClick={() => navigate(paths.vehicles)}
-                className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition-colors"
-              >
-                Back to Vehicles
-              </button>
+      <div className="p-6 lg:p-8">
+        <div className="mx-auto max-w-2xl">
+          <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 px-8 py-12 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
+              <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+              </svg>
             </div>
+            <h2 className="text-lg font-bold text-red-900">Failed to Load Vehicle</h2>
+            <p className="mt-2 text-sm text-red-600">
+              {extractMessage(fetchError) ?? 'An error occurred while fetching the vehicle.'}
+            </p>
+            <button
+              onClick={() => navigate(paths.vehicles)}
+              className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition-colors"
+            >
+              Back to Vehicles
+            </button>
           </div>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   // ── Not found ───────────────────────────────────────────────────────────────
   if (!vehicle) {
     return (
-      <DashboardLayout pageTitle="Vehicle Details">
-        <div className="p-6 lg:p-8">
-          <div className="mx-auto max-w-2xl">
-            <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white px-8 py-12 text-center shadow-sm">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
-                <svg className="h-7 w-7 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
-                </svg>
-              </div>
-              <h2 className="text-lg font-bold text-slate-900">Vehicle Not Found</h2>
-              <p className="mt-2 text-sm text-slate-500">The vehicle you are looking for does not exist or may have been removed.</p>
-              <button
-                onClick={() => navigate(paths.vehicles)}
-                className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
-              >
-                Back to Vehicles
-              </button>
+      <div className="p-6 lg:p-8">
+        <div className="mx-auto max-w-2xl">
+          <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white px-8 py-12 text-center shadow-sm">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+              <svg className="h-7 w-7 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
             </div>
+            <h2 className="text-lg font-bold text-slate-900">Vehicle Not Found</h2>
+            <p className="mt-2 text-sm text-slate-500">The vehicle you are looking for does not exist or may have been removed.</p>
+            <button
+              onClick={() => navigate(paths.vehicles)}
+              className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
+            >
+              Back to Vehicles
+            </button>
           </div>
         </div>
-      </DashboardLayout>
+      </div>
     );
   }
 
   // ── Detail view ─────────────────────────────────────────────────────────────
   return (
-    <DashboardLayout pageTitle={`${vehicle.make} ${vehicle.model}`}>
+    <>
       <div className="p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">
           {/* Back navigation */}
@@ -162,7 +151,7 @@ export function VehicleDetailPage() {
           {/* Page Header */}
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
                 {vehicle.make} {vehicle.model}
               </h1>
               <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
@@ -214,6 +203,6 @@ export function VehicleDetailPage() {
         onConfirm={handleDeleteConfirm}
         onCancel={() => setIsDeleteDialogOpen(false)}
       />
-    </DashboardLayout>
+    </>
   );
 }
