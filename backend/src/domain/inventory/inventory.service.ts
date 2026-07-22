@@ -9,10 +9,13 @@ function toInventoryItem(vehicle: {
   year: number;
   vin: string;
   price: number;
+  createdAt?: Date;
   isAvailable?: boolean;
 }): InventoryItem {
   const isAvailable = vehicle.isAvailable ?? true;
+  const dateStr = vehicle.createdAt ? new Date(vehicle.createdAt).toISOString() : new Date().toISOString();
   return {
+    id: vehicle.id,
     vehicleId: vehicle.id,
     make: vehicle.make,
     model: vehicle.model,
@@ -21,6 +24,8 @@ function toInventoryItem(vehicle: {
     price: vehicle.price,
     stockQuantity: isAvailable ? 1 : 0,
     isAvailable,
+    createdAt: dateStr,
+    updatedAt: dateStr,
   };
 }
 

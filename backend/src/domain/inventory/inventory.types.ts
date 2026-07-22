@@ -1,4 +1,5 @@
 export interface InventoryItem {
+  id?: string;
   vehicleId: string;
   make: string;
   model: string;
@@ -7,6 +8,8 @@ export interface InventoryItem {
   price: number;
   stockQuantity: number;
   isAvailable: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface InventoryStatus {

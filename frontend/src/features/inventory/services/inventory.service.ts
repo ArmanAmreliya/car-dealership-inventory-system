@@ -10,57 +10,101 @@
  */
 
 import { apiClient } from '../../../api/axios-client';
+import { VehicleDTO } from '../../../api/api';
 import {
   InventoryItemDTO,
   InventoryResponse,
   UpdateStockInput,
 } from '../types/inventory.types';
 
+export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
+  const id = rawItem.id || rawItem.vehicleId || '';
+  const vehicleId = rawItem.vehicleId || rawItem.id || id;
+  const make = rawItem.vehicle?.make || rawItem.make || '';
+  const model = rawItem.vehicle?.model || rawItem.model || '';
+  const year = rawItem.vehicle?.year || rawItem.year || 0;
+  const price = rawItem.vehicle?.price || rawItem.price || 0;
+  const vin = rawItem.vehicle?.vin || rawItem.vin || '';
+  const imageUrl = rawItem.vehicle?.imageUrl || rawItem.imageUrl;
+  const color = rawItem.vehicle?.color || rawItem.color;
+  const mileage = rawItem.vehicle?.mileage || rawItem.mileage;
+
+  const vehicle: VehicleDTO = rawItem.vehicle || {
+    id: vehicleId,
+    vin,
+    make,
+    model,
+    year,
+    price,
+    mileage,
+    color,
+    imageUrl,
+    createdAt: rawItem.vehicle?.createdAt || rawItem.createdAt || new Date().toISOString(),
+    updatedAt: rawItem.vehicle?.updatedAt || rawItem.updatedAt || new Date().toISOString(),
+  };
+
+  const quantity =
+    typeof rawItem.quantity === 'number'
+      ? rawItem.quantity
+      : typeof rawItem.stockQuantity === 'number'
+      ? rawItem.stockQuantity
+      : rawItem.isAvailable === false
+      ? 0
+      : 1;
+
+  const available =
+    typeof rawItem.available === 'boolean'
+      ? rawItem.available
+      : typeof rawItem.isAvailable === 'boolean'
+      ? rawItem.isAvailable
+      : quantity > 0;
+
+  const createdAt = rawItem.createdAt || rawItem.vehicle?.createdAt || new Date().toISOString();
+  const updatedAt = rawItem.updatedAt || rawItem.vehicle?.updatedAt || new Date().toISOString();
+
+  return {
+    id: id || vehicleId,
+    vehicleId,
+    vehicle,
+    quantity,
+    available,
+    reserved: rawItem.reserved ?? false,
+    createdAt,
+    updatedAt,
+  };
+}
+
 /**
  * Inventory API service
- *
- * @example
- * ```ts
- * // Fetch all inventory items
- * const data = await inventoryService.getInventory();
- *
- * // Update stock for a specific item
- * const updated = await inventoryService.updateStock('item-uuid', { stockQuantity: 5 });
- * ```
  */
 export const inventoryService = {
   /**
    * Fetch the full inventory list with aggregate totals.
-   *
-   * Calls GET /api/v1/inventory.
-   * Returns the raw backend response shape:
-   *   { items, totalVehicles, availableVehicles }
-   *
-   * @returns InventoryResponse
    */
   getInventory: async (): Promise<InventoryResponse> => {
-    const response = await apiClient.get<InventoryResponse>('/v1/inventory');
-    return response.data;
+    const response = await apiClient.get<any>('/v1/inventory');
+    const data = response.data;
+    const rawItems = Array.isArray(data?.items) ? data.items : [];
+    const items = rawItems.map(normalizeInventoryItem);
+    return {
+      ...data,
+      items,
+      totalVehicles: data?.totalVehicles ?? items.length,
+      availableVehicles: data?.availableVehicles ?? items.filter((i: InventoryItemDTO) => i.available).length,
+    };
   },
 
   /**
    * Update the stock quantity for a single inventory item.
-   *
-   * Calls PATCH /api/v1/inventory/:id with { stockQuantity }.
-   * The backend recalculates the `available` flag based on the new quantity.
-   *
-   * @param id   - Inventory item UUID
-   * @param data - { stockQuantity: number } — must be a non-negative integer
-   * @returns Updated InventoryItemDTO
    */
   updateStock: async (
     id: string,
     data: UpdateStockInput
   ): Promise<InventoryItemDTO> => {
-    const response = await apiClient.patch<InventoryItemDTO>(
+    const response = await apiClient.patch<any>(
       `/v1/inventory/${id}`,
       data
     );
-    return response.data;
+    return normalizeInventoryItem(response.data);
   },
 };
