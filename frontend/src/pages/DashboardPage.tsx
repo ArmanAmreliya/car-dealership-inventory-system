@@ -1,28 +1,15 @@
-/**
- * DashboardPage
- *
- * Main authenticated landing page. Provides a real-time overview of the
- * dealership's vehicle inventory and recent session activity.
- *
- * API calls (per PLAN.md):
- *   GET /api/v1/inventory  →  stats, alert items
- *   GET /api/v1/vehicles   →  total vehicle count, quick-action context
- *
- * Layout (responsive):
- *   ┌──────────────────────────────────────────┐
- *   │  Welcome header                          │
- *   ├──────────────────────────────────────────┤
- *   │  StatsCards  (4-column KPI grid)         │
- *   ├─────────────────────┬────────────────────┤
- *   │  LowInventoryCard   │  RecentPurchases   │
- *   │  (left, 7/12)       │  (right, 5/12)     │
- *   ├──────────────────────────────────────────┤
- *   │  Quick Actions grid                      │
- *   └──────────────────────────────────────────┘
- */
-
 import { useNavigate } from 'react-router-dom';
-import { DashboardLayout } from '../layouts/DashboardLayout';
+import { motion } from 'framer-motion';
+import {
+  PlusCircle,
+  Car,
+  Package,
+  ShoppingCart,
+  RefreshCw,
+  Sparkles,
+  ArrowRight,
+  TrendingUp,
+} from 'lucide-react';
 import { StatsCards } from '../features/dashboard/components/StatsCards';
 import { LowInventoryCard } from '../features/dashboard/components/LowInventoryCard';
 import { RecentPurchases } from '../features/dashboard/components/RecentPurchases';
@@ -30,75 +17,45 @@ import { useDashboard } from '../features/dashboard/hooks/useDashboard';
 import { useAuth } from '../hooks/useAuth';
 import { paths } from '../routes/paths';
 
-// ── Quick action definition ────────────────────────────────────────────────
-
 interface QuickAction {
   title: string;
   description: string;
   icon: React.ReactNode;
   path: string;
-  accent: string;
+  badge: string;
 }
 
 const QUICK_ACTIONS: QuickAction[] = [
   {
-    title: 'Add Vehicle',
-    description: 'Register a new vehicle in inventory',
-    icon: (
-      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-      </svg>
-    ),
+    title: 'Register Vehicle',
+    description: 'Add a new vehicle with VIN & photos to catalogue',
+    icon: <PlusCircle className="h-6 w-6 text-teal-600 dark:text-teal-400" />,
     path: paths.vehiclesNew,
-    accent: 'text-blue-600 bg-blue-50 group-hover:bg-blue-100',
+    badge: 'Fast Add',
   },
   {
-    title: 'Browse Vehicles',
-    description: 'View and manage the full vehicle catalog',
-    icon: (
-      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
-      </svg>
-    ),
+    title: 'Fleet Catalogue',
+    description: 'Browse, filter, and inspect dealership inventory',
+    icon: <Car className="h-6 w-6 text-slate-700 dark:text-slate-300" />,
     path: paths.vehicles,
-    accent: 'text-gray-600 bg-gray-50 group-hover:bg-gray-100',
+    badge: 'Showcase',
   },
   {
-    title: 'Stock Management',
-    description: 'Update quantities and availability',
-    icon: (
-      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
-      </svg>
-    ),
+    title: 'Stock Operations',
+    description: 'Adjust stock levels, track availability & status',
+    icon: <Package className="h-6 w-6 text-amber-600 dark:text-amber-400" />,
     path: paths.inventory,
-    accent: 'text-amber-600 bg-amber-50 group-hover:bg-amber-100',
+    badge: 'Real-time',
   },
   {
-    title: 'New Purchase',
-    description: 'Process a vehicle purchase transaction',
-    icon: (
-      <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
-      </svg>
-    ),
+    title: 'Purchase Order',
+    description: 'Process customer sales and generate receipts',
+    icon: <ShoppingCart className="h-6 w-6 text-emerald-600 dark:text-emerald-400" />,
     path: paths.purchases,
-    accent: 'text-green-600 bg-green-50 group-hover:bg-green-100',
+    badge: 'Checkout',
   },
 ];
 
-// ── Page ──────────────────────────────────────────────────────────────────
-
-/**
- * DashboardPage
- *
- * Uses DashboardLayout (wraps itself — per the app router pattern where
- * the router wraps each page, this page renders *inside* the layout
- * via AppRoutes, so the layout is applied by the router, not here).
- *
- * NOTE: DashboardPage is rendered by AppRoutes already wrapped in
- * DashboardLayout — so the page itself does NOT add another DashboardLayout.
- */
 export function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -106,86 +63,112 @@ export function DashboardPage() {
     useDashboard();
 
   return (
-    <div className="p-6">
-      <div className="mx-auto max-w-7xl space-y-6">
-
-        {/* ── Welcome header ──────────────────────────────────────────── */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {user?.name ? `Welcome back, ${user.name.split(' ')[0]}` : 'Welcome to DealerFlow'}
-            </h1>
-            <p className="mt-1 text-sm text-gray-500">
-              {isLoading
-                ? 'Loading inventory overview…'
-                : isError
-                ? 'Some data could not be loaded.'
-                : `${totalVehicleCount} vehicle${totalVehicleCount !== 1 ? 's' : ''} in system`}
-            </p>
+    <div className="space-y-8">
+      {/* Executive Command Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between rounded-3xl border border-slate-200/80 bg-gradient-to-br from-white via-slate-50/50 to-teal-50/20 p-6 sm:p-8 shadow-card dark:border-slate-800 dark:from-slate-900 dark:via-slate-900/80 dark:to-teal-950/20">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/10 px-3 py-1 text-xs font-semibold text-teal-700 dark:text-teal-400 border border-teal-500/20">
+              <Sparkles className="h-3.5 w-3.5" />
+              Live Dealership Hub
+            </span>
+            <span className="text-xs text-slate-400 font-mono">
+              {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            </span>
           </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+            {user?.name ? `Good day, ${user.name.split(' ')[0]}` : 'DealerFlow Command Center'}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 font-medium">
+            {isLoading
+              ? 'Synchronizing inventory telemetry...'
+              : isError
+              ? 'Unable to connect to inventory services.'
+              : `Managing ${totalVehicleCount} registered vehicle${totalVehicleCount !== 1 ? 's' : ''} across active stock.`}
+          </p>
+        </div>
 
+        <div className="flex items-center gap-3">
           {isError && (
             <button
               type="button"
               onClick={refetch}
-              className="inline-flex shrink-0 items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 shadow-subtle hover:bg-slate-50 transition-all dark:border-slate-800 dark:bg-slate-800 dark:text-slate-200"
             >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
-              </svg>
-              Retry
+              <RefreshCw className="h-4 w-4" />
+              Retry Connection
             </button>
           )}
+
+          <button
+            type="button"
+            onClick={() => navigate(paths.vehiclesNew)}
+            className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 px-5 py-3 text-xs font-bold text-white shadow-lg shadow-teal-500/20 hover:from-teal-600 hover:to-teal-700 transition-all"
+          >
+            <PlusCircle className="h-4 w-4" />
+            Add Vehicle
+          </button>
+        </div>
+      </div>
+
+      {/* KPI Stats Grid */}
+      <StatsCards stats={stats} isLoading={isLoading} />
+
+      {/* Middle Operations Grid: Low Stock Alerts + Recent Purchases */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="lg:col-span-7">
+          <LowInventoryCard
+            alertItems={alertItems}
+            isLoading={isLoading}
+            maxVisible={5}
+          />
         </div>
 
-        {/* ── KPI stat cards ───────────────────────────────────────────── */}
-        <StatsCards stats={stats} isLoading={isLoading} />
-
-        {/* ── Middle row: alerts + recent purchases ────────────────────── */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-          {/* Low inventory — wider column */}
-          <div className="lg:col-span-7">
-            <LowInventoryCard
-              alertItems={alertItems}
-              isLoading={isLoading}
-              maxVisible={5}
-            />
-          </div>
-
-          {/* Recent purchases — narrower column */}
-          <div className="lg:col-span-5">
-            <RecentPurchases maxVisible={5} />
-          </div>
+        <div className="lg:col-span-5">
+          <RecentPurchases maxVisible={5} />
         </div>
+      </div>
 
-        {/* ── Quick actions ────────────────────────────────────────────── */}
-        <div>
-          <h2 className="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400">
-            Quick Actions
+      {/* Quick Actions Shortcuts */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+            Rapid Operations Shortcuts
           </h2>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {QUICK_ACTIONS.map((action) => (
-              <button
-                key={action.path}
-                type="button"
-                onClick={() => navigate(action.path)}
-                className="group flex items-start gap-4 rounded-lg border border-gray-200 bg-white p-5 text-left shadow-sm hover:border-blue-200 hover:shadow-md transition-all focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
-              >
-                <span className={`shrink-0 rounded-lg p-2 transition-colors ${action.accent}`}>
-                  {action.icon}
-                </span>
-                <div className="min-w-0">
-                  <p className="font-semibold text-gray-900">{action.title}</p>
-                  <p className="mt-0.5 text-xs text-gray-500 leading-relaxed">
-                    {action.description}
-                  </p>
-                </div>
-              </button>
-            ))}
-          </div>
         </div>
 
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {QUICK_ACTIONS.map((action) => (
+            <motion.button
+              key={action.path}
+              whileHover={{ y: -3 }}
+              type="button"
+              onClick={() => navigate(action.path)}
+              className="group flex flex-col justify-between rounded-2xl border border-slate-200/80 bg-white p-5 shadow-card text-left hover:border-teal-500/30 hover:shadow-popover transition-all dark:border-slate-800 dark:bg-slate-900/60"
+            >
+              <div className="flex items-start justify-between mb-4">
+                <div className="rounded-2xl bg-slate-100 p-3 shadow-subtle dark:bg-slate-800 group-hover:scale-105 transition-transform">
+                  {action.icon}
+                </div>
+                <span className="rounded-lg bg-slate-100 dark:bg-slate-800 px-2 py-0.5 text-[10px] font-semibold text-slate-500 dark:text-slate-400">
+                  {action.badge}
+                </span>
+              </div>
+
+              <div>
+                <p className="font-bold text-sm text-slate-900 dark:text-slate-100 flex items-center justify-between">
+                  {action.title}
+                  <ArrowRight className="h-4 w-4 text-slate-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+                </p>
+                <p className="mt-1 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
+                  {action.description}
+                </p>
+              </div>
+            </motion.button>
+          ))}
+        </div>
       </div>
     </div>
   );
 }
+

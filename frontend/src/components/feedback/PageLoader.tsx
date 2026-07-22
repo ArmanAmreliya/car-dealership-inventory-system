@@ -1,59 +1,22 @@
-/**
- * PageLoader Component
- *
- * Full-page loading screen used during:
- *   - Initial app hydration (auth session restore)
- *   - Page-level data fetches before first render
- *   - Lazy-loaded route transitions
- *
- * Two variants:
- *   overlay  – absolute-positioned over the current page (default)
- *   fullscreen – takes the full viewport, replaces page content
- *
- * @example
- * ```tsx
- * // During auth restore
- * if (isLoading) return <PageLoader label="Authenticating…" />;
- *
- * // Fullscreen initial load
- * <PageLoader variant="fullscreen" label="Loading DealerFlow…" showBrand />
- * ```
- */
-
 import { Loader } from './Loader';
 
-// ── Types ──────────────────────────────────────────────────────────────────
-
 interface PageLoaderProps {
-  /** Accessible / visible loading message */
   label?: string;
-  /** Show the DealerFlow brand name above the spinner */
   showBrand?: boolean;
-  /** Layout variant */
   variant?: 'overlay' | 'fullscreen';
-  /** Additional wrapper className */
   className?: string;
 }
 
-// ── Main component ─────────────────────────────────────────────────────────
-
-/**
- * PageLoader
- *
- * Centred spinner with an optional brand name and label.
- * The overlay variant sits on top of existing page content;
- * the fullscreen variant replaces it entirely.
- */
 export function PageLoader({
-  label = 'Loading…',
+  label = 'Loading workspace…',
   showBrand = false,
   variant = 'overlay',
   className = '',
 }: PageLoaderProps) {
   const base =
     variant === 'fullscreen'
-      ? 'fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-50'
-      : 'absolute inset-0 z-40 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm';
+      ? 'fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0B0F19] text-white'
+      : 'absolute inset-0 z-40 flex flex-col items-center justify-center bg-white/90 backdrop-blur-md dark:bg-slate-950/90';
 
   return (
     <div
@@ -63,70 +26,63 @@ export function PageLoader({
       className={`${base} ${className}`}
     >
       {showBrand && (
-        <p className="mb-6 text-xl font-bold tracking-tight text-gray-900">
-          DealerFlow
-        </p>
+        <div className="mb-4 flex items-center gap-2.5">
+          <img src="/car-logo.png" alt="DealerFlow" className="h-8 w-8 object-contain" />
+          <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
+            DealerFlow
+          </span>
+        </div>
       )}
 
-      <Loader size="lg" />
+      {/* Animated Car GIF */}
+      <img
+        src="/car-gif.gif"
+        alt="Loading..."
+        className="h-20 w-auto object-contain drop-shadow-md"
+      />
 
-      <p className="mt-4 text-sm text-gray-500">{label}</p>
+      <p className="mt-3 text-xs font-medium text-slate-500 dark:text-slate-400 animate-pulse">
+        {label}
+      </p>
     </div>
   );
 }
 
-// ── Auth-restore variant ───────────────────────────────────────────────────
-
-/**
- * AppInitLoader
- *
- * Used during the auth session restore on first mount.
- * Fullscreen with brand, no backdrop blur.
- */
 export function AppInitLoader() {
   return (
     <div
       role="status"
       aria-label="Initialising DealerFlow"
       aria-live="polite"
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gray-50"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-[#0B0F19] text-white"
     >
-      {/* Wordmark */}
-      <div className="mb-8 flex items-center gap-2">
-        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-600">
-          <svg
-            className="h-5 w-5 text-white"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            aria-hidden="true"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12"
-            />
-          </svg>
-        </div>
-        <span className="text-xl font-bold text-gray-900">DealerFlow</span>
+      {/* Brand Header */}
+      <div className="mb-6 flex items-center gap-3">
+        <img src="/car-logo.png" alt="DealerFlow" className="h-10 w-10 object-contain drop-shadow-lg" />
+        <span className="text-2xl font-bold tracking-tight text-white font-sans">
+          DealerFlow
+        </span>
       </div>
 
-      <Loader size="lg" />
-      <p className="mt-4 text-sm text-gray-400">Loading your workspace…</p>
+      {/* Animated Car GIF */}
+      <div className="relative flex flex-col items-center">
+        <img
+          src="/car-gif.gif"
+          alt="Loading application..."
+          className="h-28 w-auto object-contain drop-shadow-xl"
+        />
+        <div className="h-1.5 w-32 rounded-full bg-slate-800 overflow-hidden mt-4">
+          <div className="h-full bg-gradient-to-r from-teal-500 to-mint-400 animate-pulse w-3/4" />
+        </div>
+        <p className="mt-4 text-xs font-semibold tracking-wide uppercase text-teal-400">
+          Loading workspace...
+        </p>
+      </div>
     </div>
   );
 }
 
-// ── Route-transition overlay ───────────────────────────────────────────────
-
-/**
- * RouteLoader
- *
- * Lightweight overlay for route-level data fetching.
- * Semi-transparent so the previous page content remains visible.
- */
-export function RouteLoader({ label = 'Loading…' }: { label?: string }) {
+export function RouteLoader({ label = 'Loading...' }: { label?: string }) {
   return (
     <div
       role="status"
@@ -134,8 +90,9 @@ export function RouteLoader({ label = 'Loading…' }: { label?: string }) {
       aria-live="polite"
       className="flex min-h-64 flex-col items-center justify-center gap-3 py-16"
     >
-      <Loader size="lg" />
-      <p className="text-sm text-gray-400">{label}</p>
+      <img src="/car-gif.gif" alt="Loading" className="h-16 w-auto object-contain" />
+      <p className="text-xs font-medium text-slate-400">{label}</p>
     </div>
   );
 }
+
