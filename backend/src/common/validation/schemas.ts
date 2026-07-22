@@ -15,6 +15,7 @@ export const createVehicleSchema = z.object({
     .max(17, 'VIN must be at most 17 characters'),
   mileage: z.number().nonnegative('mileage cannot be negative').optional(),
   color: z.string().optional(),
+  imageUrl: z.string().url('imageUrl must be a valid URL').optional().or(z.literal('')),
 });
 
 export const updateVehicleSchema = z
@@ -25,6 +26,7 @@ export const updateVehicleSchema = z
     price: z.number().positive().optional(),
     mileage: z.number().nonnegative().optional(),
     color: z.string().optional(),
+    imageUrl: z.string().url('imageUrl must be a valid URL').optional().or(z.literal('')),
     isAvailable: z.boolean().optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {

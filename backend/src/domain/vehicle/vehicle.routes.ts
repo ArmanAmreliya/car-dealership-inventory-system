@@ -8,6 +8,7 @@ import { VehicleRepository } from './vehicle.repository';
 import type { IVehicleRepository } from './vehicle.repository';
 import { VehicleService } from './vehicle.service';
 import { VehicleController } from './vehicle.controller';
+import { UploadController } from './upload.controller';
 
 export const createVehicleRouter = (
   vehicleRepository: IVehicleRepository = new VehicleRepository(),
@@ -15,6 +16,11 @@ export const createVehicleRouter = (
   const router = Router();
   const vehicleService = new VehicleService(vehicleRepository);
   const vehicleController = new VehicleController(vehicleService);
+  const uploadController = new UploadController();
+
+  router.get('/upload-signature', authenticate, (req: Request, res: Response, next: NextFunction) =>
+    uploadController.getSignature(req as AuthenticatedRequest, res, next),
+  );
 
   router.post(
     '/',

@@ -10,6 +10,7 @@ export interface CreateVehicleData {
   vin: string;
   mileage?: number;
   color?: string;
+  imageUrl?: string;
 }
 
 export class VehicleService {
@@ -25,6 +26,7 @@ export class VehicleService {
       vin: data.vin,
       mileage: data.mileage ?? 0,
       color: data.color ?? '',
+      imageUrl: data.imageUrl,
       createdAt: new Date(),
     };
     this.vehicleRepository.save(vehicle);
