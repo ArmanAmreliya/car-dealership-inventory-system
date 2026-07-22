@@ -75,7 +75,9 @@ apiClient.interceptors.response.use(
           }
         }
       } catch {
-        window.location.href = '/login?expired=true';
+        if (window.location.pathname !== '/login') {
+          window.location.href = '/login?expired=true';
+        }
       }
     }
     return Promise.reject(error);

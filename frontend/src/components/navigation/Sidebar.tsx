@@ -208,15 +208,39 @@ export function Sidebar({ onClose, isCollapsed: externalCollapsed, onToggleColla
         </div>
       )}
 
-      {/* Sidebar Footer */}
-      <div className="shrink-0 border-t border-slate-800/80 px-5 py-4">
-        <div className="flex items-center justify-between">
-          {!isCollapsed ? (
-            <p className="text-xs font-medium text-slate-500">© 2026 DealerFlow Inc.</p>
-          ) : (
-            <div className="mx-auto h-2 w-2 rounded-full bg-teal-500" />
-          )}
-        </div>
+      {/* Sidebar Footer — Enterprise Status */}
+      <div className="shrink-0 border-t border-slate-800/80 px-4 py-4">
+        {!isCollapsed ? (
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-slate-400 tracking-wide">DealerFlow Pro</span>
+              <span className="text-[10px] font-mono text-slate-500">v2.0</span>
+            </div>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-[10px] font-medium text-slate-500">API: Healthy</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="relative flex h-2 w-2">
+                  <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                </span>
+                <span className="text-[10px] font-medium text-slate-500">Database: Online</span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center gap-1.5">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-50" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            <span className="text-[8px] font-bold text-slate-500">v2.0</span>
+          </div>
+        )}
       </div>
     </aside>
   );
