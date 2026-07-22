@@ -4,6 +4,15 @@ import { Button } from './Button';
 import { SectionHeading } from './SectionHeading';
 import { MockupWrapper } from './MockupWrapper';
 
+const SHOWCASE_VEHICLES = [
+  { make: 'Ford F-150', year: 2024, vin: '10001', price: 30000, status: 'Available', img: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=400&q=80' },
+  { make: 'Toyota Camry', year: 2024, vin: '10002', price: 35000, status: 'Available', img: 'https://images.unsplash.com/photo-1621007947382-bb3c3994e3fb?auto=format&fit=crop&w=400&q=80' },
+  { make: 'BMW 3 Series', year: 2023, vin: '10003', price: 47000, status: 'Low Stock', img: 'https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=400&q=80' },
+  { make: 'Tesla Model 3', year: 2024, vin: '10004', price: 42000, status: 'Available', img: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=400&q=80' },
+  { make: 'Honda Civic', year: 2023, vin: '10005', price: 28000, status: 'Available', img: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=400&q=80' },
+  { make: 'Audi A4', year: 2024, vin: '10006', price: 51000, status: 'Low Stock', img: 'https://images.unsplash.com/photo-1603584173870-7f23fdae1b7a?auto=format&fit=crop&w=400&q=80' },
+];
+
 export function VehicleManagement() {
   return (
     <section id="vehicles" className="py-20 lg:py-24 bg-white">
@@ -80,23 +89,28 @@ export function VehicleManagement() {
                 </div>
                 
                 <div className="grid grid-cols-2 gap-3">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="bg-white rounded-lg p-3 border border-neutral-200 shadow-sm">
-                      <div className="aspect-video bg-neutral-100 rounded mb-2 flex items-center justify-center">
-                        <CarIcon className="w-6 h-6 text-neutral-300" />
+                  {SHOWCASE_VEHICLES.map((v) => (
+                    <div key={v.vin} className="bg-white rounded-lg p-3 border border-neutral-200 shadow-sm group">
+                      <div className="aspect-video rounded mb-2 overflow-hidden">
+                        <img
+                          src={v.img}
+                          alt={v.make}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          loading="lazy"
+                        />
                       </div>
                       <div className="text-xs font-semibold text-neutral-900 mb-1">
-                        {i % 2 === 0 ? 'Toyota Camry' : 'Ford F-150'} 2024
+                        {v.make} {v.year}
                       </div>
-                      <div className="text-xs text-neutral-500 mb-2">VIN: {10000 + i}</div>
+                      <div className="text-xs text-neutral-500 mb-2">VIN: {v.vin}</div>
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-bold text-primary-600">
-                          ${(25000 + i * 5000).toLocaleString()}
+                          ${v.price.toLocaleString()}
                         </span>
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
-                          i % 3 === 0 ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
+                          v.status === 'Low Stock' ? 'bg-warning/10 text-warning' : 'bg-success/10 text-success'
                         }`}>
-                          {i % 3 === 0 ? 'Low Stock' : 'Available'}
+                          {v.status}
                         </span>
                       </div>
                     </div>

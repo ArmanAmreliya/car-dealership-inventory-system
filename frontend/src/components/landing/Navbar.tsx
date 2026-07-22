@@ -115,10 +115,12 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-6 lg:px-12">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
-            <Link to="/" className="text-xl font-bold text-neutral-900 flex items-center gap-2 group">
-              <div className="p-1.5 bg-blue-600 text-white rounded-lg group-hover:bg-blue-700 transition-colors">
-                <Car className="w-5 h-5" />
-              </div>
+            <Link to="/" className="text-xl font-bold text-neutral-900 flex items-center gap-2.5 group">
+              <img
+                src="/car-logo.png"
+                alt="DealerFlow"
+                className="h-9 w-9 object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-200"
+              />
               <span className="bg-gradient-to-r from-neutral-900 to-neutral-700 bg-clip-text text-transparent">DealerFlow</span>
             </Link>
             <div className="hidden md:flex items-center gap-6">

@@ -11,7 +11,6 @@ import { Automation } from '../components/landing/Automation';
 import { Testimonials } from '../components/landing/Testimonials';
 import { Pricing } from '../components/landing/Pricing';
 import { FAQ } from '../components/landing/FAQ';
-import { CTA } from '../components/landing/CTA';
 import { Footer } from '../components/landing/Footer';
 
 export function App() {
@@ -31,7 +30,6 @@ export function App() {
         <Testimonials />
         <Pricing />
         <FAQ />
-        <CTA />
       </main>
       <Footer />
     </div>
