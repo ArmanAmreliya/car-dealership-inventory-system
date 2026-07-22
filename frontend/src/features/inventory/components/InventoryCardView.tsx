@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InventoryItemDTO } from '../types/inventory.types';
 import { StockUpdateModal } from './StockUpdateModal';
 import { paths } from '../../../routes/paths';
-import { getVehicleImage } from '../../../utils/vehicleImage';
+import { resolveVehicleImage } from '../../../utils/vehicleImage';
 import {
   Car,
   Edit,
@@ -76,7 +76,7 @@ export function InventoryCardView({ items, isLoading = false, onEditItem }: Inve
             const vinStr = v?.vin || (item as any).vin || item.vehicleId.slice(0, 10);
             const quantity = typeof item.quantity === 'number' ? item.quantity : (item as any).stockQuantity ?? 0;
             const isAvailable = item.available && quantity > 0;
-            const imageUrl = getVehicleImage(v || (item as any));
+            const imageUrl = resolveVehicleImage(v || (item as any));
 
             const formatCurrency = (amt: number) =>
               new Intl.NumberFormat('en-US', {
@@ -110,11 +110,10 @@ export function InventoryCardView({ items, isLoading = false, onEditItem }: Inve
                     {/* Left: Mint Status Pill */}
                     <div className="absolute top-3 left-3 z-10">
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold shadow-xs ${
-                          isAvailable
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold shadow-xs ${isAvailable
                             ? 'bg-[#55E6D9] text-slate-950'
                             : 'bg-slate-800 text-slate-300'
-                        }`}
+                          }`}
                       >
                         <span className={`h-1.5 w-1.5 rounded-full ${isAvailable ? 'bg-slate-950' : 'bg-slate-400'}`} />
                         {isAvailable ? 'Available' : 'Sold'}

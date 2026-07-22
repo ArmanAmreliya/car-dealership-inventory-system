@@ -14,8 +14,7 @@
 import { motion } from 'framer-motion';
 import { VehicleDTO } from '../../../api/api';
 import { Car, CheckCircle, ArrowRight, Gauge, Tag } from 'lucide-react';
-
-import { getVehicleImage } from '../../../utils/vehicleImage';
+import { resolveVehicleImage } from '../../../utils/vehicleImage';
 
 interface VehicleSelectionCardProps {
   vehicle: VehicleDTO;
@@ -28,7 +27,7 @@ export function VehicleSelectionCard({
   isSelected,
   onSelect,
 }: VehicleSelectionCardProps) {
-  const imageUrl = getVehicleImage(vehicle);
+  const imageUrl = resolveVehicleImage(vehicle);
 
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -59,13 +58,17 @@ export function VehicleSelectionCard({
       )}
 
       {/* Image Container (Approximately 45-55% height) */}
-      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-100/80">
+      <div className="relative h-48 sm:h-52 w-full overflow-hidden bg-slate-900">
         <img
           src={imageUrl}
           alt={`${vehicle.year} ${vehicle.make} ${vehicle.model}`}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           loading="lazy"
         />
+          <div className="flex h-full w-full items-center justify-center bg-slate-800 text-slate-400">
+            <Car className="h-12 w-12 stroke-[1.5] text-slate-500" />
+          </div>
+        )}
 
         {/* Year Pill Overlay */}
         <div className="absolute bottom-3 left-3 rounded-md bg-slate-900/70 backdrop-blur-md px-2.5 py-1 text-[11px] font-semibold text-white">

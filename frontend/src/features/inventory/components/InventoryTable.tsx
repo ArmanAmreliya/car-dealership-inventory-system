@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { InventoryItemDTO } from '../types/inventory.types';
 import { paths } from '../../../routes/paths';
-import { getVehicleImage } from '../../../utils/vehicleImage';
+import { resolveVehicleImage } from '../../../utils/vehicleImage';
 import { Edit, Eye, Car } from 'lucide-react';
 
 interface InventoryTableProps {
@@ -84,7 +84,7 @@ export function InventoryTable({ items, isLoading = false, onEditItem }: Invento
                 const salePrice = (v as any)?.salePrice || (item as any).salePrice || (price > 0 ? price * 0.92 : 0);
                 const quantity = item.quantity ?? 0;
                 const isAvailable = item.available && quantity > 0;
-                const imageUrl = getVehicleImage(v || (item as any));
+                const imageUrl = resolveVehicleImage(v || (item as any));
 
                 const dateObj = item.updatedAt ? new Date(item.updatedAt) : null;
                 const arrivalStr = dateObj && !isNaN(dateObj.getTime())
@@ -114,14 +114,10 @@ export function InventoryTable({ items, isLoading = false, onEditItem }: Invento
                       <input type="checkbox" className="rounded border-slate-300 text-slate-900 focus:ring-0" />
                     </td>
 
-                    {/* Large Photo Thumbnail */}
+                    {/* Photo */}
                     <td className="px-4 py-3">
-                      <div className="h-12 w-16 overflow-hidden rounded-lg bg-slate-900 border border-slate-200 shadow-2xs shrink-0">
-                        <img
-                          src={imageUrl}
-                          alt={`${make} ${model}`}
-                          className="h-full w-full object-cover group-hover:scale-105 transition-transform"
-                        />
+                      <div className="h-10 w-14 overflow-hidden rounded-lg bg-slate-900 border border-slate-200/60 shadow-2xs">
+                        <img src={imageUrl} alt={model} className="h-full w-full object-cover" />
                       </div>
                     </td>
 
