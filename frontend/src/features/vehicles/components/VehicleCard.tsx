@@ -34,7 +34,18 @@ export function VehicleCard({ vehicle, onDeleteRequest }: VehicleCardProps) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md hover:border-slate-300">
       {/* Top accent bar */}
-      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 opacity-0 transition-opacity group-hover:opacity-100" />
+      <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 opacity-0 transition-opacity group-hover:opacity-100 z-10" />
+
+      {/* Vehicle thumbnail */}
+      {vehicle.imageUrl && (
+        <div className="h-40 w-full overflow-hidden bg-slate-100">
+          <img
+            src={vehicle.imageUrl}
+            alt={`${vehicle.make} ${vehicle.model}`}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+        </div>
+      )}
 
       <div className="p-5">
         {/* Header: Make/Model + Price */}

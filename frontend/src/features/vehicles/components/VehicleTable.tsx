@@ -182,25 +182,13 @@ export function VehicleTable({ vehicles, isLoading = false, onDeleteRequest }: V
   const mobileView = (
     <div className="md:hidden space-y-3">
       {isLoading ? (
-        Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="animate-pulse rounded-xl border border-slate-200 bg-white p-5 space-y-4 shadow-sm">
-            <div className="flex items-start justify-between">
-              <div className="space-y-2">
-                <div className="h-4 w-40 rounded-full bg-slate-200" />
-                <div className="h-3 w-28 rounded-full bg-slate-100" />
-              </div>
-              <div className="h-6 w-20 rounded-full bg-slate-200" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {Array.from({ length: 4 }).map((_, j) => (
-                <div key={j} className="space-y-1.5">
-                  <div className="h-2.5 w-12 rounded-full bg-slate-200" />
-                  <div className="h-4 w-20 rounded-full bg-slate-100" />
-                </div>
-              ))}
-            </div>
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white p-12 text-center shadow-sm">
+          <div className="relative mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-50 p-2 ring-1 ring-slate-100">
+            <img src="/car.gif" alt="Loading vehicles" className="h-16 w-16 object-contain" />
           </div>
-        ))
+          <p className="text-sm font-semibold text-slate-800">Loading vehicles…</p>
+          <p className="mt-0.5 text-xs text-slate-400">Fetching inventory catalog</p>
+        </div>
       ) : vehicles.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-16 text-center shadow-sm">
           <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-100">
@@ -238,7 +226,17 @@ export function VehicleTable({ vehicles, isLoading = false, onDeleteRequest }: V
 
           <tbody className="divide-y divide-slate-50">
             {isLoading ? (
-              Array.from({ length: SKELETON_ROWS }).map((_, i) => <SkeletonRow key={i} />)
+              <tr>
+                <td colSpan={7}>
+                  <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
+                    <div className="relative mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-slate-50 p-2 ring-1 ring-slate-100">
+                      <img src="/car.gif" alt="Loading vehicles" className="h-16 w-16 object-contain" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-800">Loading vehicles…</p>
+                    <p className="mt-0.5 text-xs text-slate-400">Fetching inventory catalog</p>
+                  </div>
+                </td>
+              </tr>
             ) : sorted.length === 0 ? (
               <EmptyState />
             ) : (
@@ -256,7 +254,16 @@ export function VehicleTable({ vehicles, isLoading = false, onDeleteRequest }: V
 
                   {/* Make */}
                   <td className="px-5 py-4 whitespace-nowrap">
-                    <span className="font-semibold text-slate-900 text-sm">{vehicle.make}</span>
+                    <div className="flex items-center gap-3">
+                      {vehicle.imageUrl ? (
+                        <img
+                          src={vehicle.imageUrl}
+                          alt={vehicle.make}
+                          className="h-9 w-9 rounded-xl object-cover ring-1 ring-slate-200 shrink-0"
+                        />
+                      ) : null}
+                      <span className="font-semibold text-slate-900 text-sm">{vehicle.make}</span>
+                    </div>
                   </td>
 
                   {/* Model */}

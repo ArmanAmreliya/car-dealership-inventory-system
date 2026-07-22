@@ -3,6 +3,7 @@
  *
  * Displays a complete, formatted summary of a single vehicle record.
  * Uses a Stripe-inspired card layout with:
+ *   - Optional vehicle photo banner
  *   - Gradient header with large price badge
  *   - Grid of labelled data fields with subtle backgrounds
  *   - Metadata footer with record ID and timestamps
@@ -33,6 +34,18 @@ const COLOR_MAP: Record<string, string> = {
 export function VehicleDetailsCard({ vehicle }: VehicleDetailsCardProps) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+      {/* Vehicle Image Banner */}
+      {vehicle.imageUrl && (
+        <div className="relative h-64 w-full overflow-hidden bg-slate-900">
+          <img
+            src={vehicle.imageUrl}
+            alt={`${vehicle.make} ${vehicle.model}`}
+            className="h-full w-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent" />
+        </div>
+      )}
+
       {/* Header */}
       <div className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-8 py-8">
         {/* Background pattern */}
