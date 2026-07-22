@@ -1,106 +1,123 @@
-# AI Interaction Log
 
-This document records every meaningful AI interaction during development.
+# PROMPTS.md
 
----
-# AI Usage Journal
+# AI Usage Log (Important Prompts Only)
 
-## Principles
-
-- AI is used as a pair programmer.
-- All generated code is reviewed manually.
-- Architecture decisions remain mine.
-- Every dependency is understood before adoption.
-- AI suggestions are treated as proposals, not facts.
+This document contains only the major AI prompts used during development. Minor debugging prompts, formatting requests, and repetitive iterations have been omitted.
 
 ---
 
-# Session 1
+## 1. System Architecture Planning
+**AI Tool:** ChatGPT GPT-5.5
 
-Goal
+**Goal:** Design a production-ready Car Dealership Inventory System.
 
-Plan project architecture.
+**Key Prompt**
+- Design backend (Express, TypeScript, PostgreSQL, Prisma).
+- Design frontend (React, TypeScript, Tailwind).
+- JWT authentication.
+- SOLID architecture.
+- Feature-based folder structure.
 
-AI Tool
-
-ChatGPT GPT-5.5
-
-Outcome
-
-Created development roadmap.
-
-Reflection
-
-Used AI for planning rather than implementation.
+**Outcome:** Complete development roadmap and architecture.
 
 ---
 
-# Session 2
+## 2. Test-Driven Development
+**AI Tool:** Antigravity AI (Claude Sonnet)
 
-Goal
+**Goal:** Implement backend using TDD.
 
-Study Incubyte AI Plugins.
+**Key Prompt**
+- Follow Red → Green → Refactor.
+- Tests before implementation.
+- Tests drive implementation.
+- Small feature-based commits.
+- Prefer unit tests with essential integration tests.
 
-Reference
-
-https://github.com/incubyte/ai-plugins
-
-Reflection
-
-Understood AI-assisted development workflow and adapted prompt engineering practices into my own development process.
-
----
-
-# Session 3
-
-Goal
-
-Study Incubyte Open Source repositories.
-
-Reference
-
-https://github.com/incubyteservices
-
-Reflection
-
-Observed engineering practices, testing style, repository organization, and commit history. No implementation was copied.
+**Outcome:** Authentication, Vehicles, Inventory, Purchases, middleware, validation and comprehensive test suites.
 
 ---
 
-# Session 4
+## 3. Backend Production Readiness
+**AI Tool:** Antigravity AI + Gemini
 
-Goal
+**Key Prompt**
+- Add Swagger/OpenAPI.
+- Configure GitHub Actions CI.
+- Add validation middleware and logging.
+- Remove dead code.
+- Resolve lint and type errors.
+- Verify production build.
 
-Implement Vehicle Domain CRUD, Inventory Management, and Purchase Workflow with TDD.
-
-AI Tool
-
-Antigravity AI (Claude Sonnet 4.6)
-
-Outcome
-
-Built domain services, repositories, controllers, routers, unit test suites, and integration test suites adhering to TDD red-green-refactor cycles.
-
-Reflection
-
-Ensured separation of concerns, single shared repository state across modules, and operational error handling.
+**Outcome:** Production-ready backend with CI, documentation, passing tests, and zero blocking issues.
 
 ---
 
-# Session 5
+## 4. Frontend Development
+**AI Tool:** Gemini 2.5 Pro
 
-Goal
+**Key Prompt**
+- Preserve backend APIs.
+- Build reusable React components.
+- Responsive layouts.
+- Accessibility.
+- React Query.
+- Clean architecture.
+- Small logical commits.
 
-Complete Backend Production Readiness and Final Verification Audit.
+**Outcome:** Complete frontend for authentication, dashboard, vehicles, inventory, and purchases.
 
-AI Tool
+---
 
-Antigravity AI (Claude Sonnet 4.6 & Gemini 3.5 Flash)
+## 5. Enterprise UI/UX Redesign
+**AI Tool:** ChatGPT GPT-5.5 + Gemini 2.5 Pro
 
-Outcome
+**Key Prompt**
+- Transform DealerFlow into a commercial dealership management platform.
+- Premium enterprise dashboard.
+- Grid/List vehicle views.
+- Inventory management.
+- Purchase workflow.
+- Right-side edit drawer.
+- Mobile navigation.
+- Global search.
+- Modern design system and micro-interactions.
 
-Added Zod validation middleware, Morgan HTTP logging, Swagger/OpenAPI spec (`/api/docs`), multi-stage GitHub Actions CI, formatted codebase with Prettier, resolved type-import ESLint errors, and verified 100% test pass rate.
+**Outcome:** Commercial-grade dealership management interface while preserving backend functionality.
 
-Reflection
+---
 
-Ensured zero blocking issues, zero type errors, zero lint warnings, zero dead code, and full compliance with assessment quality standards.
+## 6. Premium Landing Page
+**AI Tool:** ChatGPT GPT-5.5
+
+**Key Prompt**
+- Luxury automotive landing page.
+- Cinematic hero section.
+- Premium vehicle photography.
+- Brand logos.
+- Vehicle categories.
+- Featured vehicles.
+- Promotional offers.
+- Testimonials.
+- Contact section.
+- Responsive design with Framer Motion.
+
+**Outcome:** Premium automotive marketing experience integrated with DealerFlow branding.
+
+---
+
+# AI Usage Reflection
+
+AI was used as an engineering assistant for:
+
+- Architecture planning
+- Test-Driven Development guidance
+- Test generation
+- UI/UX design
+- Debugging
+- Refactoring
+- Documentation
+- Performance and accessibility reviews
+
+All AI-generated output was manually reviewed, modified where necessary, and validated through testing before being committed. Final architecture, implementation, testing strategy, and engineering decisions are my own.
