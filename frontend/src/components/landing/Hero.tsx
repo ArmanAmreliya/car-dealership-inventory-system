@@ -1,183 +1,203 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, ArrowRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Play, ArrowRight } from 'lucide-react';
+import { Button } from './Button';
+import { MockupWrapper } from './MockupWrapper';
 
-const HERO_IMAGE =
-  '/bmw-760i-xdrive-2023-07-1652911620.avif';
-
-const stats = [
-  { value: '15,000+', label: 'Vehicles' },
-  { value: '500+', label: 'Dealerships' },
-  { value: '99%', label: 'Customer Satisfaction' },
-];
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 30 },
-  visible: (delay: number) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.6, delay },
-  }),
-};
+const rotatingWords = ['Enterprise', 'Independent', 'Multi-location'];
 
 export function Hero() {
-  const [query, setQuery] = useState('');
-  const navigate = useNavigate();
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    const params = query.trim() ? `?search=${encodeURIComponent(query.trim())}` : '';
-    navigate(`/vehicles${params}`);
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    
+    if (!mediaQuery.matches) {
+      const interval = setInterval(() => {
+        setCurrentWordIndex((prev) => (prev + 1) % rotatingWords.length);
+      }, 4000);
+      return () => clearInterval(interval);
+    }
+  }, []);
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5 },
+    },
   };
 
   return (
-    <section
-      id="hero"
-      className="relative w-full h-screen min-h-[680px] flex flex-col items-center justify-center overflow-hidden px-4 pt-[68px]"
-      aria-label="Hero section"
-    >
-      {/* Background image */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={HERO_IMAGE}
-          alt="Premium BMW sports car in a luxury showroom"
-          className="w-full h-full object-cover object-center brightness-110 saturate-[0.9]"
-          loading="eager"
-          decoding="async"
-        />
-        <div className="absolute inset-0 bg-white/25" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.08)_0%,rgba(255,255,255,0.24)_38%,rgba(255,255,255,0.42)_100%)]" />
-        <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-white/60 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-white/48 to-transparent" />
-      </div>
-
-      {/* Centered content */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto flex flex-col items-center text-center">
-        {/* Headline */}
-        <motion.h1
-          custom={0.1}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="text-5xl sm:text-6xl lg:text-[72px] font-black text-[#050505] leading-[1.04] mb-5"
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            textShadow:
-              '0 3px 28px rgba(255,255,255,0.92), 0 1px 1px rgba(255,255,255,0.75)',
-          }}
-        >
-          Find Your Perfect Car
-        </motion.h1>
-
-        {/* Subtitle */}
-        <motion.p
-          custom={0.2}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="text-lg sm:text-xl text-[#111111] max-w-xl mb-10 leading-relaxed font-medium"
-          style={{
-            fontFamily: "'Inter', sans-serif",
-            textShadow: '0 2px 18px rgba(255,255,255,0.88)',
-          }}
-        >
-          Browse thousands of premium vehicles from trusted dealerships across the country.
-        </motion.p>
-
-        {/* Glass search bar */}
-        <motion.form
-          custom={0.3}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          onSubmit={handleSearch}
-          className="w-full max-w-2xl flex items-center gap-0 bg-white/95 backdrop-blur-md rounded-2xl shadow-[0_24px_70px_rgba(17,17,17,0.18)] border border-white overflow-hidden mb-12"
-          role="search"
-        >
-          <label htmlFor="hero-search" className="sr-only">
-            Search by make, model or VIN
-          </label>
-          <input
-            id="hero-search"
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by make, model or VIN"
-            className="min-w-0 flex-1 h-16 px-6 bg-transparent text-[#111111] text-base placeholder-[#6B7280] outline-none font-medium"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-            autoComplete="off"
-          />
-          <button
-            type="submit"
-            id="hero-search-btn"
-            className="m-2 h-12 w-12 flex items-center justify-center bg-[#050505] hover:bg-[#2563EB] rounded-xl text-white transition-all duration-200 hover:scale-105 active:scale-95 flex-shrink-0 shadow-lg"
-            aria-label="Search vehicles"
+    <section id="hero" className="relative pt-32 pb-20 lg:pt-40 lg:pb-32 overflow-hidden">
+      <div className="absolute inset-0 bg-gradient-to-br from-primary-50 via-white to-accent-50 opacity-50" />
+      <div className="relative max-w-7xl mx-auto px-6 lg:px-12">
+        <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="space-y-8"
           >
-            <Search className="w-5 h-5" />
-          </button>
-        </motion.form>
-
-        {/* CTA buttons */}
-        <motion.div
-          custom={0.4}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-col sm:flex-row items-center gap-4 mb-16"
-        >
-          <button
-            id="hero-search-cta"
-            type="button"
-            onClick={() => navigate('/vehicles')}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-[#050505] text-white text-base font-semibold rounded-xl hover:bg-[#2563EB] transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] shadow-[0_16px_40px_rgba(17,17,17,0.28)]"
-            style={{ fontFamily: "'Inter', sans-serif" }}
+            <motion.div variants={itemVariants}>
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-primary-50 rounded-full">
+                <span className="w-2 h-2 bg-accent-500 rounded-full animate-pulse" />
+                <span className="text-sm font-medium text-primary-700">Trusted by 500+ dealership professionals</span>
+              </div>
+            </motion.div>
+            
+            <motion.h1 variants={itemVariants} className="text-5xl lg:text-6xl font-bold text-neutral-900 leading-tight">
+              <span className="block">{rotatingWords[currentWordIndex] || 'Enterprise'}</span>
+              <span className="block text-primary-600">dealership platform</span>
+            </motion.h1>
+            
+            <motion.p variants={itemVariants} className="text-lg lg:text-xl text-neutral-600 max-w-xl">
+              Modernize your dealership operations with AI-powered inventory management, 
+              intelligent analytics, and seamless workflow automation.
+            </motion.p>
+            
+            <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4">
+              <Button variant="secondary" size="lg" className="group">
+                <Play className="w-4 h-4 mr-2" />
+                Watch Demo
+              </Button>
+              <Button variant="primary" size="lg" href="/register">
+                Start Free Trial
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </motion.div>
+            
+            <motion.a variants={itemVariants} href="#features" className="inline-flex items-center gap-2 text-sm text-primary-600 hover:text-primary-700 font-medium">
+              View Features <ArrowRight className="w-4 h-4" />
+            </motion.a>
+          </motion.div>
+          
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="relative"
           >
-            <Search className="w-4 h-4" />
-            Search
-          </button>
-          <button
-            id="hero-browse-cta"
-            type="button"
-            onClick={() => navigate('/vehicles')}
-            className="inline-flex items-center gap-2 px-8 py-4 bg-white/90 backdrop-blur-sm text-[#111111] text-base font-semibold rounded-xl hover:bg-white border border-white transition-all duration-200 hover:scale-[1.03] active:scale-[0.97] shadow-[0_12px_34px_rgba(17,17,17,0.14)]"
-            style={{ fontFamily: "'Inter', sans-serif" }}
-          >
-            Browse Inventory
-            <ArrowRight className="w-4 h-4" />
-          </button>
-        </motion.div>
-
-        {/* Bottom stat strip */}
-        <motion.div
-          custom={0.55}
-          variants={fadeUp}
-          initial="hidden"
-          animate="visible"
-          className="flex flex-wrap items-center justify-center gap-8 sm:gap-14 rounded-2xl border border-white/80 bg-white/55 px-6 py-4 backdrop-blur-sm shadow-[0_20px_60px_rgba(17,17,17,0.12)]"
-        >
-          {stats.map((stat, i) => (
-            <div
-              key={stat.label}
-              className={`flex min-w-[120px] flex-col items-center ${
-                i > 0 ? 'sm:border-l sm:border-[#111111]/15 sm:pl-14' : ''
-              }`}
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
             >
-              <span
-                className="text-2xl sm:text-3xl font-black text-[#050505]"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
-                {stat.value}
-              </span>
-              <span
-                className="text-sm text-[#111111]/70 mt-1 font-medium"
-                style={{ fontFamily: "'Inter', sans-serif" }}
-              >
-                {stat.label}
-              </span>
-            </div>
-          ))}
-        </motion.div>
+              <MockupWrapper className="bg-gradient-to-br from-neutral-50 to-neutral-100">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary-600 flex items-center justify-center">
+                        <span className="text-white text-xs font-bold">DF</span>
+                      </div>
+                      <div>
+                        <div className="text-sm font-semibold text-neutral-900">Dashboard</div>
+                        <div className="text-xs text-neutral-500">Real-time insights</div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="px-3 py-1 bg-accent-100 text-accent-700 rounded-full text-xs font-medium">
+                        AI Active
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="text-2xl font-bold text-neutral-900">247</div>
+                      <div className="text-xs text-neutral-500">Vehicles</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="text-2xl font-bold text-accent-600">12</div>
+                      <div className="text-xs text-neutral-500">Low Stock</div>
+                    </div>
+                    <div className="bg-white rounded-lg p-4 shadow-sm">
+                      <div className="text-2xl font-bold text-primary-600">$1.2M</div>
+                      <div className="text-xs text-neutral-500">Inventory Value</div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg p-4 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-neutral-900">Recent Activity</span>
+                      <span className="text-xs text-neutral-500">Last 24h</span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 text-xs">
+                        <div className="w-2 h-2 bg-success rounded-full" />
+                        <span className="text-neutral-600">Vehicle added: 2024 Toyota Camry</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <div className="w-2 h-2 bg-accent-500 rounded-full" />
+                        <span className="text-neutral-600">AI suggestion: Price adjustment for Ford F-150</span>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs">
+                        <div className="w-2 h-2 bg-primary-500 rounded-full" />
+                        <span className="text-neutral-600">Purchase completed: VIN 5YJ3E1</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-r from-primary-600 to-accent-500 rounded-lg p-4 text-white">
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className="w-6 h-6 rounded-full bg-white/20 flex items-center justify-center">
+                        <span className="text-xs">✨</span>
+                      </div>
+                      <span className="text-sm font-semibold">AI Insight</span>
+                    </div>
+                    <p className="text-xs opacity-90">
+                      Based on market trends, consider increasing stock of SUVs by 15% this quarter.
+                    </p>
+                  </div>
+                </div>
+              </MockupWrapper>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.8 }}
+              className="absolute -top-4 -right-4 bg-white rounded-xl shadow-lg p-4 border border-neutral-200"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-accent-100 flex items-center justify-center">
+                  <span className="text-accent-600">📈</span>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-neutral-900">+23%</div>
+                  <div className="text-xs text-neutral-500">Sales this month</div>
+                </div>
+              </div>
+            </motion.div>
+            
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 1 }}
+              className="absolute -bottom-4 -left-4 bg-white rounded-xl shadow-lg p-4 border border-neutral-200"
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
+                  <span className="text-primary-600">⚡</span>
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-neutral-900">40% faster</div>
+                  <div className="text-xs text-neutral-500">Deal processing</div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        </div>
       </div>
     </section>
   );
