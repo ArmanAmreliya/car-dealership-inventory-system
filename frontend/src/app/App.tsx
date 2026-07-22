@@ -15,7 +15,7 @@ import { Footer } from '../components/landing/Footer';
 
 export function App() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" style={{ fontFamily: "'Inter', sans-serif" }}>
       <Navbar />
       <main id="main-content">
         <Hero />
