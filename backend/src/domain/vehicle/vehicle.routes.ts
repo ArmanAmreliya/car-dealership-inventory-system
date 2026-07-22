@@ -2,13 +2,16 @@ import type { Request, Response, NextFunction } from 'express';
 import { Router } from 'express';
 import type { AuthenticatedRequest } from '../../middleware/authenticate';
 import { authenticate } from '../../middleware/authenticate';
+import { requireAdmin } from '../../middleware/requireAdmin';
 import { validate } from '../../middleware/validate';
-import { createVehicleSchema, updateVehicleSchema } from '../../common/validation/schemas';
+import { createVehicleSchema, updateVehicleSchema, restockSchema } from '../../common/validation/schemas';
 import { VehicleRepository } from './vehicle.repository';
 import type { IVehicleRepository } from './vehicle.repository';
 import { VehicleService } from './vehicle.service';
 import { VehicleController } from './vehicle.controller';
 import { UploadController } from './upload.controller';
+import { InventoryService } from '../inventory/inventory.service';
+import { InventoryController } from '../inventory/inventory.controller';
 
 export const createVehicleRouter = (
   vehicleRepository: IVehicleRepository = new VehicleRepository(),
@@ -17,6 +20,7 @@ export const createVehicleRouter = (
   const vehicleService = new VehicleService(vehicleRepository);
   const vehicleController = new VehicleController(vehicleService);
   const uploadController = new UploadController();
+  const inventoryController = new InventoryController(new InventoryService(vehicleRepository));
 
   router.get('/upload-signature', authenticate, (req: Request, res: Response, next: NextFunction) =>
     uploadController.getSignature(req as AuthenticatedRequest, res, next),
@@ -34,8 +38,24 @@ export const createVehicleRouter = (
       vehicleController.create(req as AuthenticatedRequest, res, next),
   );
 
+  router.get('/search', authenticate, (req: Request, res: Response, next: NextFunction) =>
+    vehicleController.list(req as AuthenticatedRequest, res, next),
+  );
+
   router.get('/', authenticate, (req: Request, res: Response, next: NextFunction) =>
     vehicleController.list(req as AuthenticatedRequest, res, next),
+  );
+
+  router.post(
+    '/:id/restock',
+    authenticate,
+    requireAdmin,
+    validate(restockSchema),
+    (req: Request, res: Response, next: NextFunction) => {
+      const restockRequest = req as Request & { body: { stockQuantity: number } };
+      restockRequest.body = { stockQuantity: req.body.quantity };
+      return inventoryController.updateStock(restockRequest, res, next);
+    },
   );
 
   router.get('/:id', authenticate, (req: Request, res: Response, next: NextFunction) =>
@@ -50,8 +70,12 @@ export const createVehicleRouter = (
       vehicleController.update(req as AuthenticatedRequest, res, next),
   );
 
-  router.delete('/:id', authenticate, (req: Request, res: Response, next: NextFunction) =>
-    vehicleController.delete(req as AuthenticatedRequest, res, next),
+  router.delete(
+    '/:id',
+    authenticate,
+    requireAdmin,
+    (req: Request, res: Response, next: NextFunction) =>
+      vehicleController.delete(req as AuthenticatedRequest, res, next),
   );
 
   return router;

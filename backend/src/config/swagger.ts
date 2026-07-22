@@ -99,6 +99,13 @@ const options: swaggerJsdoc.Options = {
             stockQuantity: { type: 'integer', minimum: 0, example: 1 },
           },
         },
+        RestockBody: {
+          type: 'object',
+          required: ['quantity'],
+          properties: {
+            quantity: { type: 'integer', minimum: 0, example: 5 },
+          },
+        },
         PurchaseBody: {
           type: 'object',
           required: ['vehicleId'],
@@ -157,6 +164,213 @@ const options: swaggerJsdoc.Options = {
     },
     security: [{ bearerAuth: [] }],
     paths: {
+      '/api/auth/register': {
+        post: {
+          tags: ['Auth'],
+          summary: 'Register a new user (compatibility route)',
+          security: [],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/RegisterBody' } },
+            },
+          },
+          responses: {
+            201: {
+              description: 'User registered',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
+              },
+            },
+            400: { description: 'Validation error' },
+            409: { description: 'Email already registered' },
+          },
+        },
+      },
+      '/api/auth/login': {
+        post: {
+          tags: ['Auth'],
+          summary: 'Login and obtain a JWT (compatibility route)',
+          security: [],
+          requestBody: {
+            required: true,
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginBody' } } },
+          },
+          responses: {
+            200: {
+              description: 'Successful login',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
+              },
+            },
+            400: { description: 'Missing credentials' },
+            401: { description: 'Invalid credentials' },
+          },
+        },
+      },
+      '/api/vehicles': {
+        post: {
+          tags: ['Vehicles'],
+          summary: 'Create a vehicle (compatibility route)',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/CreateVehicleBody' } },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Vehicle created',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
+            },
+            400: { description: 'Validation error' },
+            401: { description: 'Unauthorized' },
+          },
+        },
+        get: {
+          tags: ['Vehicles'],
+          summary: 'List vehicles (compatibility route)',
+          parameters: [
+            { in: 'query', name: 'make', schema: { type: 'string' } },
+            { in: 'query', name: 'model', schema: { type: 'string' } },
+            { in: 'query', name: 'year', schema: { type: 'integer' } },
+            { in: 'query', name: 'availability', schema: { type: 'boolean' } },
+            { in: 'query', name: 'minPrice', schema: { type: 'number' } },
+            { in: 'query', name: 'maxPrice', schema: { type: 'number' } },
+          ],
+          responses: {
+            200: {
+              description: 'Array of vehicles',
+              content: {
+                'application/json': {
+                  schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } },
+                },
+              },
+            },
+            401: { description: 'Unauthorized' },
+          },
+        },
+      },
+      '/api/vehicles/search': {
+        get: {
+          tags: ['Vehicles'],
+          summary: 'Search vehicles by filters (compatibility route)',
+          parameters: [
+            { in: 'query', name: 'make', schema: { type: 'string' } },
+            { in: 'query', name: 'model', schema: { type: 'string' } },
+            { in: 'query', name: 'year', schema: { type: 'integer' } },
+            { in: 'query', name: 'availability', schema: { type: 'boolean' } },
+            { in: 'query', name: 'minPrice', schema: { type: 'number' } },
+            { in: 'query', name: 'maxPrice', schema: { type: 'number' } },
+          ],
+          responses: {
+            200: {
+              description: 'Array of vehicles',
+              content: {
+                'application/json': {
+                  schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } },
+                },
+              },
+            },
+            401: { description: 'Unauthorized' },
+          },
+        },
+      },
+      '/api/vehicles/{id}': {
+        get: {
+          tags: ['Vehicles'],
+          summary: 'Get a vehicle by ID (compatibility route)',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          responses: {
+            200: {
+              description: 'Vehicle found',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
+            },
+            401: { description: 'Unauthorized' },
+            404: { description: 'Not found' },
+          },
+        },
+        put: {
+          tags: ['Vehicles'],
+          summary: 'Update a vehicle (compatibility route)',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/UpdateVehicleBody' } },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Vehicle updated',
+              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
+            },
+            400: { description: 'Validation error' },
+            401: { description: 'Unauthorized' },
+            404: { description: 'Not found' },
+          },
+        },
+        delete: {
+          tags: ['Vehicles'],
+          summary: 'Delete a vehicle (admin only compatibility route)',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          responses: {
+            204: { description: 'Deleted' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden' },
+            404: { description: 'Not found' },
+          },
+        },
+      },
+      '/api/vehicles/{id}/restock': {
+        post: {
+          tags: ['Vehicles'],
+          summary: 'Restock a vehicle (admin only compatibility route)',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/RestockBody' } },
+            },
+          },
+          responses: {
+            200: {
+              description: 'Stock updated',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/InventoryItem' } },
+              },
+            },
+            400: { description: 'Validation error' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden' },
+            404: { description: 'Vehicle not found' },
+          },
+        },
+      },
+      '/api/purchases': {
+        post: {
+          tags: ['Purchases'],
+          summary: 'Purchase a vehicle (compatibility route)',
+          requestBody: {
+            required: true,
+            content: {
+              'application/json': { schema: { $ref: '#/components/schemas/PurchaseBody' } },
+            },
+          },
+          responses: {
+            201: {
+              description: 'Purchase completed',
+              content: {
+                'application/json': { schema: { $ref: '#/components/schemas/PurchaseRecord' } },
+              },
+            },
+            400: { description: 'Validation error' },
+            401: { description: 'Unauthorized' },
+            404: { description: 'Vehicle not found' },
+            409: { description: 'Vehicle not available for purchase' },
+          },
+        },
+      },
       '/v1/auth/register': {
         post: {
           tags: ['Auth'],

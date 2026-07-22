@@ -44,7 +44,12 @@ export const purchaseSchema = z.object({
   vehicleId: z.string({ message: 'vehicleId is required' }).min(1, 'vehicleId is required'),
 });
 
+export const restockSchema = z.object({
+  quantity: z.number({ message: 'quantity must be a number' }).int().nonnegative('quantity cannot be negative'),
+});
+
 export type CreateVehicleInput = z.infer<typeof createVehicleSchema>;
 export type UpdateVehicleInput = z.infer<typeof updateVehicleSchema>;
 export type StockUpdateInput = z.infer<typeof stockUpdateSchema>;
 export type PurchaseInput = z.infer<typeof purchaseSchema>;
+export type RestockInput = z.infer<typeof restockSchema>;

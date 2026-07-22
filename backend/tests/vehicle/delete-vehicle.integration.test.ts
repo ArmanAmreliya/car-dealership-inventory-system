@@ -16,6 +16,15 @@ async function registerAndLogin(email: string): Promise<string> {
   return res.body.token as string;
 }
 
+async function loginAdmin(): Promise<string> {
+  const res = await request(app).post('/api/v1/auth/login').send({
+    email: 'admin@dealerflow.com',
+    password: 'admin123',
+  });
+
+  return res.body.token as string;
+}
+
 async function createVehicle(token: string): Promise<string> {
   const res = await request(app)
     .post('/api/v1/vehicles')
@@ -37,7 +46,7 @@ describe('DELETE /api/v1/vehicles/:id', () => {
   let token: string;
 
   beforeAll(async () => {
-    token = await registerAndLogin('vehicle-delete@example.com');
+    token = await loginAdmin();
   });
 
   it('returns 401 when no token is provided', async () => {
@@ -64,6 +73,43 @@ describe('DELETE /api/v1/vehicles/:id', () => {
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(404);
+    expect(response.body.status).toBe('error');
+  });
+});
+
+describe('POST /api/vehicles/:id/restock', () => {
+  let adminToken: string;
+  let userToken: string;
+
+  beforeAll(async () => {
+    adminToken = await loginAdmin();
+    userToken = await registerAndLogin('vehicle-restock-user@example.com');
+  });
+
+  it('returns 200 on successful admin restock', async () => {
+    const vehicleId = await createVehicle(adminToken);
+
+    const response = await request(app)
+      .post(`/api/vehicles/${vehicleId}/restock`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ quantity: 5 });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({
+      vehicleId,
+      isAvailable: true,
+    });
+  });
+
+  it('returns 403 when a non-admin user tries to restock', async () => {
+    const vehicleId = await createVehicle(adminToken);
+
+    const response = await request(app)
+      .post(`/api/vehicles/${vehicleId}/restock`)
+      .set('Authorization', `Bearer ${userToken}`)
+      .send({ quantity: 5 });
+
+    expect(response.status).toBe(403);
     expect(response.body.status).toBe('error');
   });
 });

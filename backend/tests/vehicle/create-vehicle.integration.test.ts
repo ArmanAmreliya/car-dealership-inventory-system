@@ -126,3 +126,22 @@ describe('POST /api/v1/vehicles', () => {
     });
   });
 });
+
+describe('GET /api/vehicles/search', () => {
+  it('should return vehicles filtered by query params through the compatibility route', async () => {
+    const token = await registerAndLogin('vehicle-search@example.com');
+
+    await request(app)
+      .post('/api/v1/vehicles')
+      .set('Authorization', `Bearer ${token}`)
+      .send(validVehicle);
+
+    const response = await request(app)
+      .get('/api/vehicles/search?make=Toyota')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.some((vehicle: { make: string }) => vehicle.make === 'Toyota')).toBe(true);
+  });
+});

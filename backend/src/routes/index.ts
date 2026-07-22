@@ -24,10 +24,14 @@ const authRepository = new AuthRepository();
 const authService = new AuthService(authRepository);
 const authController = new AuthController(authService);
 router.use('/v1/auth', createAuthRouter(authController));
+router.use('/auth', createAuthRouter(authController));
 
 const vehicleRepository = new VehicleRepository();
 router.use('/v1/vehicles', createVehicleRouter(vehicleRepository));
+router.use('/vehicles', createVehicleRouter(vehicleRepository));
 router.use('/v1/inventory', createInventoryRouter(vehicleRepository));
+router.use('/inventory', createInventoryRouter(vehicleRepository));
 router.use('/v1/purchases', createPurchaseRouter(vehicleRepository));
+router.use('/purchases', createPurchaseRouter(vehicleRepository));
 
 export default router;
