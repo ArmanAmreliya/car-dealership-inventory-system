@@ -1,9 +1,11 @@
 /**
- * Vehicle Edit Page
+ * Vehicle Edit Page — Premium Enterprise Edition
  *
  * Page for editing an existing vehicle.
- * Wrapped in DashboardLayout. Fetches vehicle by route param ID,
- * then renders VehicleForm in edit mode.
+ * Features:
+ *   - Consistent premium styling with create page
+ *   - Gradient accent on form card
+ *   - Polished skeleton, error, and not-found states
  */
 
 import { useParams, useNavigate } from 'react-router-dom';
@@ -15,14 +17,6 @@ import { useUpdateVehicle } from '../features/vehicles/hooks/useUpdateVehicle';
 import { VehicleUpdateInput } from '../features/vehicles/validation/vehicle.schema';
 import { paths } from '../routes/paths';
 
-/**
- * VehicleEditPage
- *
- * Loads the vehicle identified by `:id` from the route.
- * Shows skeleton while loading, error state on failure, and
- * the edit form once data is available.
- * On success, shows a toast and redirects to the vehicle detail page.
- */
 export function VehicleEditPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -59,16 +53,23 @@ export function VehicleEditPage() {
   if (!id) {
     return (
       <DashboardLayout pageTitle="Edit Vehicle">
-        <div className="p-6">
-          <div className="mx-auto max-w-2xl rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-            <h2 className="text-lg font-semibold text-red-900">Invalid Vehicle ID</h2>
-            <p className="mt-2 text-red-700">No vehicle ID was provided in the URL.</p>
-            <button
-              onClick={() => navigate(paths.vehicles)}
-              className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Back to Vehicles
-            </button>
+        <div className="p-6 lg:p-8">
+          <div className="mx-auto max-w-2xl">
+            <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 px-8 py-12 text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
+                <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-red-900">Invalid Vehicle ID</h2>
+              <p className="mt-2 text-sm text-red-600">No vehicle ID was provided in the URL.</p>
+              <button
+                onClick={() => navigate(paths.vehicles)}
+                className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition-colors"
+              >
+                Back to Vehicles
+              </button>
+            </div>
           </div>
         </div>
       </DashboardLayout>
@@ -79,18 +80,21 @@ export function VehicleEditPage() {
   if (isLoading) {
     return (
       <DashboardLayout pageTitle="Edit Vehicle">
-        <div className="p-6">
-          <div className="mx-auto max-w-2xl animate-pulse space-y-4">
-            <div className="h-4 w-32 rounded bg-gray-200" />
-            <div className="h-8 w-56 rounded bg-gray-200" />
-            <div className="h-4 w-72 rounded bg-gray-200" />
-            <div className="mt-8 space-y-6 rounded-lg border border-gray-200 bg-white p-8">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <div className="h-4 w-32 rounded bg-gray-200" />
-                  <div className="h-10 w-full rounded bg-gray-100" />
-                </div>
-              ))}
+        <div className="p-6 lg:p-8">
+          <div className="mx-auto max-w-2xl animate-pulse space-y-6">
+            <div className="h-8 w-36 rounded-lg bg-slate-200" />
+            <div className="h-7 w-48 rounded-lg bg-slate-200" />
+            <div className="h-4 w-64 rounded-lg bg-slate-100" />
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              <div className="h-1 bg-slate-200" />
+              <div className="p-8 space-y-6">
+                {Array.from({ length: 6 }).map((_, i) => (
+                  <div key={i} className="space-y-2">
+                    <div className="h-4 w-24 rounded-full bg-slate-200" />
+                    <div className="h-12 w-full rounded-xl bg-slate-100" />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -102,25 +106,32 @@ export function VehicleEditPage() {
   if (fetchError) {
     return (
       <DashboardLayout pageTitle="Edit Vehicle">
-        <div className="p-6">
-          <div className="mx-auto max-w-2xl rounded-lg border border-red-200 bg-red-50 p-6">
-            <h2 className="text-lg font-semibold text-red-900">Failed to Load Vehicle</h2>
-            <p className="mt-2 text-red-700">
-              {extractMessage(fetchError) ?? 'An error occurred while fetching the vehicle.'}
-            </p>
-            <div className="mt-4 flex gap-4">
-              <button
-                onClick={() => navigate(paths.vehicleDetail(id))}
-                className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Back to Details
-              </button>
-              <button
-                onClick={() => navigate(paths.vehicles)}
-                className="text-sm text-gray-500 hover:text-gray-700 font-medium"
-              >
-                Back to Vehicles
-              </button>
+        <div className="p-6 lg:p-8">
+          <div className="mx-auto max-w-2xl">
+            <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 px-8 py-12 text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
+                <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-red-900">Failed to Load Vehicle</h2>
+              <p className="mt-2 text-sm text-red-600">
+                {extractMessage(fetchError) ?? 'An error occurred while fetching the vehicle.'}
+              </p>
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={() => navigate(paths.vehicleDetail(id))}
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition-colors"
+                >
+                  Back to Details
+                </button>
+                <button
+                  onClick={() => navigate(paths.vehicles)}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50 transition-colors"
+                >
+                  Back to Vehicles
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -132,16 +143,23 @@ export function VehicleEditPage() {
   if (!vehicle) {
     return (
       <DashboardLayout pageTitle="Edit Vehicle">
-        <div className="p-6">
-          <div className="mx-auto max-w-2xl rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">Vehicle Not Found</h2>
-            <p className="mt-2 text-gray-600">The vehicle you are looking for does not exist.</p>
-            <button
-              onClick={() => navigate(paths.vehicles)}
-              className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Back to Vehicles
-            </button>
+        <div className="p-6 lg:p-8">
+          <div className="mx-auto max-w-2xl">
+            <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white px-8 py-12 text-center shadow-sm">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+                <svg className="h-7 w-7 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">Vehicle Not Found</h2>
+              <p className="mt-2 text-sm text-slate-500">The vehicle you are looking for does not exist or may have been removed.</p>
+              <button
+                onClick={() => navigate(paths.vehicles)}
+                className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
+              >
+                Back to Vehicles
+              </button>
+            </div>
           </div>
         </div>
       </DashboardLayout>
@@ -151,35 +169,44 @@ export function VehicleEditPage() {
   // ── Form ────────────────────────────────────────────────────────────────────
   return (
     <DashboardLayout pageTitle="Edit Vehicle">
-      <div className="p-6">
+      <div className="p-6 lg:p-8">
         <div className="mx-auto max-w-2xl">
+          {/* Back navigation */}
+          <button
+            type="button"
+            onClick={() => navigate(paths.vehicleDetail(id))}
+            className="mb-6 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors -ml-2"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Back to Details
+          </button>
+
           {/* Page Header */}
           <div className="mb-8">
-            <button
-              type="button"
-              onClick={() => navigate(paths.vehicleDetail(id))}
-              className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Details
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">Edit Vehicle</h1>
-            <p className="mt-2 text-gray-600">
-              {vehicle.make} {vehicle.model} ({vehicle.year})
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Edit Vehicle</h1>
+            <p className="mt-2 text-sm text-slate-500">
+              Update details for{' '}
+              <span className="font-semibold text-slate-700">
+                {vehicle.make} {vehicle.model} ({vehicle.year})
+              </span>
             </p>
           </div>
 
           {/* Form Card */}
-          <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-            <VehicleForm
-              mode="edit"
-              initialData={vehicle}
-              onSubmit={handleSubmit}
-              isPending={isPending}
-              error={extractMessage(updateError)}
-            />
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            {/* Top accent */}
+            <div className="h-1 bg-gradient-to-r from-indigo-500 via-blue-500 to-emerald-500" />
+            <div className="p-8">
+              <VehicleForm
+                mode="edit"
+                initialData={vehicle}
+                onSubmit={handleSubmit}
+                isPending={isPending}
+                error={extractMessage(updateError)}
+              />
+            </div>
           </div>
 
           {/* Cancel Link */}
@@ -187,9 +214,9 @@ export function VehicleEditPage() {
             <button
               type="button"
               onClick={() => navigate(paths.vehicleDetail(id))}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              className="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
             >
-              Cancel
+              Cancel and return to vehicle details
             </button>
           </div>
         </div>

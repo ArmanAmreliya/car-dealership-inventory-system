@@ -1,8 +1,11 @@
 /**
- * Vehicle Create Page
+ * Vehicle Create Page — Premium Enterprise Edition
  *
  * Page for creating a new vehicle.
- * Wrapped in DashboardLayout. Uses VehicleForm in create mode.
+ * Features:
+ *   - Breadcrumb-style back navigation
+ *   - Gradient accent on form card
+ *   - Premium form with grouped sections
  */
 
 import { useNavigate } from 'react-router-dom';
@@ -13,13 +16,6 @@ import { useCreateVehicle } from '../features/vehicles/hooks/useCreateVehicle';
 import { VehicleCreateInput } from '../features/vehicles/validation/vehicle.schema';
 import { paths } from '../routes/paths';
 
-/**
- * VehicleCreatePage
- *
- * Displays a form for adding a new vehicle to inventory.
- * On success, shows a toast and redirects to the vehicle list.
- * On error, surfaces the API error message inside the form.
- */
 export function VehicleCreatePage() {
   const navigate = useNavigate();
   const { mutate: createVehicle, isPending, error } = useCreateVehicle();
@@ -42,34 +38,40 @@ export function VehicleCreatePage() {
 
   return (
     <DashboardLayout pageTitle="Add Vehicle">
-      <div className="p-6">
+      <div className="p-6 lg:p-8">
         <div className="mx-auto max-w-2xl">
+          {/* Back navigation */}
+          <button
+            type="button"
+            onClick={() => navigate(paths.vehicles)}
+            className="mb-6 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors -ml-2"
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+            </svg>
+            Back to Vehicles
+          </button>
+
           {/* Page Header */}
           <div className="mb-8">
-            <button
-              type="button"
-              onClick={() => navigate(paths.vehicles)}
-              className="mb-4 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Vehicles
-            </button>
-            <h1 className="text-3xl font-bold text-gray-900">Add New Vehicle</h1>
-            <p className="mt-2 text-gray-600">
-              Fill in the details below to add a new vehicle to the inventory.
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Add New Vehicle</h1>
+            <p className="mt-2 text-sm text-slate-500">
+              Fill in the details below to add a new vehicle to your inventory catalog.
             </p>
           </div>
 
           {/* Form Card */}
-          <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-sm">
-            <VehicleForm
-              mode="create"
-              onSubmit={handleSubmit}
-              isPending={isPending}
-              error={errorMessage}
-            />
+          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            {/* Top gradient accent */}
+            <div className="h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500" />
+            <div className="p-8">
+              <VehicleForm
+                mode="create"
+                onSubmit={handleSubmit}
+                isPending={isPending}
+                error={errorMessage}
+              />
+            </div>
           </div>
 
           {/* Cancel Link */}
@@ -77,9 +79,9 @@ export function VehicleCreatePage() {
             <button
               type="button"
               onClick={() => navigate(paths.vehicles)}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              className="text-sm font-medium text-slate-500 hover:text-slate-700 transition-colors"
             >
-              Cancel
+              Cancel and return to vehicle list
             </button>
           </div>
         </div>

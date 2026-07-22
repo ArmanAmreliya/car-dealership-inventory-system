@@ -1,8 +1,12 @@
 /**
- * Vehicle Detail Page
+ * Vehicle Detail Page — Premium Enterprise Edition
  *
  * Page for viewing full details of a single vehicle.
- * Wrapped in DashboardLayout. Provides Edit and Delete actions.
+ * Features:
+ *   - Premium skeleton loading with shimmer
+ *   - Dark gradient header on details card
+ *   - Action buttons with hover states
+ *   - Polished error and not-found states
  */
 
 import { useState } from 'react';
@@ -15,14 +19,6 @@ import { useVehicle } from '../features/vehicles/hooks/useVehicle';
 import { useDeleteVehicle } from '../features/vehicles/hooks/useVehicles';
 import { paths } from '../routes/paths';
 
-/**
- * VehicleDetailPage
- *
- * Loads the vehicle identified by `:id` from the route.
- * Shows a skeleton while loading, an error state on failure, and
- * the full VehicleDetailsCard once data is available.
- * Allows navigating to the edit page or opening the delete confirmation dialog.
- */
 export function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -57,16 +53,23 @@ export function VehicleDetailPage() {
   if (!id) {
     return (
       <DashboardLayout pageTitle="Vehicle Details">
-        <div className="p-6">
-          <div className="mx-auto max-w-2xl rounded-lg border border-red-200 bg-red-50 p-6 text-center">
-            <h2 className="text-lg font-semibold text-red-900">Invalid Vehicle ID</h2>
-            <p className="mt-2 text-red-700">No vehicle ID was provided in the URL.</p>
-            <button
-              onClick={() => navigate(paths.vehicles)}
-              className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Back to Vehicles
-            </button>
+        <div className="p-6 lg:p-8">
+          <div className="mx-auto max-w-2xl">
+            <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 px-8 py-12 text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
+                <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-red-900">Invalid Vehicle ID</h2>
+              <p className="mt-2 text-sm text-red-600">No vehicle ID was provided in the URL.</p>
+              <button
+                onClick={() => navigate(paths.vehicles)}
+                className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition-colors"
+              >
+                Back to Vehicles
+              </button>
+            </div>
           </div>
         </div>
       </DashboardLayout>
@@ -77,30 +80,44 @@ export function VehicleDetailPage() {
   if (isLoading) {
     return (
       <DashboardLayout pageTitle="Vehicle Details">
-        <div className="p-6">
+        <div className="p-6 lg:p-8">
           <div className="mx-auto max-w-4xl animate-pulse">
-            <div className="mb-6">
-              <div className="h-4 w-32 rounded bg-gray-200 mb-4" />
-              <div className="flex items-start justify-between">
-                <div className="space-y-2">
-                  <div className="h-8 w-64 rounded bg-gray-200" />
-                  <div className="h-4 w-48 rounded bg-gray-200" />
-                </div>
-                <div className="flex gap-3">
-                  <div className="h-10 w-28 rounded bg-gray-200" />
-                  <div className="h-10 w-24 rounded bg-gray-200" />
-                </div>
+            {/* Back button skeleton */}
+            <div className="mb-6 h-8 w-36 rounded-lg bg-slate-200" />
+
+            {/* Header skeleton */}
+            <div className="mb-8 flex items-start justify-between">
+              <div className="space-y-2.5">
+                <div className="h-8 w-64 rounded-lg bg-slate-200" />
+                <div className="h-4 w-40 rounded-lg bg-slate-100" />
+              </div>
+              <div className="flex gap-3">
+                <div className="h-10 w-24 rounded-xl bg-slate-200" />
+                <div className="h-10 w-24 rounded-xl bg-slate-200" />
               </div>
             </div>
-            <div className="rounded-lg border border-gray-200 bg-white p-6 space-y-6">
-              <div className="h-6 w-40 rounded bg-gray-200" />
-              <div className="grid grid-cols-2 gap-6">
-                {Array.from({ length: 6 }).map((_, i) => (
-                  <div key={i} className="space-y-2">
-                    <div className="h-3 w-20 rounded bg-gray-200" />
-                    <div className="h-6 w-32 rounded bg-gray-100" />
+
+            {/* Card skeleton */}
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+              <div className="bg-slate-800 px-8 py-8">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-3">
+                    <div className="h-7 w-52 rounded-lg bg-slate-700" />
+                    <div className="h-4 w-40 rounded-lg bg-slate-700" />
                   </div>
-                ))}
+                  <div className="h-10 w-28 rounded-2xl bg-slate-700" />
+                </div>
+              </div>
+              <div className="px-8 py-8">
+                <div className="h-4 w-28 rounded-full bg-slate-200 mb-5" />
+                <div className="grid grid-cols-3 gap-4">
+                  {Array.from({ length: 6 }).map((_, i) => (
+                    <div key={i} className="rounded-xl bg-slate-50 p-4 space-y-2">
+                      <div className="h-2.5 w-12 rounded-full bg-slate-200" />
+                      <div className="h-5 w-24 rounded-full bg-slate-100" />
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -113,18 +130,25 @@ export function VehicleDetailPage() {
   if (fetchError) {
     return (
       <DashboardLayout pageTitle="Vehicle Details">
-        <div className="p-6">
-          <div className="mx-auto max-w-2xl rounded-lg border border-red-200 bg-red-50 p-6">
-            <h2 className="text-lg font-semibold text-red-900">Failed to Load Vehicle</h2>
-            <p className="mt-2 text-red-700">
-              {extractMessage(fetchError) ?? 'An error occurred while fetching the vehicle.'}
-            </p>
-            <button
-              onClick={() => navigate(paths.vehicles)}
-              className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Back to Vehicles
-            </button>
+        <div className="p-6 lg:p-8">
+          <div className="mx-auto max-w-2xl">
+            <div className="flex flex-col items-center rounded-2xl border border-red-200 bg-red-50 px-8 py-12 text-center">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-100">
+                <svg className="h-7 w-7 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-red-900">Failed to Load Vehicle</h2>
+              <p className="mt-2 text-sm text-red-600">
+                {extractMessage(fetchError) ?? 'An error occurred while fetching the vehicle.'}
+              </p>
+              <button
+                onClick={() => navigate(paths.vehicles)}
+                className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-red-100 px-4 py-2 text-sm font-semibold text-red-700 hover:bg-red-200 transition-colors"
+              >
+                Back to Vehicles
+              </button>
+            </div>
           </div>
         </div>
       </DashboardLayout>
@@ -135,16 +159,23 @@ export function VehicleDetailPage() {
   if (!vehicle) {
     return (
       <DashboardLayout pageTitle="Vehicle Details">
-        <div className="p-6">
-          <div className="mx-auto max-w-2xl rounded-lg border border-gray-200 bg-gray-50 p-6 text-center">
-            <h2 className="text-lg font-semibold text-gray-900">Vehicle Not Found</h2>
-            <p className="mt-2 text-gray-600">The vehicle you are looking for does not exist.</p>
-            <button
-              onClick={() => navigate(paths.vehicles)}
-              className="mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Back to Vehicles
-            </button>
+        <div className="p-6 lg:p-8">
+          <div className="mx-auto max-w-2xl">
+            <div className="flex flex-col items-center rounded-2xl border border-slate-200 bg-white px-8 py-12 text-center shadow-sm">
+              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100">
+                <svg className="h-7 w-7 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+                </svg>
+              </div>
+              <h2 className="text-lg font-bold text-slate-900">Vehicle Not Found</h2>
+              <p className="mt-2 text-sm text-slate-500">The vehicle you are looking for does not exist or may have been removed.</p>
+              <button
+                onClick={() => navigate(paths.vehicles)}
+                className="mt-6 inline-flex items-center gap-1.5 rounded-xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-200 transition-colors"
+              >
+                Back to Vehicles
+              </button>
+            </div>
           </div>
         </div>
       </DashboardLayout>
@@ -154,16 +185,16 @@ export function VehicleDetailPage() {
   // ── Detail view ─────────────────────────────────────────────────────────────
   return (
     <DashboardLayout pageTitle={`${vehicle.make} ${vehicle.model}`}>
-      <div className="p-6">
+      <div className="p-6 lg:p-8">
         <div className="mx-auto max-w-4xl">
           {/* Back navigation */}
           <button
             type="button"
             onClick={() => navigate(paths.vehicles)}
-            className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+            className="mb-6 inline-flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors -ml-2"
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
             </svg>
             Back to Vehicles
           </button>
@@ -171,14 +202,15 @@ export function VehicleDetailPage() {
           {/* Page Header */}
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
                 {vehicle.make} {vehicle.model}
               </h1>
-              <p className="mt-2 text-gray-600">
-                {vehicle.year} &bull;{' '}
-                {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(
-                  vehicle.price
-                )}
+              <p className="mt-1 flex items-center gap-2 text-sm text-slate-500">
+                <span>{vehicle.year}</span>
+                <span className="text-slate-300">·</span>
+                <span className="font-semibold text-emerald-600">
+                  {new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(vehicle.price)}
+                </span>
               </p>
             </div>
 
@@ -187,20 +219,20 @@ export function VehicleDetailPage() {
               <button
                 type="button"
                 onClick={() => navigate(paths.vehicleEdit(id))}
-                className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-bold text-white shadow-sm shadow-blue-500/20 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 011.13-1.897L16.863 4.487z" />
                 </svg>
-                Edit
+                Edit Vehicle
               </button>
               <button
                 type="button"
                 onClick={() => setIsDeleteDialogOpen(true)}
-                className="inline-flex items-center gap-2 rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
+                className="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-colors"
               >
                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
                 </svg>
                 Delete
               </button>
