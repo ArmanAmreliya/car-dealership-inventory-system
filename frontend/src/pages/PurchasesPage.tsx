@@ -1,46 +1,52 @@
 /**
- * PurchasesPage
+ * PurchasesPage Component
  *
- * Purchase history and new-purchase entry point.
- *
- * IMPORTANT: The backend exposes only POST /api/v1/purchases.
- * There is no list or history endpoint. Purchase history is therefore
- * accumulated in sessionStorage-backed local state for the current browser
- * session. Records are added each time a purchase is completed on this page
- * or carried in via navigation state from CreatePurchasePage.
- *
- * Layout:
- *   ┌─────────────────────────────────────────┐
- *   │  Page header + "New Purchase" button    │
- *   ├─────────────────────────────────────────┤
- *   │  Session summary stats (if any)         │
- *   ├─────────────────────────────────────────┤
- *   │  Inline new-purchase form (collapsible) │
- *   ├─────────────────────────────────────────┤
- *   │  Purchase table (session history)       │
- *   └─────────────────────────────────────────┘
+ * Enterprise SaaS vehicle purchase workspace designed from scratch.
+ * Design Philosophy: Linear / Stripe Dashboard / Apple
+ * Focus:
+ * - High visual hierarchy with generous whitespace
+ * - Full content area width
+ * - Instant debounced search & filter bar
+ * - Responsive gallery grid of available vehicles
+ * - 50/50 Split Preview for selected vehicle
+ * - Stripe-like Purchase Summary card with 1-click confirmation
+ * - Smooth Framer Motion animations & session history log
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import { DashboardLayout } from '../layouts/DashboardLayout';
-import { PurchaseTable } from '../features/purchases/components/PurchaseTable';
-import { PurchaseSummary } from '../features/purchases/components/PurchaseSummary';
-import { PurchaseForm } from '../features/purchases/components/PurchaseForm';
-import { useVehicles } from '../features/vehicles/hooks/useVehicles';
+import { VehicleDTO } from '../api/api';
 import { PurchaseDTO } from '../features/purchases/types/purchase.types';
+import { useVehicles } from '../features/vehicles/hooks/useVehicles';
+import { useCreatePurchase, extractPurchaseError } from '../features/purchases/hooks/useCreatePurchase';
+import { VehicleSelectionCard } from '../features/purchases/components/VehicleSelectionCard';
+import { SelectedVehiclePreview } from '../features/purchases/components/SelectedVehiclePreview';
+import { PurchaseOrderSummaryCard } from '../features/purchases/components/PurchaseOrderSummaryCard';
+import { PurchaseSuccessReceipt } from '../features/purchases/components/PurchaseSuccessReceipt';
+import { PurchaseTable } from '../features/purchases/components/PurchaseTable';
 import { paths } from '../routes/paths';
-
-// ── Session storage helpers ───────────────────────────────────────────────
+import {
+  Search,
+  Filter,
+  RotateCcw,
+  Car,
+  ShoppingBag,
+  History,
+  Sparkles,
+  CheckCircle2,
+  AlertCircle,
+  X,
+} from 'lucide-react';
 
 const SESSION_KEY = 'dealerflow_session_purchases';
 
 function loadSessionPurchases(): PurchaseDTO[] {
   try {
     const raw = sessionStorage.getItem(SESSION_KEY);
-    if (!raw) return [];
-    return JSON.parse(raw) as PurchaseDTO[];
+    return raw ? (JSON.parse(raw) as PurchaseDTO[]) : [];
   } catch {
     return [];
   }
@@ -50,187 +56,54 @@ function saveSessionPurchases(purchases: PurchaseDTO[]): void {
   try {
     sessionStorage.setItem(SESSION_KEY, JSON.stringify(purchases));
   } catch {
-    // sessionStorage unavailable — silently degrade
+    // sessionStorage fallback
   }
 }
 
-// ── Sub-components ────────────────────────────────────────────────────────
-
-function SessionStats({ purchases }: { purchases: PurchaseDTO[] }) {
-  if (purchases.length === 0) return null;
-
-  const totalSpent = purchases.reduce((sum, p) => {
-    return sum + (p.vehicle?.price ?? 0);
-  }, 0);
-
-  return (
-    <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-3">
-      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-          Session Purchases
-        </p>
-        <p className="mt-1 text-2xl font-bold text-gray-900">{purchases.length}</p>
-      </div>
-      {totalSpent > 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-            Total Spent
-          </p>
-          <p className="mt-1 text-2xl font-bold text-green-700">
-            {new Intl.NumberFormat('en-US', {
-              style: 'currency',
-              currency: 'USD',
-              maximumFractionDigits: 0,
-            }).format(totalSpent)}
-          </p>
-        </div>
-      )}
-      <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-        <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-          Last Purchase
-        </p>
-        <p className="mt-1 text-sm font-semibold text-gray-700 truncate">
-          {purchases[0]?.vehicle
-            ? `${purchases[0].vehicle.year} ${purchases[0].vehicle.make} ${purchases[0].vehicle.model}`
-            : purchases[0]?.vehicleId.slice(0, 8) + '…'}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// ── Inline purchase form panel ────────────────────────────────────────────
-
-interface InlinePurchasePanelProps {
-  vehicles: ReturnType<typeof useVehicles>['data'];
-  vehiclesLoading: boolean;
-  vehiclesError: boolean;
-  onRefetchVehicles: () => void;
-  onSuccess: (receipt: PurchaseDTO) => void;
-  onClose: () => void;
-}
-
-function InlinePurchasePanel({
-  vehicles = [],
-  vehiclesLoading,
-  vehiclesError,
-  onRefetchVehicles,
-  onSuccess,
-  onClose,
-}: InlinePurchasePanelProps) {
-  return (
-    <div className="mb-6 rounded-lg border border-blue-200 bg-white shadow-sm">
-      {/* Panel header */}
-      <div className="flex items-center justify-between border-b border-gray-100 px-5 py-4">
-        <h2 className="text-sm font-semibold text-gray-900">New Purchase</h2>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close"
-          className="rounded p-1 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
-      </div>
-
-      <div className="px-5 py-5">
-        {/* Vehicles loading */}
-        {vehiclesLoading && (
-          <div className="animate-pulse space-y-3">
-            <div className="h-4 w-32 rounded bg-gray-200" />
-            <div className="h-10 w-full rounded bg-gray-100" />
-            <div className="h-10 w-full rounded bg-gray-200" />
-          </div>
-        )}
-
-        {/* Vehicles error */}
-        {vehiclesError && (
-          <div className="flex items-start gap-3 rounded-md border border-red-200 bg-red-50 p-4">
-            <svg className="mt-0.5 h-5 w-5 shrink-0 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-            </svg>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-red-800">
-                Failed to load available vehicles
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={onRefetchVehicles}
-              className="shrink-0 rounded-md bg-red-100 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-200 transition-colors"
-            >
-              Retry
-            </button>
-          </div>
-        )}
-
-        {/* No available vehicles */}
-        {!vehiclesLoading && !vehiclesError && vehicles.length === 0 && (
-          <div className="rounded-md border border-amber-200 bg-amber-50 px-4 py-4 text-center">
-            <p className="text-sm font-medium text-amber-900">
-              No vehicles currently available for purchase.
-            </p>
-            <p className="mt-1 text-xs text-amber-700">
-              Check inventory to restock available vehicles.
-            </p>
-          </div>
-        )}
-
-        {/* Form */}
-        {!vehiclesLoading && !vehiclesError && vehicles.length > 0 && (
-          <PurchaseForm
-            availableVehicles={vehicles}
-            onSuccess={onSuccess}
-            onCancel={onClose}
-            submitLabel="Confirm Purchase"
-          />
-        )}
-      </div>
-    </div>
-  );
-}
-
-// ── Page ──────────────────────────────────────────────────────────────────
-
-/**
- * PurchasesPage
- *
- * Responsibilities:
- * - Maintains the session purchase history in state + sessionStorage.
- * - Accepts incoming receipt state from navigation (CreatePurchasePage).
- * - Owns the inline new-purchase panel open/close state.
- * - Passes vehicleMap to child components for receipt enrichment.
- */
 export function PurchasesPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ── Session purchase history ────────────────────────────────────────────
-  const [purchases, setPurchases] = useState<PurchaseDTO[]>(() =>
-    loadSessionPurchases()
+  // ── Query & Mutation Hooks ──────────────────────────────────────────────
+  const {
+    data: availableVehicles = [],
+    isLoading: vehiclesLoading,
+    isError: vehiclesError,
+    refetch: refetchVehicles,
+  } = useVehicles({ availability: true });
+
+  const { mutate: executePurchase, isPending: isPurchasing } = useCreatePurchase();
+
+  // ── State Management ────────────────────────────────────────────────────
+  const [selectedVehicle, setSelectedVehicle] = useState<VehicleDTO | null>(null);
+  const [completedPurchase, setCompletedPurchase] = useState<PurchaseDTO | null>(null);
+  const [purchases, setPurchases] = useState<PurchaseDTO[]>(() => loadSessionPurchases());
+  const [activeTab, setActiveTab] = useState<'purchase' | 'history'>('purchase');
+
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedMake, setSelectedMake] = useState<string>('all');
+  const [selectedYear, setSelectedYear] = useState<string>('all');
+  const [priceMax, setPriceMax] = useState<string>('all');
+
+  // Vehicle Map for history table enrichment
+  const vehicleMap = useMemo(
+    () => Object.fromEntries(availableVehicles.map((v) => [v.id, v])),
+    [availableVehicles]
   );
 
-  // ── Latest receipt (shown inline above table after a purchase) ─────────
-  const [latestReceipt, setLatestReceipt] = useState<PurchaseDTO | null>(null);
-
-  // ── Inline purchase form visibility ────────────────────────────────────
-  const [showForm, setShowForm] = useState(false);
-
-  // Accept a receipt carried via navigation state (from CreatePurchasePage)
+  // Accept incoming receipt from navigation state if any
   useEffect(() => {
     const state = location.state as { purchase?: PurchaseDTO } | null;
     if (state?.purchase) {
       addPurchase(state.purchase);
-      // Clear state so refreshing the page doesn't re-add it
+      setCompletedPurchase(state.purchase);
       navigate(paths.purchases, { replace: true, state: null });
     }
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const addPurchase = useCallback((receipt: PurchaseDTO) => {
     setPurchases((prev) => {
-      // Deduplicate by id
       if (prev.some((p) => p.id === receipt.id)) return prev;
       const updated = [receipt, ...prev];
       saveSessionPurchases(updated);
@@ -238,175 +111,376 @@ export function PurchasesPage() {
     });
   }, []);
 
-  // ── Available vehicles for the purchase form ────────────────────────────
-  const {
-    data: vehicles = [],
-    isLoading: vehiclesLoading,
-    isError: vehiclesError,
-    refetch: refetchVehicles,
-  } = useVehicles({ availability: true });
+  // ── Unique Manufacturers & Years for Dropdowns ──────────────────────────
+  const uniqueMakes = useMemo(() => {
+    const makes = new Set<string>();
+    availableVehicles.forEach((v) => makes.add(v.make));
+    return Array.from(makes).sort();
+  }, [availableVehicles]);
 
-  // Build vehicleMap for table / summary enrichment
-  const vehicleMap = Object.fromEntries(vehicles.map((v) => [v.id, v]));
+  const uniqueYears = useMemo(() => {
+    const years = new Set<number>();
+    availableVehicles.forEach((v) => years.add(v.year));
+    return Array.from(years).sort((a, b) => b - a);
+  }, [availableVehicles]);
 
-  // ── Handlers ────────────────────────────────────────────────────────────
-  const handlePurchaseSuccess = (receipt: PurchaseDTO) => {
-    toast.success('Purchase completed successfully!');
-    addPurchase(receipt);
-    setLatestReceipt(receipt);
-    setShowForm(false);
+  // ── Filtered Vehicles Computation ───────────────────────────────────────
+  const filteredVehicles = useMemo(() => {
+    return availableVehicles.filter((v) => {
+      const q = searchQuery.toLowerCase().trim();
+      if (q) {
+        const haystack = `${v.year} ${v.make} ${v.model} ${v.vin}`.toLowerCase();
+        if (!haystack.includes(q)) return false;
+      }
+      if (selectedMake !== 'all' && v.make.toLowerCase() !== selectedMake.toLowerCase()) {
+        return false;
+      }
+      if (selectedYear !== 'all' && String(v.year) !== selectedYear) {
+        return false;
+      }
+      if (priceMax !== 'all') {
+        const maxVal = parseInt(priceMax, 10);
+        if (v.price > maxVal) return false;
+      }
+      return true;
+    });
+  }, [availableVehicles, searchQuery, selectedMake, selectedYear, priceMax]);
+
+  // ── Purchase Submission Handler ─────────────────────────────────────────
+  const handleConfirmPurchase = () => {
+    if (!selectedVehicle) return;
+
+    executePurchase(
+      { vehicleId: selectedVehicle.id },
+      {
+        onSuccess: (receipt) => {
+          const enrichedReceipt: PurchaseDTO = {
+            ...receipt,
+            vehicle: selectedVehicle,
+          };
+          addPurchase(enrichedReceipt);
+          setCompletedPurchase(enrichedReceipt);
+          toast.success(`Purchased ${selectedVehicle.year} ${selectedVehicle.make} ${selectedVehicle.model}`);
+        },
+        onError: (err) => {
+          const pe = extractPurchaseError(err);
+          toast.error(pe?.message || 'Failed to complete purchase. Please try again.');
+        },
+      }
+    );
   };
 
-  const handleClearHistory = () => {
-    setPurchases([]);
-    setLatestReceipt(null);
-    saveSessionPurchases([]);
-    toast.success('Purchase history cleared.');
+  const handleResetFilters = () => {
+    setSearchQuery('');
+    setSelectedMake('all');
+    setSelectedYear('all');
+    setPriceMax('all');
   };
-
-  // ── Derived ─────────────────────────────────────────────────────────────
-  const subtitle =
-    purchases.length === 0
-      ? 'No purchases this session'
-      : `${purchases.length} purchase${purchases.length !== 1 ? 's' : ''} this session`;
 
   return (
-    <DashboardLayout pageTitle="Purchases">
-      <div className="p-6">
-        <div className="mx-auto max-w-7xl">
-
-          {/* ── Page header ──────────────────────────────────────────────── */}
-          <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">Purchase History</h1>
-              <p className="mt-1 text-sm text-gray-500">{subtitle}</p>
+    <DashboardLayout pageTitle="Vehicle Acquisition">
+      <div className="mx-auto max-w-[1440px] p-6 md:p-8 space-y-8">
+        {/* Page Header */}
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-slate-200/80 pb-6">
+          <div>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900">Purchase Vehicle</h1>
+              <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-bold text-blue-700 border border-blue-200/60">
+                <Sparkles className="h-3 w-3 text-blue-500" />
+                Live Stock Acquisition
+              </span>
             </div>
-
-            <div className="flex shrink-0 items-center gap-3">
-              {purchases.length > 0 && (
-                <button
-                  type="button"
-                  onClick={handleClearHistory}
-                  className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 transition-colors"
-                >
-                  Clear History
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowForm((prev) => !prev);
-                  setLatestReceipt(null);
-                }}
-                className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                New Purchase
-              </button>
-            </div>
+            <p className="mt-1 text-sm text-slate-500">
+              Acquire available vehicles directly into inventory with instant order placement and stock sync.
+            </p>
           </div>
 
-          {/* ── Session stats ─────────────────────────────────────────────── */}
-          <SessionStats purchases={purchases} />
-
-          {/* ── Inline new-purchase form ──────────────────────────────────── */}
-          {showForm && (
-            <InlinePurchasePanel
-              vehicles={vehicles}
-              vehiclesLoading={vehiclesLoading}
-              vehiclesError={vehiclesError}
-              onRefetchVehicles={refetchVehicles}
-              onSuccess={handlePurchaseSuccess}
-              onClose={() => setShowForm(false)}
-            />
-          )}
-
-          {/* ── Latest receipt (shown immediately after purchase) ─────────── */}
-          {latestReceipt && !showForm && (
-            <div className="mb-6">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-700">
-                  Latest Receipt
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => setLatestReceipt(null)}
-                  className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  Dismiss
-                </button>
-              </div>
-              <PurchaseSummary
-                purchase={latestReceipt}
-                vehicleMap={vehicleMap}
-              />
-            </div>
-          )}
-
-          {/* ── No-history empty prompt ───────────────────────────────────── */}
-          {purchases.length === 0 && !showForm && (
-            <div className="mb-6 rounded-lg border border-dashed border-gray-300 bg-white px-6 py-12 text-center">
-              <svg
-                className="mx-auto mb-4 h-12 w-12 text-gray-300"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={1.5}
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                />
-              </svg>
-              <h3 className="text-sm font-semibold text-gray-900">No purchases yet</h3>
-              <p className="mt-1 text-sm text-gray-500">
-                Purchases you make this session will be recorded here.
-              </p>
-              <button
-                type="button"
-                onClick={() => setShowForm(true)}
-                className="mt-4 inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-              >
-                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                </svg>
-                Make a Purchase
-              </button>
-            </div>
-          )}
-
-          {/* ── Session purchase table ────────────────────────────────────── */}
-          {purchases.length > 0 && (
-            <>
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-700">
-                  Session History
-                </h2>
-                <button
-                  type="button"
-                  onClick={() => navigate(paths.vehicles)}
-                  className="text-xs font-medium text-blue-600 hover:text-blue-800 transition-colors"
-                >
-                  Browse Vehicles →
-                </button>
-              </div>
-              <PurchaseTable
-                purchases={purchases}
-                vehicleMap={vehicleMap}
-              />
-            </>
-          )}
-
-          {/* ── Info notice about session scope ──────────────────────────── */}
-          <p className="mt-6 text-center text-xs text-gray-400">
-            Purchase history is session-only — records are not persisted between browser sessions.
-          </p>
-
+          {/* Tab View Switcher */}
+          <div className="flex items-center gap-1 rounded-xl bg-slate-100 p-1 border border-slate-200/60 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('purchase');
+                setCompletedPurchase(null);
+              }}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all ${
+                activeTab === 'purchase'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <ShoppingBag className="h-3.5 w-3.5" />
+              Acquire Vehicle
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('history')}
+              className={`flex items-center gap-2 rounded-lg px-3.5 py-2 text-xs font-bold transition-all ${
+                activeTab === 'history'
+                  ? 'bg-white text-slate-900 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <History className="h-3.5 w-3.5" />
+              Session History ({purchases.length})
+            </button>
+          </div>
         </div>
+
+        {/* Tab 1: Acquisition Workflow */}
+        {activeTab === 'purchase' && (
+          <>
+            {/* Success State View */}
+            {completedPurchase ? (
+              <PurchaseSuccessReceipt
+                purchase={completedPurchase}
+                vehicle={completedPurchase.vehicle || vehicleMap[completedPurchase.vehicleId]}
+                onReset={() => {
+                  setCompletedPurchase(null);
+                  setSelectedVehicle(null);
+                }}
+                onViewHistory={() => setActiveTab('history')}
+              />
+            ) : (
+              <div className="space-y-8">
+                {/* Search Bar & Filter Controls */}
+                <div className="space-y-4 rounded-2xl border border-slate-200/80 bg-white p-5 shadow-xs">
+                  {/* Large Search Input */}
+                  <div className="relative">
+                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search by VIN, Make, Model, or Year (e.g. 2024 Toyota Camry)..."
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-3.5 pl-12 pr-10 text-sm font-medium text-slate-900 placeholder-slate-400 transition-colors focus:border-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-600/20"
+                    />
+                    {searchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setSearchQuery('')}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-full p-1 text-slate-400 hover:bg-slate-200 hover:text-slate-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Filter Dropdowns Row */}
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-slate-100 pt-3.5">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider pr-2 border-r border-slate-200">
+                        <Filter className="h-3.5 w-3.5 text-slate-400" />
+                        <span>Filters</span>
+                      </div>
+
+                      {/* Manufacturer */}
+                      <select
+                        value={selectedMake}
+                        onChange={(e) => setSelectedMake(e.target.value)}
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-300 focus:border-blue-600 focus:outline-none"
+                      >
+                        <option value="all">All Manufacturers</option>
+                        {uniqueMakes.map((make) => (
+                          <option key={make} value={make}>
+                            {make}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Year */}
+                      <select
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(e.target.value)}
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-300 focus:border-blue-600 focus:outline-none"
+                      >
+                        <option value="all">All Model Years</option>
+                        {uniqueYears.map((yr) => (
+                          <option key={yr} value={String(yr)}>
+                            {yr}
+                          </option>
+                        ))}
+                      </select>
+
+                      {/* Price Ceiling */}
+                      <select
+                        value={priceMax}
+                        onChange={(e) => setPriceMax(e.target.value)}
+                        className="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 hover:border-slate-300 focus:border-blue-600 focus:outline-none"
+                      >
+                        <option value="all">Max Price: Any</option>
+                        <option value="30000">Under $30,000</option>
+                        <option value="50000">Under $50,000</option>
+                        <option value="75000">Under $75,000</option>
+                      </select>
+                    </div>
+
+                    {/* Reset Button */}
+                    {(searchQuery || selectedMake !== 'all' || selectedYear !== 'all' || priceMax !== 'all') && (
+                      <button
+                        type="button"
+                        onClick={handleResetFilters}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-blue-600 transition-colors"
+                      >
+                        <RotateCcw className="h-3.5 w-3.5" />
+                        Reset Filters
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Selected Vehicle & Summary Workspace */}
+                <AnimatePresence>
+                  {selectedVehicle && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="space-y-6"
+                    >
+                      <div className="flex items-center justify-between">
+                        <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                          <CheckCircle2 className="h-5 w-5 text-blue-600" />
+                          Vehicle Acquisition Workspace
+                        </h2>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedVehicle(null)}
+                          className="text-xs font-semibold text-slate-500 hover:text-slate-800"
+                        >
+                          Deselect & Return to Gallery
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 items-start">
+                        {/* Selected Preview (Left 7 cols) */}
+                        <div className="xl:col-span-8">
+                          <SelectedVehiclePreview vehicle={selectedVehicle} />
+                        </div>
+
+                        {/* Order Summary (Right 4 cols) */}
+                        <div className="xl:col-span-4">
+                          <PurchaseOrderSummaryCard
+                            vehicle={selectedVehicle}
+                            isPending={isPurchasing}
+                            onConfirm={handleConfirmPurchase}
+                            onCancel={() => setSelectedVehicle(null)}
+                          />
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                {/* Vehicle Gallery Header */}
+                <div className="flex items-center justify-between border-t border-slate-200/80 pt-6">
+                  <div>
+                    <h2 className="text-lg font-bold text-slate-900">Available Vehicle Catalog</h2>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      Select a vehicle card below to review details and initiate purchase.
+                    </p>
+                  </div>
+                  <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
+                    {filteredVehicles.length} Vehicles Available
+                  </span>
+                </div>
+
+                {/* Loading State Skeleton */}
+                {vehiclesLoading && (
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className="animate-pulse rounded-2xl border border-slate-200/80 bg-white p-5 space-y-4"
+                      >
+                        <div className="h-44 w-full rounded-xl bg-slate-100" />
+                        <div className="h-4 w-2/3 rounded bg-slate-200" />
+                        <div className="h-3 w-1/2 rounded bg-slate-100" />
+                        <div className="h-10 w-full rounded-xl bg-slate-200/80" />
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Error State */}
+                {vehiclesError && (
+                  <div className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-800 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3">
+                      <AlertCircle className="h-6 w-6 text-rose-600 shrink-0" />
+                      <div>
+                        <h3 className="text-sm font-bold">Failed to load catalog</h3>
+                        <p className="text-xs text-rose-700 mt-0.5">
+                          Unable to retrieve available vehicles from the dealership server.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => refetchVehicles()}
+                      className="rounded-xl bg-rose-100 px-4 py-2 text-xs font-bold text-rose-800 hover:bg-rose-200 transition-colors"
+                    >
+                      Retry Catalog
+                    </button>
+                  </div>
+                )}
+
+                {/* Empty State */}
+                {!vehiclesLoading && !vehiclesError && filteredVehicles.length === 0 && (
+                  <div className="rounded-2xl border border-slate-200/80 bg-white p-12 text-center shadow-xs">
+                    <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                      <Car className="h-7 w-7 stroke-[1.5]" />
+                    </div>
+                    <h3 className="text-base font-bold text-slate-900">No available vehicles match your search</h3>
+                    <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+                      Try adjusting your active search query or filter selections above.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleResetFilters}
+                      className="mt-5 inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4.5 py-2.5 text-xs font-bold text-white shadow-xs hover:bg-slate-800 transition-colors"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      Clear Search & Filters
+                    </button>
+                  </div>
+                )}
+
+                {/* Gallery Grid */}
+                {!vehiclesLoading && !vehiclesError && filteredVehicles.length > 0 && (
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                    {filteredVehicles.map((vehicle) => (
+                      <VehicleSelectionCard
+                        key={vehicle.id}
+                        vehicle={vehicle}
+                        isSelected={selectedVehicle?.id === vehicle.id}
+                        onSelect={(v) => {
+                          setSelectedVehicle(v);
+                          window.scrollTo({ top: 120, behavior: 'smooth' });
+                        }}
+                      />
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Tab 2: Session Purchase History */}
+        {activeTab === 'history' && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-lg font-bold text-slate-900">Session Purchase Log</h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Review transactions completed during your current dealership session.
+                </p>
+              </div>
+            </div>
+
+            <PurchaseTable purchases={purchases} vehicleMap={vehicleMap} />
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
