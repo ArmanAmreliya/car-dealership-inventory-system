@@ -8,9 +8,9 @@
 export const env = {
   /**
    * Backend API base URL
-   * @default http://localhost:3000/api
+   * @default /api (proxied via Vite dev server to http://127.0.0.1:3000)
    */
-  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api',
+  API_BASE_URL: import.meta.env.VITE_API_BASE_URL || '/api',
 
   /**
    * Application display title
