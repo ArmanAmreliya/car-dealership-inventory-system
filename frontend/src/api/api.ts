@@ -32,8 +32,20 @@ export interface VehicleDTO {
   price: number;
   mileage?: number;
   color?: string;
+  imageUrl?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+/**
+ * Cloudinary Upload Signature DTO
+ */
+export interface UploadSignatureDTO {
+  signature: string;
+  timestamp: number;
+  apiKey: string;
+  cloudName: string;
+  folder: string;
 }
 
 /**
@@ -91,6 +103,14 @@ export const authService = {
  */
 export const vehicleService = {
   /**
+   * Get Cloudinary upload signature
+   */
+  getUploadSignature: async () => {
+    const response = await apiClient.get<UploadSignatureDTO>('/v1/vehicles/upload-signature');
+    return response.data;
+  },
+
+  /**
    * Get all vehicles with optional filters
    */
   listVehicles: async (params?: {
@@ -124,6 +144,9 @@ export const vehicleService = {
     model: string;
     year: number;
     price: number;
+    mileage?: number;
+    color?: string;
+    imageUrl?: string;
   }) => {
     const response = await apiClient.post<VehicleDTO>('/v1/vehicles', data);
     return response.data;
@@ -140,6 +163,9 @@ export const vehicleService = {
       model?: string;
       year?: number;
       price?: number;
+      mileage?: number;
+      color?: string;
+      imageUrl?: string;
     }
   ) => {
     const response = await apiClient.put<VehicleDTO>(`/v1/vehicles/${id}`, data);

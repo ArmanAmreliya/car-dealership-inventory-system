@@ -25,6 +25,7 @@ const vehicleRawObject = z.object({
     .optional()
     .transform((val) => (val === '' || val === undefined ? undefined : Number(val))),
   color: z.string().optional().transform((val) => (val === '' ? undefined : val)),
+  imageUrl: z.string().optional().transform((val) => (val === '' ? undefined : val)),
 });
 
 /**
