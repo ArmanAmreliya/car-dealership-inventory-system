@@ -29,7 +29,8 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
   const color = rawItem.vehicle?.color || rawItem.color;
   const mileage = rawItem.vehicle?.mileage || rawItem.mileage;
 
-  const vehicle: VehicleDTO = rawItem.vehicle || {
+  const vehicle: VehicleDTO = {
+    ...(rawItem.vehicle || {}),
     id: vehicleId,
     vin,
     make,
@@ -38,7 +39,7 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
     price,
     mileage,
     color,
-    imageUrl,
+    imageUrl: imageUrl || rawItem.vehicle?.imageUrl || rawItem.imageUrl || '',
     createdAt: rawItem.vehicle?.createdAt || rawItem.createdAt || new Date().toISOString(),
     updatedAt: rawItem.vehicle?.updatedAt || rawItem.updatedAt || new Date().toISOString(),
   };
@@ -84,7 +85,7 @@ export const inventoryService = {
   getInventory: async (): Promise<InventoryResponse> => {
     const response = await apiClient.get<any>('/v1/inventory');
     const data = response.data;
-    const rawItems = Array.isArray(data?.items) ? data.items : [];
+    const rawItems = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
     const items = rawItems.map(normalizeInventoryItem);
     return {
       ...data,

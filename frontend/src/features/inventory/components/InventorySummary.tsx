@@ -80,7 +80,7 @@ export function InventorySummary() {
 
   if (isLoading || !stats) {
     return (
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {Array.from({ length: 6 }).map((_, i) => (
           <StatCardSkeleton key={i} />
         ))}
@@ -95,35 +95,35 @@ export function InventorySummary() {
   }).format(stats.totalValue);
 
   return (
-    <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
       <StatCard
-        title="Total Vehicles"
+        title="Total Catalog"
         value={stats.totalVehicles}
-        description={`${stats.totalStock} units in stock`}
+        description={`${stats.totalStock} units in inventory`}
         icon={<Car className="h-5 w-5" />}
         accentClass="bg-blue-50"
         iconColor="text-blue-600"
       />
       <StatCard
-        title="Available"
+        title="Available Stock"
         value={stats.availableVehicles}
-        description={`${stats.availabilityRate}% availability`}
+        description={`${stats.availabilityRate}% health rate`}
         icon={<CheckCircle2 className="h-5 w-5" />}
         accentClass="bg-emerald-50"
         iconColor="text-emerald-600"
       />
       <StatCard
-        title="Reserved"
+        title="Reserved Hold"
         value={stats.reservedCount}
-        description="Pending customer hold"
+        description="Active buyer holds"
         icon={<Bookmark className="h-5 w-5" />}
         accentClass="bg-purple-50"
         iconColor="text-purple-600"
       />
       <StatCard
-        title="Low Stock"
+        title="Low Stock Alert"
         value={stats.lowStockCount}
-        description="At or below 3 units"
+        description="Requires restock"
         icon={<AlertTriangle className="h-5 w-5" />}
         accentClass="bg-amber-50"
         iconColor="text-amber-600"
@@ -131,15 +131,15 @@ export function InventorySummary() {
       <StatCard
         title="Out of Stock"
         value={stats.outOfStockCount}
-        description="Zero inventory"
+        description="Zero units available"
         icon={<XCircle className="h-5 w-5" />}
         accentClass="bg-rose-50"
         iconColor="text-rose-600"
       />
       <StatCard
-        title="Inventory Value"
+        title="Total Valuation"
         value={formattedValue}
-        description="Total valuation"
+        description="Combined asset value"
         icon={<DollarSign className="h-5 w-5" />}
         accentClass="bg-teal-50"
         iconColor="text-teal-600"

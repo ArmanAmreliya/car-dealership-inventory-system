@@ -162,11 +162,16 @@ export function AvailabilityDonut({ className = '' }: AvailabilityDonutProps) {
   const hasData = stats.totalVehicles > 0;
 
   return (
-    <div className={`rounded-lg border border-gray-200 bg-white p-5 shadow-sm ${className}`}>
+    <div className={`rounded-2xl border border-slate-200/90 bg-white p-6 shadow-2xs ${className}`}>
       {/* Title */}
-      <h3 className="mb-4 text-sm font-semibold text-gray-700">
-        Availability Breakdown
-      </h3>
+      <div className="mb-4">
+        <h3 className="text-base font-bold text-slate-900">
+          Stock Availability Distribution
+        </h3>
+        <p className="text-xs text-slate-500 mt-0.5">
+          Proportion of available, low-stock, and out-of-stock units
+        </p>
+      </div>
 
       {hasData ? (
         <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
@@ -268,14 +273,19 @@ export function StockLevelBars({
   const maxQty = Math.max(...bars.map((b) => b.quantity), 1);
 
   return (
-    <div className={`rounded-lg border border-gray-200 bg-white p-5 shadow-sm ${className}`}>
+    <div className={`rounded-2xl border border-slate-200/90 bg-white p-6 shadow-2xs ${className}`}>
       {/* Title */}
       <div className="mb-4 flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold text-gray-700">
-          Lowest Stock Vehicles
-        </h3>
-        <span className="text-xs text-gray-400">
-          Top {bars.length} by quantity
+        <div>
+          <h3 className="text-base font-bold text-slate-900">
+            Lowest Stock Vehicles
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5">
+            Key catalog units requiring stock monitoring
+          </p>
+        </div>
+        <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+          Top {bars.length} Units
         </span>
       </div>
 
