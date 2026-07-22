@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import type { RegisterData, User } from './auth.types';
 import { AppError } from '../../common/errors/AppError';
 import { prisma } from '../../infrastructure/prisma';
@@ -13,6 +14,37 @@ export interface IAuthRepository {
 
 export class AuthRepository implements IAuthRepository {
   private inMemoryUsers: Map<string, StoredUser> = new Map();
+
+  constructor() {
+    this.seedDefaultUsers();
+  }
+
+  private seedDefaultUsers() {
+    // Pre-hash 'admin123' and 'user123' synchronously for in-memory fallback
+    // $2b$10$e.g...
+    const adminHashed = bcrypt.hashSync('admin123', 10);
+    const userHashed = bcrypt.hashSync('user123', 10);
+
+    this.inMemoryUsers.set('admin@dealerflow.com', {
+      id: 'user-admin-default',
+      email: 'admin@dealerflow.com',
+      password: adminHashed,
+      name: 'Admin User',
+      role: 'admin',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    this.inMemoryUsers.set('user@dealerflow.com', {
+      id: 'user-demo-default',
+      email: 'user@dealerflow.com',
+      password: userHashed,
+      name: 'Demo User',
+      role: 'user',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
 
   async findByEmail(email: string): Promise<StoredUser | null> {
     const normalizedEmail = email.trim().toLowerCase();

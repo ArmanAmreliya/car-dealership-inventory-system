@@ -22,6 +22,10 @@ export const createVehicleRouter = (
     uploadController.getSignature(req as AuthenticatedRequest, res, next),
   );
 
+  router.post('/upload-signature', authenticate, (req: Request, res: Response, next: NextFunction) =>
+    uploadController.getSignature(req as AuthenticatedRequest, res, next),
+  );
+
   router.post(
     '/',
     authenticate,

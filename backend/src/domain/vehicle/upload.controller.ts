@@ -5,32 +5,42 @@ import { env } from '../../config/env';
 
 export class UploadController {
   getSignature = (_req: AuthenticatedRequest, res: Response, _next: NextFunction): void => {
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    const folder = 'dealerflow_vehicles';
+    try {
+      const timestamp = Math.round(new Date().getTime() / 1000);
+      const folder = 'dealerflow_vehicles';
+      const cloudName = env.CLOUDINARY_CLOUD_NAME || 'dsrsmxkir';
+      const apiKey = env.CLOUDINARY_API_KEY || '258713927246861';
+      const apiSecret = env.CLOUDINARY_API_SECRET || 'vxbmvOi5eXqgbU7DxAAscE7WGIA';
 
-    cloudinary.config({
-      cloud_name: env.CLOUDINARY_CLOUD_NAME,
-      api_key: env.CLOUDINARY_API_KEY,
-      api_secret: env.CLOUDINARY_API_SECRET,
-      secure: true,
-    });
+      cloudinary.config({
+        cloud_name: cloudName,
+        api_key: apiKey,
+        api_secret: apiSecret,
+        secure: true,
+      });
 
-    const paramsToSign = {
-      timestamp,
-      folder,
-    };
+      const paramsToSign = {
+        timestamp,
+        folder,
+      };
 
-    const signature = cloudinary.utils.api_sign_request(
-      paramsToSign,
-      env.CLOUDINARY_API_SECRET
-    );
+      const signature = cloudinary.utils.api_sign_request(
+        paramsToSign,
+        apiSecret
+      );
 
-    res.status(200).json({
-      signature,
-      timestamp,
-      apiKey: env.CLOUDINARY_API_KEY,
-      cloudName: env.CLOUDINARY_CLOUD_NAME,
-      folder,
-    });
+      res.status(200).json({
+        signature,
+        timestamp,
+        apiKey,
+        cloudName,
+        folder,
+      });
+    } catch (error: any) {
+      res.status(500).json({
+        status: 'error',
+        message: error.message || 'Failed to generate upload signature',
+      });
+    }
   };
 }

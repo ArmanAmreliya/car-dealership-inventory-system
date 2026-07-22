@@ -8,7 +8,7 @@ export interface TokenPayload {
 }
 
 const JWT_SECRET = process.env['JWT_SECRET'] ?? 'test-secret';
-const SIGN_OPTIONS: SignOptions = { expiresIn: '15m' };
+const SIGN_OPTIONS: SignOptions = { expiresIn: '7d' };
 
 export function generateAccessToken(payload: TokenPayload): string {
   return jwt.sign(payload, JWT_SECRET, SIGN_OPTIONS);
