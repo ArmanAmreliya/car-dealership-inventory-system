@@ -1,77 +1,15 @@
-/**
- * Navbar Component
- *
- * Top navigation bar — sits above the main content area in DashboardLayout.
- * Renders the mobile/tablet hamburger, an optional search slot, theme toggle
- * slot, and the user avatar dropdown.
- *
- * Breakpoint strategy (matches DashboardLayout):
- *   < lg   → sidebar is hidden; hamburger is visible
- *   ≥ lg   → sidebar is fixed; hamburger is hidden
- */
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Menu, Search, LogOut, User, Bell, ChevronDown } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { Header } from './Header';
 
 interface NavbarProps {
   pageTitle?: string;
   onMenuClick?: () => void;
+  onOpenSearch?: () => void;
 }
 
-// ── Hamburger icon ─────────────────────────────────────────────────────────
-
-function HamburgerIcon() {
-  return (
-    <svg
-      className="h-5 w-5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      aria-hidden="true"
-    >
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  );
-}
-
-// ── User avatar button ─────────────────────────────────────────────────────
-
-interface AvatarButtonProps {
-  initials: string;
-  onClick: () => void;
-  isOpen: boolean;
-}
-
-function AvatarButton({ initials, onClick, isOpen }: AvatarButtonProps) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label="Open user menu"
-      aria-haspopup="menu"
-      aria-expanded={isOpen}
-      className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-semibold text-white ring-2 ring-transparent hover:ring-blue-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-500 transition-all"
-    >
-      {initials}
-    </button>
-  );
-}
-
-// ── Main component ─────────────────────────────────────────────────────────
-
-/**
- * Navbar
- *
- * Renders a 64-px-tall top bar containing:
- *   Left  : hamburger (hidden at lg+) | DealerFlow wordmark (mobile only)
- *   Right : user info snippet (sm+) | avatar + dropdown
- *
- * Followed immediately by the <Header> page-title bar.
- */
-export function Navbar({ pageTitle, onMenuClick }: NavbarProps) {
+export function Navbar({ pageTitle, onMenuClick, onOpenSearch }: NavbarProps) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -89,99 +27,119 @@ export function Navbar({ pageTitle, onMenuClick }: NavbarProps) {
         .slice(0, 2)
         .join('')
         .toUpperCase()
-    : '?';
+    : 'DF';
 
   return (
     <>
-      {/* ── Top bar ────────────────────────────────────────────────────── */}
-      <div className="sticky top-0 z-30 flex h-16 shrink-0 items-center border-b border-gray-200 bg-white px-4 shadow-sm sm:px-6 dark:border-gray-700 dark:bg-gray-800">
-
-        {/* Left side */}
-        <div className="flex items-center gap-3">
-          {/* Hamburger — only visible on mobile / tablet (< lg) */}
+      <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center justify-between border-b border-slate-200/80 bg-white/90 px-4 sm:px-6 shadow-subtle backdrop-blur-xl dark:border-slate-800/80 dark:bg-slate-900/90">
+        {/* Left Side: Mobile Hamburger & Page Title / Breadcrumb */}
+        <div className="flex items-center gap-3.5">
           <button
             type="button"
             onClick={onMenuClick}
-            aria-label="Open sidebar"
-            className="rounded-md p-1.5 text-gray-500 hover:bg-gray-100 hover:text-gray-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 lg:hidden dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white"
+            aria-label="Open navigation sidebar"
+            className="rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 lg:hidden dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-100 transition-colors"
           >
-            <HamburgerIcon />
+            <Menu className="h-5 w-5" />
           </button>
 
-          {/* Wordmark — only visible on mobile where the sidebar is hidden */}
-          <span className="text-base font-bold tracking-tight text-gray-900 lg:hidden dark:text-white">
-            DealerFlow
-          </span>
+          {/* Brand Logo for Mobile Header */}
+          <div className="flex items-center gap-2 lg:hidden">
+            <img src="/car-logo.png" alt="Logo" className="h-7 w-7 object-contain" />
+            <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
+              DealerFlow
+            </span>
+          </div>
+
+          {/* Breadcrumb / Page Title */}
+          <div className="hidden lg:flex items-center gap-2 text-sm text-slate-400 font-medium">
+            <span>DealerFlow</span>
+            <span>/</span>
+            <span className="text-slate-900 dark:text-slate-100 font-semibold">
+              {pageTitle || 'Dashboard'}
+            </span>
+          </div>
         </div>
 
-        {/* Right side */}
-        <div className="ml-auto flex items-center gap-3">
-          {/* User info snippet — hidden on xs */}
-          {user && (
-            <div className="hidden flex-col text-right sm:flex">
-              <span className="text-sm font-medium leading-none text-gray-900 dark:text-white">
-                {user.name}
-              </span>
-              <span className="mt-0.5 text-xs leading-none text-gray-400 dark:text-gray-500">
-                {user.email}
-              </span>
+        {/* Middle: Global Search Bar Trigger */}
+        <div className="flex-1 max-w-md mx-4">
+          <button
+            type="button"
+            onClick={onOpenSearch}
+            className="w-full flex items-center justify-between gap-2 rounded-xl border border-slate-200/90 bg-slate-50/80 px-3.5 py-2 text-sm text-slate-400 shadow-inner hover:border-slate-300 hover:bg-slate-100/80 transition-all dark:border-slate-800 dark:bg-slate-800/60 dark:hover:bg-slate-800"
+          >
+            <div className="flex items-center gap-2.5 truncate">
+              <Search className="h-4 w-4 text-slate-400 shrink-0" />
+              <span className="truncate text-xs sm:text-sm">Search vehicles, VIN, inventory...</span>
             </div>
-          )}
+            <kbd className="hidden sm:inline-flex items-center gap-0.5 rounded-lg border border-slate-200 bg-white px-2 py-0.5 text-[10px] font-mono font-medium text-slate-500 shadow-subtle dark:border-slate-700 dark:bg-slate-800 dark:text-slate-400 shrink-0">
+              <span className="text-xs">⌘</span>K
+            </kbd>
+          </button>
+        </div>
 
-          {/* Avatar + dropdown */}
+        {/* Right Side: Notifications & User Profile */}
+        <div className="flex items-center gap-3">
+          {/* Notifications Button */}
+          <button
+            type="button"
+            aria-label="Notifications"
+            className="relative rounded-xl p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 transition-colors"
+          >
+            <Bell className="h-5 w-5" />
+            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-teal-500 ring-2 ring-white dark:ring-slate-900" />
+          </button>
+
+          <div className="h-5 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
+
+          {/* User Profile Menu */}
           <div className="relative">
-            <AvatarButton
-              initials={initials}
-              onClick={() => setUserMenuOpen((o) => !o)}
-              isOpen={userMenuOpen}
-            />
+            <button
+              type="button"
+              onClick={() => setUserMenuOpen((prev) => !prev)}
+              className="flex items-center gap-2.5 rounded-xl p-1 hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all"
+            >
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-teal-700 text-xs font-bold text-white shadow-md shadow-teal-500/20">
+                {initials}
+              </div>
+              <div className="hidden md:flex flex-col text-left">
+                <span className="text-xs font-semibold leading-tight text-slate-900 dark:text-slate-100">
+                  {user?.name || 'Manager'}
+                </span>
+                <span className="text-[11px] leading-tight text-slate-400 capitalize">
+                  {user?.role || 'Admin'}
+                </span>
+              </div>
+              <ChevronDown className="h-4 w-4 text-slate-400 hidden sm:block" />
+            </button>
 
-            {/* Dropdown menu */}
+            {/* Dropdown Menu */}
             {userMenuOpen && (
-              <div
-                role="menu"
-                aria-label="User menu"
-                className="absolute right-0 mt-2 w-52 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-700 dark:bg-gray-800"
-              >
-                {/* User info (shown on mobile where snippet is hidden) */}
-                <div className="border-b border-gray-100 px-4 py-3 sm:hidden dark:border-gray-700">
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
+              <div className="absolute right-0 mt-2 w-56 overflow-hidden rounded-2xl border border-slate-200 bg-white p-1.5 shadow-popover dark:border-slate-800 dark:bg-slate-900 z-50">
+                <div className="px-3 py-2.5 border-b border-slate-100 dark:border-slate-800">
+                  <p className="text-xs font-bold text-slate-900 dark:text-slate-100">
                     {user?.name}
                   </p>
-                  <p className="mt-0.5 text-xs text-gray-400">{user?.email}</p>
+                  <p className="text-[11px] text-slate-400 truncate mt-0.5">{user?.email}</p>
                 </div>
 
-                {/* Role badge */}
-                {user?.role && (
-                  <div className="border-b border-gray-100 px-4 py-2 dark:border-gray-700">
-                    <span className="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </span>
-                  </div>
-                )}
-
-                {/* Sign out */}
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={handleLogout}
-                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-red-600 dark:text-gray-300 dark:hover:bg-gray-700 dark:hover:text-red-400"
-                >
-                  <svg className="h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
-                  </svg>
-                  Sign out
-                </button>
+                <div className="py-1">
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
-      </div>
+      </header>
 
-      {/* ── Page title bar ─────────────────────────────────────────────── */}
-      <Header title={pageTitle} />
-
-      {/* Close dropdown on outside click */}
+      {/* Outside Click Overlay for User Menu */}
       {userMenuOpen && (
         <div
           aria-hidden="true"
@@ -192,3 +150,4 @@ export function Navbar({ pageTitle, onMenuClick }: NavbarProps) {
     </>
   );
 }
+
