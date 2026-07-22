@@ -1,15 +1,17 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { RouterProvider } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import { AuthProvider } from '../contexts/AuthContext';
 import { queryClient } from '../lib/query-client';
-import { router } from './router';
+import { appRouter } from '../routes/AppRoutes';
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({ children }: { children?: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-      <Toaster position="top-right" richColors />
-      {children}
+      <AuthProvider>
+        {children || <RouterProvider router={appRouter} />}
+        <Toaster position="top-right" richColors />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }

@@ -1,12 +1,39 @@
+import { Navbar } from '../components/landing/Navbar';
+import { Hero } from '../components/landing/Hero';
+import { TrustedBy } from '../components/landing/TrustedBy';
+import { Stats } from '../components/landing/Stats';
+import { VehicleManagement } from '../components/landing/VehicleManagement';
+import { Inventory } from '../components/landing/Inventory';
+import { PurchaseWorkflow } from '../components/landing/PurchaseWorkflow';
+import { Analytics } from '../components/landing/Analytics';
+import { AIFeatures } from '../components/landing/AIFeatures';
+import { Automation } from '../components/landing/Automation';
+import { Testimonials } from '../components/landing/Testimonials';
+import { Pricing } from '../components/landing/Pricing';
+import { FAQ } from '../components/landing/FAQ';
+import { CTA } from '../components/landing/CTA';
+import { Footer } from '../components/landing/Footer';
+
 export function App() {
   return (
-    <main className="min-h-screen bg-background p-8 text-foreground">
-      <div className="mx-auto max-w-5xl">
-        <h1 className="text-3xl font-semibold">DealerFlow</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Frontend foundation initialized.
-        </p>
-      </div>
-    </main>
+    <div className="min-h-screen bg-white">
+      <Navbar />
+      <main id="main-content">
+        <Hero />
+        <TrustedBy />
+        <Stats />
+        <VehicleManagement />
+        <Inventory />
+        <PurchaseWorkflow />
+        <Analytics />
+        <AIFeatures />
+        <Automation />
+        <Testimonials />
+        <Pricing />
+        <FAQ />
+        <CTA />
+      </main>
+      <Footer />
+    </div>
   );
 }
