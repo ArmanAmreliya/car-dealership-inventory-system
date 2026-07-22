@@ -66,8 +66,11 @@ export function Hero() {
 					variants={fadeUp}
 					initial="hidden"
 					animate="visible"
-					className="mb-10 max-w-xl text-lg font-medium leading-relaxed text-[#1F2937] sm:text-xl"
-					style={{ fontFamily: "'Inter', sans-serif" }}
+					className="mb-10 max-w-xl text-lg font-medium leading-relaxed text-white sm:text-xl"
+					style={{
+						fontFamily: "'Inter', sans-serif",
+						textShadow: '0 3px 20px rgba(0, 0, 0, 0.85)',
+					}}
 				>
 					Browse thousands of premium vehicles from trusted dealerships across the country.
 				</motion.p>
