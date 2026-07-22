@@ -116,11 +116,13 @@ export function Navbar() {
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-8">
             <Link to="/" className="text-xl font-bold text-neutral-900 flex items-center gap-2.5 group">
-              <img
-                src="/car-logo.png"
-                alt="DealerFlow"
-                className="h-9 w-9 object-contain drop-shadow-sm group-hover:scale-105 transition-transform duration-200"
-              />
+              <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-[20px] bg-white/90 shadow-sm ring-1 ring-black/5 transition-transform duration-200 group-hover:scale-105">
+                <img
+                  src="/car-logo.png"
+                  alt="DealerFlow"
+                  className="h-8 w-8 object-contain"
+                />
+              </div>
               <span className="bg-gradient-to-r from-neutral-900 to-neutral-700 bg-clip-text text-transparent">DealerFlow</span>
             </Link>
             <div className="hidden md:flex items-center gap-6">
@@ -157,18 +159,18 @@ export function Navbar() {
           <div className="flex items-center gap-4">
             <div className="hidden md:flex items-center gap-3">
               <Link to="/register">
-                <button className="px-5 py-2 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]">
+                <button className="rounded-full px-5 py-2 text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]">
                   Try Free
                 </button>
               </Link>
               <Link to="/login">
-                <button className="px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]">
+                <button className="rounded-full px-5 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 shadow-sm hover:shadow-md hover:scale-[1.02] active:scale-[0.98]">
                   Log-In
                 </button>
               </Link>
             </div>
             <button
-              className="md:hidden p-2 text-neutral-600"
+              className="md:hidden rounded-full p-2 text-neutral-600"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               aria-label="Toggle menu"
             >
@@ -207,12 +209,12 @@ export function Navbar() {
               <a href="#faq" className="block text-lg text-neutral-900 font-medium">FAQ</a>
               <div className="pt-4 space-y-3">
                 <Link to="/register" className="block w-full">
-                  <button className="w-full py-3 text-center text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-lg transition-all duration-200 shadow-sm">
+                  <button className="w-full py-3 text-center text-sm font-semibold text-white bg-emerald-500 hover:bg-emerald-600 rounded-full transition-all duration-200 shadow-sm">
                     Try Free
                   </button>
                 </Link>
                 <Link to="/login" className="block w-full">
-                  <button className="w-full py-3 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all duration-200 shadow-sm">
+                  <button className="w-full py-3 text-center text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-full transition-all duration-200 shadow-sm">
                     Log-In
                   </button>
                 </Link>
