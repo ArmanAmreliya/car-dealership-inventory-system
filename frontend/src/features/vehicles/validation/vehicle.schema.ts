@@ -10,23 +10,27 @@ import { z } from 'zod';
 const currentYear = new Date().getFullYear();
 
 /**
- * Full vehicle schema for creation
+ * Base ZodObject definition for vehicle fields
  */
-export const vehicleCreateSchema = z
-  .object({
-    vin: z.string().min(1, 'VIN is required').max(17, 'VIN must be at most 17 characters'),
-    make: z.string().min(1, 'Make is required'),
-    model: z.string().min(1, 'Model is required'),
-    year: z.string().or(z.number()).transform((val) => Number(val)),
-    price: z.string().or(z.number()).transform((val) => Number(val)),
-    mileage: z
-      .string()
-      .or(z.number())
-      .or(z.undefined())
-      .optional()
-      .transform((val) => (val === '' || val === undefined ? undefined : Number(val))),
-    color: z.string().optional().transform((val) => (val === '' ? undefined : val)),
-  })
+const vehicleRawObject = z.object({
+  vin: z.string().min(1, 'VIN is required').max(17, 'VIN must be at most 17 characters'),
+  make: z.string().min(1, 'Make is required'),
+  model: z.string().min(1, 'Model is required'),
+  year: z.string().or(z.number()).transform((val) => Number(val)),
+  price: z.string().or(z.number()).transform((val) => Number(val)),
+  mileage: z
+    .string()
+    .or(z.number())
+    .or(z.undefined())
+    .optional()
+    .transform((val) => (val === '' || val === undefined ? undefined : Number(val))),
+  color: z.string().optional().transform((val) => (val === '' ? undefined : val)),
+});
+
+/**
+ * Full vehicle schema for creation (with field-level refinements)
+ */
+export const vehicleCreateSchema = vehicleRawObject
   .refine((data) => data.year >= 1886, {
     message: 'Year must be 1886 or later',
     path: ['year'],
@@ -48,7 +52,7 @@ export const vehicleCreateSchema = z
  * Partial schema for vehicle updates
  * All fields are optional
  */
-export const vehicleUpdateSchema = vehicleCreateSchema.partial();
+export const vehicleUpdateSchema = vehicleRawObject.partial();
 
 export type VehicleCreateInput = z.infer<typeof vehicleCreateSchema>;
 export type VehicleUpdateInput = z.infer<typeof vehicleUpdateSchema>;

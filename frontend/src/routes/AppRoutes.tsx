@@ -10,6 +10,13 @@ import { ProtectedRoute } from '../components/guards/ProtectedRoute';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { DashboardPage } from '../pages/DashboardPage';
+import { VehiclesListPage } from '../pages/VehiclesListPage';
+import { VehicleCreatePage } from '../pages/VehicleCreatePage';
+import { VehicleDetailPage } from '../pages/VehicleDetailPage';
+import { VehicleEditPage } from '../pages/VehicleEditPage';
+import { InventoryPage } from '../pages/InventoryPage';
+import { PurchasesPage } from '../pages/PurchasesPage';
+import { CreatePurchasePage } from '../pages/CreatePurchasePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { paths } from './paths';
@@ -20,7 +27,7 @@ import { App } from '../app/App';
  *
  * Route hierarchy:
  * - Public routes: /login, /register
- * - Protected routes: All others under DashboardLayout
+ * - Protected routes: All dashboard features wrapped in ProtectedRoute
  * - Catch-all: /404 and any undefined routes
  */
 export const appRouter = createBrowserRouter([
@@ -50,11 +57,7 @@ export const appRouter = createBrowserRouter([
     path: paths.vehicles,
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Vehicles">
-          <div className="p-6">
-            <p className="text-gray-600">Vehicles page - Coming soon</p>
-          </div>
-        </DashboardLayout>
+        <VehiclesListPage />
       </ProtectedRoute>
     ),
   },
@@ -62,11 +65,7 @@ export const appRouter = createBrowserRouter([
     path: paths.vehiclesNew,
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Create Vehicle">
-          <div className="p-6">
-            <p className="text-gray-600">Create vehicle page - Coming soon</p>
-          </div>
-        </DashboardLayout>
+        <VehicleCreatePage />
       </ProtectedRoute>
     ),
   },
@@ -74,11 +73,7 @@ export const appRouter = createBrowserRouter([
     path: '/vehicles/:id',
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Vehicle Details">
-          <div className="p-6">
-            <p className="text-gray-600">Vehicle details page - Coming soon</p>
-          </div>
-        </DashboardLayout>
+        <VehicleDetailPage />
       </ProtectedRoute>
     ),
   },
@@ -86,11 +81,7 @@ export const appRouter = createBrowserRouter([
     path: '/vehicles/:id/edit',
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Edit Vehicle">
-          <div className="p-6">
-            <p className="text-gray-600">Edit vehicle page - Coming soon</p>
-          </div>
-        </DashboardLayout>
+        <VehicleEditPage />
       </ProtectedRoute>
     ),
   },
@@ -98,11 +89,7 @@ export const appRouter = createBrowserRouter([
     path: paths.inventory,
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Inventory">
-          <div className="p-6">
-            <p className="text-gray-600">Inventory page - Coming soon</p>
-          </div>
-        </DashboardLayout>
+        <InventoryPage />
       </ProtectedRoute>
     ),
   },
@@ -110,11 +97,15 @@ export const appRouter = createBrowserRouter([
     path: paths.purchases,
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Purchases">
-          <div className="p-6">
-            <p className="text-gray-600">Purchases page - Coming soon</p>
-          </div>
-        </DashboardLayout>
+        <PurchasesPage />
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: '/purchases/new',
+    element: (
+      <ProtectedRoute>
+        <CreatePurchasePage />
       </ProtectedRoute>
     ),
   },
