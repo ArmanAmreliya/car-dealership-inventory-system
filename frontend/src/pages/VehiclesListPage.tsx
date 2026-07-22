@@ -16,6 +16,8 @@ import { toast } from 'sonner';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { VehicleFilterBar } from '../features/vehicles/components/VehicleFilterBar';
 import { VehicleTable } from '../features/vehicles/components/VehicleTable';
+import { VehicleGridCard } from '../features/vehicles/components/VehicleGridCard';
+import { ViewToggle } from '../features/vehicles/components/ViewToggle';
 import { DeleteVehicleDialog } from '../features/vehicles/components/DeleteVehicleDialog';
 import { useVehicles } from '../features/vehicles/hooks/useVehicles';
 import { useDeleteVehicle } from '../features/vehicles/hooks/useVehicles';
@@ -25,6 +27,9 @@ import { paths } from '../routes/paths';
 
 export function VehiclesListPage() {
   const navigate = useNavigate();
+
+  // ── View mode state ───────────────────────────────────────────────────────────
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   // ── Filter state ────────────────────────────────────────────────────────────
   const [filters, setFilters] = useState<VehicleFilters>({});
@@ -87,24 +92,27 @@ export function VehiclesListPage() {
           {/* ── Page header ──────────────────────────────────────────────── */}
           <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900">
+              <h1 className="text-2xl font-bold tracking-tight text-neutral-900">
                 Vehicle Inventory
               </h1>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm text-neutral-500">
                 Manage your vehicle catalog — add, edit, or remove vehicles from your inventory.
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => navigate(paths.vehiclesNew)}
-              className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-blue-500/20 transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-            >
-              <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-              </svg>
-              Add Vehicle
-            </button>
+            <div className="flex items-center gap-3">
+              <ViewToggle mode={viewMode} onModeChange={setViewMode} />
+              <button
+                type="button"
+                onClick={() => navigate(paths.vehiclesNew)}
+                className="inline-flex shrink-0 items-center gap-2 rounded-xl bg-gradient-to-r from-accent-600 to-accent-700 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-accent-500/20 transition-all hover:from-accent-700 hover:to-accent-800 hover:shadow-accent-500/30 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:ring-offset-2"
+              >
+                <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} aria-hidden="true">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                </svg>
+                Add Vehicle
+              </button>
+            </div>
           </div>
 
           {/* ── Stats bar ────────────────────────────────────────────────── */}
@@ -182,12 +190,46 @@ export function VehiclesListPage() {
             </div>
           )}
 
-          {/* ── Vehicle table ──────────────────────────────────────────────── */}
-          <VehicleTable
-            vehicles={vehicles}
-            isLoading={isLoading}
-            onDeleteRequest={handleDeleteRequest}
-          />
+          {/* ── Vehicle display ──────────────────────────────────────────────── */}
+          {viewMode === 'grid' ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {isLoading ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-20">
+                  <div className="relative mb-3 flex h-20 w-20 items-center justify-center rounded-2xl bg-neutral-50 p-2 ring-1 ring-neutral-100">
+                    <svg className="h-16 w-16 text-neutral-300 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                    </svg>
+                  </div>
+                  <p className="text-sm font-semibold text-neutral-800">Loading vehicles…</p>
+                </div>
+              ) : vehicles.length === 0 ? (
+                <div className="col-span-full flex flex-col items-center justify-center py-20 text-center">
+                  <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-neutral-100">
+                    <svg className="h-7 w-7 text-neutral-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+                    </svg>
+                  </div>
+                  <h3 className="text-sm font-semibold text-neutral-900">No vehicles found</h3>
+                  <p className="mt-1 text-sm text-neutral-500">Try adjusting your filters or add a new vehicle.</p>
+                </div>
+              ) : (
+                vehicles.map((vehicle) => (
+                  <VehicleGridCard
+                    key={vehicle.id}
+                    vehicle={vehicle}
+                    onEditRequest={() => navigate(paths.vehicleEdit(vehicle.id))}
+                    onInventoryRequest={() => navigate(paths.inventory)}
+                  />
+                ))
+              )}
+            </div>
+          ) : (
+            <VehicleTable
+              vehicles={vehicles}
+              isLoading={isLoading}
+              onDeleteRequest={handleDeleteRequest}
+            />
+          )}
         </div>
       </div>
 
