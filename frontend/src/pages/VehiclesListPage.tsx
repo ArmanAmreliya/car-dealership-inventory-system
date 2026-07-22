@@ -208,49 +208,20 @@ export function VehiclesListPage() {
         />
       )}
 
-      {/* Quick Edit Drawer */}
+      {/* Quick Edit Drawer with Enterprise Tabs */}
       <VehicleEditDrawer
         isOpen={isEditDrawerOpen}
         onClose={() => setIsEditDrawerOpen(false)}
         vehicle={editingVehicle || undefined}
-      >
-        {editingVehicle && (
-          <div className="flex flex-col gap-6 p-6">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5 dark:border-slate-700 dark:bg-slate-800/50">
-              <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 mb-3 uppercase tracking-wider">Vehicle Details</p>
-              <div className="space-y-2">
-                {[
-                  ['Make', editingVehicle.make],
-                  ['Model', editingVehicle.model],
-                  ['Year', String(editingVehicle.year)],
-                  ['VIN', editingVehicle.vin],
-                  ['Color', editingVehicle.color || '—'],
-                  ['Price', new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(editingVehicle.price)],
-                ].map(([label, value]) => (
-                  <div key={label} className="flex items-center justify-between">
-                    <span className="text-xs text-slate-400 dark:text-slate-500">{label}</span>
-                    <span className="text-xs font-semibold text-slate-800 dark:text-slate-200 font-mono">{value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => { setIsEditDrawerOpen(false); navigate(paths.vehicleEdit(editingVehicle.id)); }}
-              className="w-full inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-teal-500 to-teal-600 py-3 text-sm font-bold text-white shadow-lg shadow-teal-500/20 hover:from-teal-600 hover:to-teal-700 transition-all"
-            >
-              Open Full Edit Form
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsEditDrawerOpen(false)}
-              className="w-full rounded-2xl border border-slate-200 dark:border-slate-700 py-2.5 text-xs font-semibold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        )}
-      </VehicleEditDrawer>
+        onOpenFullEdit={
+          editingVehicle
+            ? () => {
+                setIsEditDrawerOpen(false);
+                navigate(paths.vehicleEdit(editingVehicle.id));
+              }
+            : undefined
+        }
+      />
 
       {/* Fullscreen Photo Gallery Modal */}
       {galleryVehicle && (

@@ -230,12 +230,20 @@ export function buildGlobalResults(
   if (!query.trim()) return [];
 
   const results: SearchResult[] = [];
+  const usedKeys = new Set<string>();
 
   // ── Vehicles ─────────────────────────────────────────────────────────────
-  for (const v of vehicles) {
+  for (let i = 0; i < vehicles.length; i++) {
+    const v = vehicles[i];
     if (matchesVehicle(v, query)) {
+      let key = `vehicle-${v.id}`;
+      if (usedKeys.has(key)) {
+        key = `vehicle-${v.id}-${i}`;
+      }
+      usedKeys.add(key);
+
       results.push({
-        key: `vehicle-${v.id}`,
+        key,
         section: 'vehicle',
         label: `${v.year} ${v.make} ${v.model}`,
         sublabel: `VIN ${v.vin} · $${v.price.toLocaleString()}`,
@@ -248,17 +256,24 @@ export function buildGlobalResults(
   const vehicleIdsInResults = new Set(
     results
       .filter((r) => r.section === 'vehicle')
-      .map((r) => r.key.replace('vehicle-', ''))
+      .map((r) => r.key.replace(/^vehicle-/, '').replace(/-\d+$/, ''))
   );
 
-  for (const item of inventoryItems) {
+  for (let i = 0; i < inventoryItems.length; i++) {
+    const item = inventoryItems[i];
     if (vehicleIdsInResults.has(item.vehicleId)) continue; // deduplicate
     if (matchesInventoryItem(item, query)) {
+      let key = `inventory-${item.id}`;
+      if (usedKeys.has(key)) {
+        key = `inventory-${item.id}-${i}`;
+      }
+      usedKeys.add(key);
+
       const vehicleLabel = item.vehicle
         ? `${item.vehicle.year} ${item.vehicle.make} ${item.vehicle.model}`
         : item.vehicleId.slice(0, 8) + '…';
       results.push({
-        key: `inventory-${item.id}`,
+        key,
         section: 'inventory',
         label: vehicleLabel,
         sublabel: `Stock: ${item.quantity} · ${item.available ? 'Available' : 'Unavailable'}`,
@@ -268,13 +283,20 @@ export function buildGlobalResults(
   }
 
   // ── Purchases ─────────────────────────────────────────────────────────────
-  for (const p of purchases) {
+  for (let i = 0; i < purchases.length; i++) {
+    const p = purchases[i];
     if (matchesPurchase(p, query)) {
+      let key = `purchase-${p.id}`;
+      if (usedKeys.has(key)) {
+        key = `purchase-${p.id}-${i}`;
+      }
+      usedKeys.add(key);
+
       const vehicleLabel = p.vehicle
         ? `${p.vehicle.year} ${p.vehicle.make} ${p.vehicle.model}`
         : `Vehicle ${p.vehicleId.slice(0, 8)}`;
       results.push({
-        key: `purchase-${p.id}`,
+        key,
         section: 'purchase',
         label: vehicleLabel,
         sublabel: `Purchased ${new Date(p.purchasedAt).toLocaleDateString()}`,
