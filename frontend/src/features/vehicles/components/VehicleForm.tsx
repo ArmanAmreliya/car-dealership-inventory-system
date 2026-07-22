@@ -1,9 +1,12 @@
 /**
- * VehicleForm Component
+ * VehicleForm Component — Premium Enterprise Edition
  *
  * Reusable form for creating and editing vehicles.
  * Uses React Hook Form with Zod validation.
- * Supports both create and edit modes.
+ * Premium design with:
+ *   - Grouped fields with section dividers
+ *   - Smooth error animations
+ *   - Polished input styling
  */
 
 import React from 'react';
@@ -13,62 +16,13 @@ import { vehicleCreateSchema, vehicleUpdateSchema, VehicleCreateInput, VehicleUp
 import { VehicleDTO } from '../../../api/api';
 
 interface VehicleFormProps {
-  /**
-   * Form mode: create or edit
-   */
   mode: 'create' | 'edit';
-
-  /**
-   * Initial vehicle data for edit mode
-   */
   initialData?: VehicleDTO;
-
-  /**
-   * Callback when form is submitted successfully
-   */
   onSubmit: (data: FieldValues) => void;
-
-  /**
-   * Is the mutation pending
-   */
   isPending: boolean;
-
-  /**
-   * Mutation error message
-   */
   error?: string | null;
 }
 
-/**
- * VehicleForm Component
- *
- * A reusable form for creating and editing vehicles.
- * Handles validation with Zod and form state with React Hook Form.
- *
- * @example
- * ```tsx
- * function CreateVehiclePage() {
- *   const { mutate: createVehicle, isPending, error } = useCreateVehicle();
- *
- *   const handleSubmit = (data: VehicleCreateInput) => {
- *     createVehicle(data, {
- *       onSuccess: () => {
- *         navigate('/vehicles');
- *       },
- *     });
- *   };
- *
- *   return (
- *     <VehicleForm
- *       mode="create"
- *       onSubmit={handleSubmit}
- *       isPending={isPending}
- *       error={error?.message}
- *     />
- *   );
- * }
- * ```
- */
 export function VehicleForm({ mode, initialData, onSubmit, isPending, error }: VehicleFormProps) {
   const schema = mode === 'create' ? vehicleCreateSchema : vehicleUpdateSchema;
 
@@ -110,181 +64,197 @@ export function VehicleForm({ mode, initialData, onSubmit, isPending, error }: V
     onSubmit(data as VehicleCreateInput | VehicleUpdateInput);
   };
 
+  // Shared classes
+  const inputBase =
+    'block w-full rounded-xl border bg-slate-50/50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 transition-all focus:bg-white focus:outline-none disabled:bg-slate-100 disabled:text-slate-400';
+  const inputNormal = `${inputBase} border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20`;
+  const inputError = `${inputBase} border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-500/20`;
+  const labelCls = 'block text-sm font-semibold text-slate-700 mb-1.5';
+  const errorCls = 'mt-1.5 text-xs font-medium text-red-500';
+
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
       {/* Error Alert */}
       {error && (
-        <div className="rounded-md bg-red-50 p-4">
-          <div className="text-sm text-red-700">{error}</div>
+        <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4">
+          <svg className="mt-0.5 h-5 w-5 shrink-0 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} aria-hidden="true">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <div>
+            <p className="text-sm font-semibold text-red-800">Something went wrong</p>
+            <p className="mt-0.5 text-sm text-red-700">{error}</p>
+          </div>
         </div>
       )}
 
-      {/* VIN */}
+      {/* ── Section: Identification ─────────────────────────────────────────── */}
       <div>
-        <label htmlFor="vin" className="block text-sm font-medium text-gray-700">
-          VIN <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          id="vin"
-          placeholder="Enter vehicle identification number"
-          className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none sm:text-sm ${
-            errors.vin
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-          }`}
-          {...register('vin')}
-          disabled={isPending}
-        />
-        {errors.vin && <p className="mt-1 text-sm text-red-600">{String(errors.vin.message)}</p>}
-      </div>
+        <h3 className="mb-1 text-sm font-bold text-slate-900">Identification</h3>
+        <p className="mb-5 text-xs text-slate-500">Vehicle identification and classification details</p>
 
-      {/* Make */}
-      <div>
-        <label htmlFor="make" className="block text-sm font-medium text-gray-700">
-          Make <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          id="make"
-          placeholder="e.g. Toyota, Ford, BMW"
-          className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none sm:text-sm ${
-            errors.make
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-          }`}
-          {...register('make')}
-          disabled={isPending}
-        />
-        {errors.make && <p className="mt-1 text-sm text-red-600">{String(errors.make.message)}</p>}
-      </div>
+        <div className="space-y-5">
+          {/* VIN */}
+          <div>
+            <label htmlFor="vin" className={labelCls}>
+              VIN <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="text"
+              id="vin"
+              placeholder="Enter vehicle identification number"
+              className={errors.vin ? inputError : inputNormal}
+              {...register('vin')}
+              disabled={isPending}
+            />
+            {errors.vin && <p className={errorCls}>{String(errors.vin.message)}</p>}
+          </div>
 
-      {/* Model */}
-      <div>
-        <label htmlFor="model" className="block text-sm font-medium text-gray-700">
-          Model <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          id="model"
-          placeholder="e.g. Camry, F-150, 3 Series"
-          className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none sm:text-sm ${
-            errors.model
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-          }`}
-          {...register('model')}
-          disabled={isPending}
-        />
-        {errors.model && <p className="mt-1 text-sm text-red-600">{String(errors.model.message)}</p>}
-      </div>
+          {/* Make & Model row */}
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div>
+              <label htmlFor="make" className={labelCls}>
+                Make <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                id="make"
+                placeholder="e.g. Toyota, Ford, BMW"
+                className={errors.make ? inputError : inputNormal}
+                {...register('make')}
+                disabled={isPending}
+              />
+              {errors.make && <p className={errorCls}>{String(errors.make.message)}</p>}
+            </div>
 
-      {/* Year */}
-      <div>
-        <label htmlFor="year" className="block text-sm font-medium text-gray-700">
-          Year <span className="text-red-500">*</span>
-        </label>
-        <input
-          type="number"
-          id="year"
-          placeholder="e.g. 2024"
-          className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none sm:text-sm ${
-            errors.year
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-          }`}
-          {...register('year')}
-          disabled={isPending}
-        />
-        {errors.year && <p className="mt-1 text-sm text-red-600">{String(errors.year.message)}</p>}
-      </div>
-
-      {/* Price */}
-      <div>
-        <label htmlFor="price" className="block text-sm font-medium text-gray-700">
-          Price <span className="text-red-500">*</span>
-        </label>
-        <div className="relative mt-1">
-          <span className="absolute left-3 top-2 text-gray-500">$</span>
-          <input
-            type="number"
-            id="price"
-            placeholder="0.00"
-            step="0.01"
-            className={`block w-full rounded-md border px-3 py-2 pl-7 shadow-sm focus:outline-none sm:text-sm ${
-              errors.price
-                ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-                : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-            }`}
-            {...register('price')}
-            disabled={isPending}
-          />
+            <div>
+              <label htmlFor="model" className={labelCls}>
+                Model <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="text"
+                id="model"
+                placeholder="e.g. Camry, F-150, 3 Series"
+                className={errors.model ? inputError : inputNormal}
+                {...register('model')}
+                disabled={isPending}
+              />
+              {errors.model && <p className={errorCls}>{String(errors.model.message)}</p>}
+            </div>
+          </div>
         </div>
-        {errors.price && <p className="mt-1 text-sm text-red-600">{String(errors.price.message)}</p>}
       </div>
 
-      {/* Mileage */}
+      <div className="border-t border-slate-100" />
+
+      {/* ── Section: Specifications ─────────────────────────────────────────── */}
       <div>
-        <label htmlFor="mileage" className="block text-sm font-medium text-gray-700">
-          Mileage (optional)
-        </label>
-        <input
-          type="number"
-          id="mileage"
-          placeholder="Enter mileage in miles"
-          className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none sm:text-sm ${
-            errors.mileage
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-          }`}
-          {...register('mileage')}
-          disabled={isPending}
-        />
-        {errors.mileage && <p className="mt-1 text-sm text-red-600">{String(errors.mileage.message)}</p>}
+        <h3 className="mb-1 text-sm font-bold text-slate-900">Specifications</h3>
+        <p className="mb-5 text-xs text-slate-500">Year, pricing, and physical attributes</p>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          {/* Year */}
+          <div>
+            <label htmlFor="year" className={labelCls}>
+              Year <span className="text-red-400">*</span>
+            </label>
+            <input
+              type="number"
+              id="year"
+              placeholder="e.g. 2024"
+              className={errors.year ? inputError : inputNormal}
+              {...register('year')}
+              disabled={isPending}
+            />
+            {errors.year && <p className={errorCls}>{String(errors.year.message)}</p>}
+          </div>
+
+          {/* Price */}
+          <div>
+            <label htmlFor="price" className={labelCls}>
+              Price <span className="text-red-400">*</span>
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm font-semibold text-slate-400">$</span>
+              <input
+                type="number"
+                id="price"
+                placeholder="0.00"
+                step="0.01"
+                className={`${errors.price ? inputError : inputNormal} pl-8`}
+                {...register('price')}
+                disabled={isPending}
+              />
+            </div>
+            {errors.price && <p className={errorCls}>{String(errors.price.message)}</p>}
+          </div>
+
+          {/* Mileage */}
+          <div>
+            <label htmlFor="mileage" className={labelCls}>
+              Mileage <span className="text-xs font-normal text-slate-400">(optional)</span>
+            </label>
+            <div className="relative">
+              <input
+                type="number"
+                id="mileage"
+                placeholder="Enter mileage in miles"
+                className={errors.mileage ? inputError : inputNormal}
+                {...register('mileage')}
+                disabled={isPending}
+              />
+              <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-medium text-slate-400">mi</span>
+            </div>
+            {errors.mileage && <p className={errorCls}>{String(errors.mileage.message)}</p>}
+          </div>
+
+          {/* Color */}
+          <div>
+            <label htmlFor="color" className={labelCls}>
+              Color <span className="text-xs font-normal text-slate-400">(optional)</span>
+            </label>
+            <input
+              type="text"
+              id="color"
+              placeholder="e.g. Red, Blue, Black"
+              className={errors.color ? inputError : inputNormal}
+              {...register('color')}
+              disabled={isPending}
+            />
+            {errors.color && <p className={errorCls}>{String(errors.color.message)}</p>}
+          </div>
+        </div>
       </div>
 
-      {/* Color */}
-      <div>
-        <label htmlFor="color" className="block text-sm font-medium text-gray-700">
-          Color (optional)
-        </label>
-        <input
-          type="text"
-          id="color"
-          placeholder="e.g. Red, Blue, Black"
-          className={`mt-1 block w-full rounded-md border px-3 py-2 shadow-sm focus:outline-none sm:text-sm ${
-            errors.color
-              ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-          }`}
-          {...register('color')}
-          disabled={isPending}
-        />
-        {errors.color && <p className="mt-1 text-sm text-red-600">{String(errors.color.message)}</p>}
-      </div>
+      <div className="border-t border-slate-100" />
 
       {/* Submit Button */}
       <button
         type="submit"
         disabled={isPending}
-        className="w-full rounded-md bg-blue-600 px-4 py-2 text-white font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+        className="w-full rounded-xl bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-3.5 text-sm font-bold text-white shadow-lg shadow-blue-500/25 transition-all hover:from-blue-700 hover:to-blue-800 hover:shadow-blue-500/30 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:from-slate-300 disabled:to-slate-400 disabled:shadow-none disabled:cursor-not-allowed"
       >
         {isPending ? (
-          <span className="inline-flex items-center gap-2">
-            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+          <span className="inline-flex items-center justify-center gap-2">
+            <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-              />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
             </svg>
-            {mode === 'create' ? 'Creating...' : 'Updating...'}
+            {mode === 'create' ? 'Creating Vehicle...' : 'Saving Changes...'}
           </span>
         ) : mode === 'create' ? (
-          'Create Vehicle'
+          <span className="inline-flex items-center justify-center gap-2">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            Create Vehicle
+          </span>
         ) : (
-          'Update Vehicle'
+          <span className="inline-flex items-center justify-center gap-2">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+            </svg>
+            Save Changes
+          </span>
         )}
       </button>
     </form>
