@@ -7,7 +7,7 @@
 
 import { useNavigate, Link } from 'react-router-dom';
 import { LoginForm } from '../features/auth/components/LoginForm';
-import { Car, MessageCircle } from 'lucide-react';
+import { MessageCircle, ShieldCheck, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 export function LoginPage() {
@@ -18,106 +18,101 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-neutral-50 overflow-hidden font-sans">
-      {/* Left Panel: Testimonial & Branding */}
-      <div className="hidden lg:flex w-[40%] bg-[#1E2D56] text-white flex-col justify-between p-12 relative overflow-hidden">
-        {/* Faint Background Car Watermark */}
-        <Car className="absolute -left-20 -bottom-20 w-[420px] h-[420px] text-white/5 pointer-events-none select-none rotate-[20deg]" />
-
-        {/* Top: Logo */}
-        <Link to="/" className="flex items-center gap-2 group self-start z-10">
-          <div className="p-1.5 bg-blue-600 text-white rounded-lg group-hover:bg-blue-700 transition-colors">
-            <Car className="w-5 h-5" />
+    <div className="flex min-h-screen bg-slate-50 dark:bg-[#0B0F19] overflow-hidden font-sans">
+      {/* Left Hero Panel: Brand & Animated Car Graphic */}
+      <div className="hidden lg:flex w-[45%] bg-[#0B0F19] text-white flex-col justify-between p-12 relative overflow-hidden border-r border-slate-800">
+        {/* Top Logo */}
+        <Link to="/" className="flex items-center gap-3 group self-start z-10">
+          <img src="/car-logo.png" alt="DealerFlow" className="h-9 w-9 object-contain drop-shadow-md" />
+          <div className="flex flex-col">
+            <span className="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
+              DealerFlow
+              <span className="rounded-md bg-teal-500/20 px-1.5 py-0.5 text-[10px] font-semibold text-teal-400 border border-teal-500/30">
+                PRO
+              </span>
+            </span>
           </div>
-          <span className="text-lg font-bold tracking-tight">DealerFlow</span>
         </Link>
 
-        {/* Middle: Testimonial Quote */}
-        <div className="my-auto relative z-10 max-w-sm">
-          <span className="text-8xl font-serif text-white/10 absolute -left-6 -top-14 select-none">“</span>
-          <p className="text-lg font-medium leading-relaxed italic text-neutral-100">
-            "DealerFlow is extremely user friendly. Detailed data for each stock item is all there at the touch of a button."
-          </p>
-          <div className="mt-8 flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-full bg-white/10 border border-white/20 flex items-center justify-center font-bold text-xs text-neutral-300">
-              AC
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-neutral-200">Áine Cantwell</p>
-              <p className="text-xs text-neutral-400 font-medium">Trade Cars Ireland</p>
-            </div>
+        {/* Center: Animated Car GIF & Enterprise Value Prop */}
+        <div className="my-auto relative z-10 max-w-md space-y-6">
+          <div className="relative flex justify-center">
+            <img
+              src="/car-gif.gif"
+              alt="DealerFlow Animation"
+              className="h-44 w-auto object-contain drop-shadow-2xl"
+            />
+          </div>
+
+          <div className="space-y-3 text-center">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/10 px-3.5 py-1 text-xs font-bold text-teal-400 border border-teal-500/20">
+              <ShieldCheck className="h-3.5 w-3.5" />
+              Trusted by 10,000+ Automotive Dealerships
+            </span>
+            <h2 className="text-2xl font-extrabold tracking-tight text-white leading-tight">
+              Enterprise Inventory Management & Real-time Analytics
+            </h2>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+              Complete stock control, acquisition workflows, and inventory tracking built for high-performance automotive teams.
+            </p>
           </div>
         </div>
 
-        {/* Bottom footer text */}
-        <p className="text-xs text-neutral-400 font-medium relative z-10">
-          © 2026 DealerFlow. All rights reserved.
+        {/* Footer */}
+        <p className="text-xs text-slate-500 font-medium relative z-10">
+          © 2026 DealerFlow Systems Inc. All rights reserved.
         </p>
       </div>
 
       {/* Right Panel: Login Form */}
-      <div className="flex-1 flex flex-col justify-between bg-white min-h-screen relative p-8 sm:p-12 lg:p-20">
-        {/* Mobile-only Logo */}
+      <div className="flex-1 flex flex-col justify-between bg-white dark:bg-slate-900 min-h-screen relative p-8 sm:p-12 lg:p-20">
+        {/* Mobile Logo */}
         <div className="lg:hidden flex justify-center mb-8">
-          <Link to="/" className="flex items-center gap-2 group">
-            <div className="p-1.5 bg-blue-600 text-white rounded-lg">
-              <Car className="w-5 h-5" />
-            </div>
-            <span className="text-lg font-bold text-neutral-900">DealerFlow</span>
+          <Link to="/" className="flex items-center gap-2.5">
+            <img src="/car-logo.png" alt="DealerFlow" className="h-8 w-8 object-contain" />
+            <span className="text-xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              DealerFlow
+            </span>
           </Link>
         </div>
 
-        {/* Empty placeholder for alignment on desktop */}
-        <div className="hidden lg:block"></div>
+        <div className="hidden lg:block" />
 
-        {/* Form Container */}
+        {/* Login Form Container */}
         <div className="mx-auto w-full max-w-[380px] space-y-8 my-auto">
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold tracking-tight text-neutral-900">
-              Welcome
+          <div className="space-y-2 text-center sm:text-left">
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+              Welcome back
             </h1>
+            <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+              Enter your credentials to access your dealership workspace.
+            </p>
           </div>
 
           <LoginForm onSuccess={handleLoginSuccess} />
 
-          <p className="text-sm text-neutral-600 text-center">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-semibold text-blue-600 hover:text-blue-500 hover:underline">
-              Sign-Up
+          <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+            Don't have a dealership account?{' '}
+            <Link to="/register" className="font-bold text-teal-600 dark:text-teal-400 hover:underline">
+              Create Account
             </Link>
           </p>
         </div>
 
-        {/* Bottom Badges */}
+        {/* Mobile Badges */}
         <div className="flex justify-center items-center gap-4 mt-8">
-          <a href="#appstore" className="inline-flex items-center gap-2 bg-black text-white px-3.5 py-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-900 transition-all hover:scale-[1.02] duration-200 shadow-sm w-[136px]">
-            <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
-              <path d="M18.71 19.5C17.88 20.74 17 21.95 15.66 21.97C14.32 22 13.89 21.18 12.37 21.18C10.84 21.18 10.37 21.95 9.1 22C7.79 22.05 6.8 20.68 5.96 19.47C4.25 17 2.94 12.45 4.7 9.39C5.57 7.87 7.13 6.91 8.82 6.88C10.1 6.86 11.32 7.75 12.11 7.75C12.89 7.75 14.37 6.68 15.92 6.84C16.57 6.87 18.39 7.1 19.56 8.82C19.47 8.88 17.39 10.1 17.41 12.63C17.44 15.65 20.06 16.66 20.1 16.67C20.08 16.74 19.67 18.11 18.71 19.5M15.97 4.17C16.63 3.37 17.07 2.28 16.95 1C15.85 1.04 14.51 1.73 13.73 2.64C13.07 3.41 12.49 4.52 12.64 5.78C13.86 5.87 15.12 5.17 15.97 4.17Z" />
-            </svg>
-            <div className="text-left leading-none">
-              <p className="text-[7.5px] uppercase text-neutral-400 font-medium tracking-wide">Download on the</p>
-              <p className="text-[11px] font-semibold mt-0.5">App Store</p>
-            </div>
-          </a>
-
-          <a href="#googleplay" className="inline-flex items-center gap-2 bg-black text-white px-3.5 py-1.5 rounded-lg border border-neutral-800 hover:bg-neutral-900 transition-all hover:scale-[1.02] duration-200 shadow-sm w-[136px]">
-            <svg className="w-4.5 h-4.5 fill-current" viewBox="0 0 24 24">
-              <path d="M3,5.27V18.73L16.55,12L3,5.27M17.87,11.33L19.41,12.1L17.87,12.87L16.55,12L17.87,11.33M3,3.15L17.87,10.6L16.55,12L3,3.15M3,20.85L16.55,12L17.87,13.4L3,20.85" />
-            </svg>
-            <div className="text-left leading-none">
-              <p className="text-[7.5px] uppercase text-neutral-400 font-medium tracking-wide">GET IT ON</p>
-              <p className="text-[11px] font-semibold mt-0.5">Google Play</p>
-            </div>
-          </a>
+          <div className="text-center text-[11px] font-medium text-slate-400">
+            DealerFlow Management Platform v2.4
+          </div>
         </div>
 
-        {/* Decorative Floating Help/Chat Button */}
-        <button 
-          onClick={() => toast.info("Support chat is coming soon!")}
-          className="fixed bottom-6 right-6 p-4 bg-[#00C49F] hover:bg-[#00B08F] text-white rounded-full shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-400 z-50 group"
+        {/* Support floating button */}
+        <button
+          onClick={() => toast.info('Support chat is coming soon!')}
+          className="fixed bottom-6 right-6 p-4 bg-teal-500 hover:bg-teal-600 text-white rounded-2xl shadow-popover transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none z-50 group"
           aria-label="Support chat"
         >
-          <MessageCircle className="w-6 h-6 transition-transform duration-200 group-hover:rotate-6" />
+          <MessageCircle className="w-5 h-5 transition-transform duration-200 group-hover:rotate-6" />
         </button>
       </div>
     </div>
