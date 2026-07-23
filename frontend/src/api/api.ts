@@ -24,7 +24,6 @@ export interface UserDTO {
  * Vehicle DTO
  */
 export interface VehicleDTO {
-  stockQuantity: number;
   id: string;
   vin: string;
   make: string;
@@ -34,6 +33,8 @@ export interface VehicleDTO {
   mileage?: number;
   color?: string;
   imageUrl?: string;
+  isAvailable?: boolean;
+  stockQuantity?: number;
   createdAt: string;
   updatedAt: string;
 }

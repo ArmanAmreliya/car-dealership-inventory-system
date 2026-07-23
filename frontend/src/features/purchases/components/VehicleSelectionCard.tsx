@@ -28,7 +28,17 @@ export function VehicleSelectionCard({
   onSelect,
 }: VehicleSelectionCardProps) {
   const imageUrl = resolveVehicleImage(vehicle);
-  const outOfStock = (vehicle.stockQuantity ?? 0) === 0;
+  
+  // A vehicle is out of stock when:
+  // - stockQuantity is explicitly 0 (field present in response)
+  // - OR isAvailable is explicitly false
+  // Do NOT treat undefined stockQuantity as 0 — older records may not
+  // include this field in the API response. Fall back to isAvailable.
+  const stockQty = vehicle.stockQuantity;
+  const outOfStock =
+    typeof stockQty === 'number'
+      ? stockQty === 0
+      : vehicle.isAvailable === false;
 
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',

@@ -4,7 +4,7 @@ import { X, Star, Check, AlertCircle, Plus, Upload } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { InventoryItemDTO } from '../types/inventory.types';
 import { vehicleService } from '../../../api/api';
-import { inventoryService } from '../../../api/api';
+import { inventoryService } from '../services/inventory.service';
 import { VehicleImageUpload } from '../../vehicles/components/VehicleImageUpload';
 import { toast } from 'sonner';
 
@@ -122,8 +122,8 @@ export function InventoryEditDrawer({ isOpen, onClose, item, onSuccess }: Invent
         });
 
         // Update inventory stock quantity in backend database
-        if (item.id) {
-          await inventoryService.updateStock(item.id, {
+        if (item.vehicleId) {
+          await inventoryService.updateStock(item.vehicleId, {
             stockQuantity: Number(quantity),
           });
         }

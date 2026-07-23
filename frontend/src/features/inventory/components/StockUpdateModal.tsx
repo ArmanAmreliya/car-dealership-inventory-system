@@ -62,7 +62,10 @@ function deltaLabel(delta: number): string {
 export function StockUpdateModal({ item, onClose }: StockUpdateModalProps) {
   const { mutate: updateStock, isPending, error, reset } = useUpdateStock();
 
-  const targetId = item.id || item.vehicleId;
+  // Always use vehicleId — that's what the backend PATCH /inventory/:id expects.
+  // item.id and item.vehicleId are often the same value, but vehicleId is
+  // the explicit contract. Never rely on item.id alone.
+  const targetId = item.vehicleId || item.id;
   const currentQty = item.quantity ?? 0;
 
   const [quantity, setQuantity] = useState<number>(currentQty);
