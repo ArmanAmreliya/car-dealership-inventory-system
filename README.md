@@ -295,17 +295,21 @@ lib/jwt.ts                    |     100 |      100 |     100 |     100
 
 ## Screenshots
 
-> Add screenshots of your running application here.
->
-> Suggested screenshots:
-> - Login page
-> - Dashboard
-> - Vehicle list (grid view)
-> - Vehicle list (table view, admin with delete button visible)
-> - Vehicle create form (admin)
-> - Inventory page with restock button
-> - Purchase flow
-> - Mobile view
+### Landing Page
+
+![Landing Page](https://raw.githubusercontent.com/ArmanAmreliya/car-dealership-inventory-system/ba53d06b1c110d72499cbd4b10ed2c48379c72a7/Langing-Page.png)
+
+### Vehicle Management
+
+![Vehicle Page](https://raw.githubusercontent.com/ArmanAmreliya/car-dealership-inventory-system/ba53d06b1c110d72499cbd4b10ed2c48379c72a7/Vehicle-Page.png)
+
+### Inventory Management
+
+![Inventory Page](https://raw.githubusercontent.com/ArmanAmreliya/car-dealership-inventory-system/ba53d06b1c110d72499cbd4b10ed2c48379c72a7/Inventory-Page.png)
+
+### Purchase Workflow
+
+![Purchases Page](https://raw.githubusercontent.com/ArmanAmreliya/car-dealership-inventory-system/ba53d06b1c110d72499cbd4b10ed2c48379c72a7/Purchases-Page.png)
 
 ---
 
