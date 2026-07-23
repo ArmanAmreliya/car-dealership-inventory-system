@@ -8,9 +8,16 @@ const options: swaggerJsdoc.Options = {
       version: '1.0.0',
       description:
         'Car Dealership Inventory Management System REST API. ' +
-        'All protected endpoints require a Bearer JWT token obtained from POST /api/v1/auth/login.',
+        'All protected endpoints require a Bearer JWT token obtained from POST /api/v1/auth/login. ' +
+        'Admin-only endpoints additionally require the authenticated user to have role="admin".',
     },
     servers: [{ url: '/api', description: 'Current host' }],
+    tags: [
+      { name: 'Auth',      description: 'Registration and login' },
+      { name: 'Vehicles',  description: 'Vehicle CRUD, search, purchase, and restock' },
+      { name: 'Inventory', description: 'Inventory status and stock management' },
+      { name: 'Purchases', description: 'Purchase history' },
+    ],
     components: {
       securitySchemes: {
         bearerAuth: {
@@ -20,58 +27,108 @@ const options: swaggerJsdoc.Options = {
         },
       },
       schemas: {
+        // ── Error ────────────────────────────────────────────────────────────
         ErrorResponse: {
           type: 'object',
           properties: {
-            status: { type: 'string', example: 'error' },
-            message: { type: 'string' },
+            status:  { type: 'string', example: 'error' },
+            message: { type: 'string', example: 'Forbidden' },
           },
         },
+
+        // ── Auth ─────────────────────────────────────────────────────────────
+        RegisterBody: {
+          type: 'object',
+          required: ['name', 'email', 'password'],
+          properties: {
+            name:     { type: 'string',  example: 'Jane Doe' },
+            email:    { type: 'string',  format: 'email', example: 'jane@example.com' },
+            password: { type: 'string',  minLength: 8, example: 'password123' },
+          },
+        },
+        LoginBody: {
+          type: 'object',
+          required: ['email', 'password'],
+          properties: {
+            email:    { type: 'string', format: 'email', example: 'jane@example.com' },
+            password: { type: 'string', example: 'password123' },
+          },
+        },
+        AuthResponse: {
+          type: 'object',
+          properties: {
+            token: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+            user: {
+              type: 'object',
+              properties: {
+                id:        { type: 'string', format: 'uuid' },
+                email:     { type: 'string', format: 'email' },
+                name:      { type: 'string', nullable: true },
+                role:      { type: 'string', enum: ['user', 'admin'], example: 'user' },
+                createdAt: { type: 'string', format: 'date-time' },
+                updatedAt: { type: 'string', format: 'date-time' },
+              },
+            },
+          },
+        },
+
+        // ── Vehicle ───────────────────────────────────────────────────────────
         Vehicle: {
           type: 'object',
           properties: {
-            id: { type: 'string' },
-            make: { type: 'string' },
-            model: { type: 'string' },
-            year: { type: 'integer' },
-            price: { type: 'number' },
-            vin: { type: 'string' },
-            mileage: { type: 'integer' },
-            color: { type: 'string' },
-            isAvailable: { type: 'boolean' },
-            createdAt: { type: 'string', format: 'date-time' },
+            id:            { type: 'string', format: 'uuid' },
+            make:          { type: 'string', example: 'Toyota' },
+            model:         { type: 'string', example: 'Camry' },
+            year:          { type: 'integer', example: 2024 },
+            price:         { type: 'number',  example: 28000 },
+            vin:           { type: 'string',  example: '1HGBH41JXMN109186' },
+            mileage:       { type: 'integer', example: 15000, nullable: true },
+            color:         { type: 'string',  example: 'White', nullable: true },
+            category:      { type: 'string',  example: 'Sedan', nullable: true },
+            imageUrl:      { type: 'string',  format: 'uri', nullable: true },
+            isAvailable:   { type: 'boolean', example: true },
+            stockQuantity: { type: 'integer', example: 3 },
+            createdAt:     { type: 'string',  format: 'date-time' },
+            updatedAt:     { type: 'string',  format: 'date-time' },
           },
         },
         CreateVehicleBody: {
           type: 'object',
           required: ['make', 'model', 'year', 'price', 'vin'],
           properties: {
-            make: { type: 'string', example: 'Toyota' },
-            model: { type: 'string', example: 'Camry' },
-            year: { type: 'integer', example: 2024 },
-            price: { type: 'number', example: 28000 },
-            vin: { type: 'string', example: '1HGBH41JXMN109186' },
-            mileage: { type: 'integer', example: 0 },
-            color: { type: 'string', example: 'White' },
+            make:     { type: 'string',  example: 'Toyota' },
+            model:    { type: 'string',  example: 'Camry' },
+            year:     { type: 'integer', example: 2024 },
+            price:    { type: 'number',  example: 28000 },
+            vin:      { type: 'string',  example: '1HGBH41JXMN109186' },
+            mileage:  { type: 'integer', example: 0 },
+            color:    { type: 'string',  example: 'White' },
+            category: { type: 'string',  example: 'Sedan' },
+            imageUrl: { type: 'string',  format: 'uri', example: 'https://example.com/car.jpg' },
           },
         },
         UpdateVehicleBody: {
           type: 'object',
+          description: 'At least one field must be provided.',
           properties: {
-            make: { type: 'string' },
-            model: { type: 'string' },
-            year: { type: 'integer' },
-            price: { type: 'number' },
-            mileage: { type: 'integer' },
-            color: { type: 'string' },
+            make:        { type: 'string' },
+            model:       { type: 'string' },
+            year:        { type: 'integer' },
+            price:       { type: 'number' },
+            mileage:     { type: 'integer' },
+            color:       { type: 'string' },
+            category:    { type: 'string' },
+            imageUrl:    { type: 'string', format: 'uri' },
             isAvailable: { type: 'boolean' },
           },
         },
+
+        // ── Inventory ─────────────────────────────────────────────────────────
         InventoryStatus: {
           type: 'object',
           properties: {
-            totalVehicles: { type: 'integer' },
-            availableVehicles: { type: 'integer' },
+            totalVehicles:       { type: 'integer' },
+            availableVehicles:   { type: 'integer' },
             unavailableVehicles: { type: 'integer' },
             items: {
               type: 'array',
@@ -82,295 +139,58 @@ const options: swaggerJsdoc.Options = {
         InventoryItem: {
           type: 'object',
           properties: {
-            vehicleId: { type: 'string' },
-            make: { type: 'string' },
-            model: { type: 'string' },
-            year: { type: 'integer' },
-            vin: { type: 'string' },
-            price: { type: 'number' },
+            id:            { type: 'string', format: 'uuid' },
+            vehicleId:     { type: 'string', format: 'uuid' },
+            make:          { type: 'string' },
+            model:         { type: 'string' },
+            year:          { type: 'integer' },
+            vin:           { type: 'string' },
+            price:         { type: 'number' },
             stockQuantity: { type: 'integer' },
-            isAvailable: { type: 'boolean' },
+            isAvailable:   { type: 'boolean' },
+            createdAt:     { type: 'string', format: 'date-time' },
+            updatedAt:     { type: 'string', format: 'date-time' },
           },
         },
         StockUpdateBody: {
           type: 'object',
           required: ['stockQuantity'],
           properties: {
-            stockQuantity: { type: 'integer', minimum: 0, example: 1 },
+            stockQuantity: { type: 'integer', minimum: 0, example: 5 },
           },
         },
         RestockBody: {
           type: 'object',
           required: ['quantity'],
+          description: 'Amount to ADD to current stock (not an absolute value).',
           properties: {
             quantity: { type: 'integer', minimum: 0, example: 5 },
           },
         },
-        PurchaseBody: {
-          type: 'object',
-          required: ['vehicleId'],
-          properties: {
-            vehicleId: { type: 'string', example: 'vehicle-1' },
-          },
-        },
+
+        // ── Purchase ──────────────────────────────────────────────────────────
         PurchaseRecord: {
           type: 'object',
           properties: {
-            purchaseId: { type: 'string', format: 'uuid' },
-            vehicleId: { type: 'string' },
-            make: { type: 'string' },
-            model: { type: 'string' },
-            year: { type: 'integer' },
-            vin: { type: 'string' },
-            price: { type: 'number' },
+            purchaseId:  { type: 'string', format: 'uuid' },
+            vehicleId:   { type: 'string', format: 'uuid' },
+            make:        { type: 'string' },
+            model:       { type: 'string' },
+            year:        { type: 'integer' },
+            vin:         { type: 'string' },
+            price:       { type: 'number' },
             purchasedAt: { type: 'string', format: 'date-time' },
-          },
-        },
-        RegisterBody: {
-          type: 'object',
-          required: ['name', 'email', 'password'],
-          properties: {
-            name: { type: 'string', example: 'Jane Doe' },
-            email: { type: 'string', format: 'email', example: 'jane@example.com' },
-            password: { type: 'string', minLength: 8, example: 'password123' },
-          },
-        },
-        LoginBody: {
-          type: 'object',
-          required: ['email', 'password'],
-          properties: {
-            email: { type: 'string', format: 'email' },
-            password: { type: 'string' },
-          },
-        },
-        AuthResponse: {
-          type: 'object',
-          properties: {
-            token: { type: 'string' },
-            user: {
-              type: 'object',
-              properties: {
-                id: { type: 'string' },
-                email: { type: 'string' },
-                name: { type: 'string', nullable: true },
-                role: { type: 'string' },
-                createdAt: { type: 'string', format: 'date-time' },
-                updatedAt: { type: 'string', format: 'date-time' },
-              },
-            },
           },
         },
       },
     },
     security: [{ bearerAuth: [] }],
     paths: {
-      '/api/auth/register': {
-        post: {
-          tags: ['Auth'],
-          summary: 'Register a new user (compatibility route)',
-          security: [],
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/RegisterBody' } },
-            },
-          },
-          responses: {
-            201: {
-              description: 'User registered',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
-              },
-            },
-            400: { description: 'Validation error' },
-            409: { description: 'Email already registered' },
-          },
-        },
-      },
-      '/api/auth/login': {
-        post: {
-          tags: ['Auth'],
-          summary: 'Login and obtain a JWT (compatibility route)',
-          security: [],
-          requestBody: {
-            required: true,
-            content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginBody' } } },
-          },
-          responses: {
-            200: {
-              description: 'Successful login',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
-              },
-            },
-            400: { description: 'Missing credentials' },
-            401: { description: 'Invalid credentials' },
-          },
-        },
-      },
-      '/api/vehicles': {
-        post: {
-          tags: ['Vehicles'],
-          summary: 'Create a vehicle (compatibility route)',
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateVehicleBody' } },
-            },
-          },
-          responses: {
-            201: {
-              description: 'Vehicle created',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
-            },
-            400: { description: 'Validation error' },
-            401: { description: 'Unauthorized' },
-          },
-        },
-        get: {
-          tags: ['Vehicles'],
-          summary: 'List vehicles (compatibility route)',
-          parameters: [
-            { in: 'query', name: 'make', schema: { type: 'string' } },
-            { in: 'query', name: 'model', schema: { type: 'string' } },
-            { in: 'query', name: 'year', schema: { type: 'integer' } },
-            { in: 'query', name: 'availability', schema: { type: 'boolean' } },
-            { in: 'query', name: 'minPrice', schema: { type: 'number' } },
-            { in: 'query', name: 'maxPrice', schema: { type: 'number' } },
-          ],
-          responses: {
-            200: {
-              description: 'Array of vehicles',
-              content: {
-                'application/json': {
-                  schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } },
-                },
-              },
-            },
-            401: { description: 'Unauthorized' },
-          },
-        },
-      },
-      '/api/vehicles/search': {
-        get: {
-          tags: ['Vehicles'],
-          summary: 'Search vehicles by filters (compatibility route)',
-          parameters: [
-            { in: 'query', name: 'make', schema: { type: 'string' } },
-            { in: 'query', name: 'model', schema: { type: 'string' } },
-            { in: 'query', name: 'year', schema: { type: 'integer' } },
-            { in: 'query', name: 'availability', schema: { type: 'boolean' } },
-            { in: 'query', name: 'minPrice', schema: { type: 'number' } },
-            { in: 'query', name: 'maxPrice', schema: { type: 'number' } },
-          ],
-          responses: {
-            200: {
-              description: 'Array of vehicles',
-              content: {
-                'application/json': {
-                  schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } },
-                },
-              },
-            },
-            401: { description: 'Unauthorized' },
-          },
-        },
-      },
-      '/api/vehicles/{id}': {
-        get: {
-          tags: ['Vehicles'],
-          summary: 'Get a vehicle by ID (compatibility route)',
-          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
-          responses: {
-            200: {
-              description: 'Vehicle found',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
-            },
-            401: { description: 'Unauthorized' },
-            404: { description: 'Not found' },
-          },
-        },
-        put: {
-          tags: ['Vehicles'],
-          summary: 'Update a vehicle (compatibility route)',
-          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/UpdateVehicleBody' } },
-            },
-          },
-          responses: {
-            200: {
-              description: 'Vehicle updated',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
-            },
-            400: { description: 'Validation error' },
-            401: { description: 'Unauthorized' },
-            404: { description: 'Not found' },
-          },
-        },
-        delete: {
-          tags: ['Vehicles'],
-          summary: 'Delete a vehicle (admin only compatibility route)',
-          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
-          responses: {
-            204: { description: 'Deleted' },
-            401: { description: 'Unauthorized' },
-            403: { description: 'Forbidden' },
-            404: { description: 'Not found' },
-          },
-        },
-      },
-      '/api/vehicles/{id}/restock': {
-        post: {
-          tags: ['Vehicles'],
-          summary: 'Restock a vehicle (admin only compatibility route)',
-          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/RestockBody' } },
-            },
-          },
-          responses: {
-            200: {
-              description: 'Stock updated',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/InventoryItem' } },
-              },
-            },
-            400: { description: 'Validation error' },
-            401: { description: 'Unauthorized' },
-            403: { description: 'Forbidden' },
-            404: { description: 'Vehicle not found' },
-          },
-        },
-      },
-      '/api/purchases': {
-        post: {
-          tags: ['Purchases'],
-          summary: 'Purchase a vehicle (compatibility route)',
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/PurchaseBody' } },
-            },
-          },
-          responses: {
-            201: {
-              description: 'Purchase completed',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/PurchaseRecord' } },
-              },
-            },
-            400: { description: 'Validation error' },
-            401: { description: 'Unauthorized' },
-            404: { description: 'Vehicle not found' },
-            409: { description: 'Vehicle not available for purchase' },
-          },
-        },
-      },
+
+      // ════════════════════════════════════════════════════════════════════════
+      // AUTH
+      // ════════════════════════════════════════════════════════════════════════
+
       '/v1/auth/register': {
         post: {
           tags: ['Auth'],
@@ -378,29 +198,12 @@ const options: swaggerJsdoc.Options = {
           security: [],
           requestBody: {
             required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/RegisterBody' } },
-            },
+            content: { 'application/json': { schema: { $ref: '#/components/schemas/RegisterBody' } } },
           },
           responses: {
-            201: {
-              description: 'User registered',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
-              },
-            },
-            400: {
-              description: 'Validation error',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } },
-              },
-            },
-            409: {
-              description: 'Email already registered',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } },
-              },
-            },
+            201: { description: 'User registered',        content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } } } },
+            400: { description: 'Validation error',       content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+            409: { description: 'Email already in use',   content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
           },
         },
       },
@@ -414,56 +217,86 @@ const options: swaggerJsdoc.Options = {
             content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginBody' } } },
           },
           responses: {
-            200: {
-              description: 'Successful login',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } },
-              },
-            },
+            200: { description: 'JWT token + user object', content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } } } },
             400: { description: 'Missing credentials' },
             401: { description: 'Invalid credentials' },
           },
         },
       },
-      '/v1/vehicles': {
+
+      // Compatibility aliases (no /v1 prefix)
+      '/auth/register': {
         post: {
-          tags: ['Vehicles'],
-          summary: 'Create a vehicle',
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/CreateVehicleBody' } },
-            },
-          },
+          tags: ['Auth'],
+          summary: 'Register (alias — same as /v1/auth/register)',
+          security: [],
+          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/RegisterBody' } } } },
           responses: {
-            201: {
-              description: 'Vehicle created',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
-            },
+            201: { description: 'User registered',  content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } } } },
             400: { description: 'Validation error' },
-            401: { description: 'Unauthorized' },
+            409: { description: 'Email already in use' },
           },
         },
+      },
+      '/auth/login': {
+        post: {
+          tags: ['Auth'],
+          summary: 'Login (alias — same as /v1/auth/login)',
+          security: [],
+          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/LoginBody' } } } },
+          responses: {
+            200: { description: 'JWT token + user object', content: { 'application/json': { schema: { $ref: '#/components/schemas/AuthResponse' } } } },
+            401: { description: 'Invalid credentials' },
+          },
+        },
+      },
+
+      // ════════════════════════════════════════════════════════════════════════
+      // VEHICLES
+      // ════════════════════════════════════════════════════════════════════════
+
+      '/v1/vehicles': {
         get: {
           tags: ['Vehicles'],
           summary: 'List all vehicles',
           parameters: [
-            { in: 'query', name: 'make', schema: { type: 'string' } },
-            { in: 'query', name: 'model', schema: { type: 'string' } },
-            { in: 'query', name: 'year', schema: { type: 'integer' } },
-            { in: 'query', name: 'availability', schema: { type: 'boolean' } },
-            { in: 'query', name: 'minPrice', schema: { type: 'number' } },
-            { in: 'query', name: 'maxPrice', schema: { type: 'number' } },
+            { in: 'query', name: 'make',         schema: { type: 'string' },  description: 'Filter by make (case-insensitive)' },
+            { in: 'query', name: 'model',        schema: { type: 'string' },  description: 'Filter by model' },
+            { in: 'query', name: 'year',         schema: { type: 'integer' }, description: 'Filter by exact year' },
+            { in: 'query', name: 'availability', schema: { type: 'boolean' }, description: 'true = available only' },
+            { in: 'query', name: 'minPrice',     schema: { type: 'number' },  description: 'Minimum price (inclusive)' },
+            { in: 'query', name: 'maxPrice',     schema: { type: 'number' },  description: 'Maximum price (inclusive)' },
           ],
           responses: {
-            200: {
-              description: 'Array of vehicles',
-              content: {
-                'application/json': {
-                  schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } },
-                },
-              },
-            },
+            200: { description: 'Array of vehicles', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } } } } },
+            401: { description: 'Unauthorized' },
+          },
+        },
+        post: {
+          tags: ['Vehicles'],
+          summary: 'Create a new vehicle',
+          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/CreateVehicleBody' } } } },
+          responses: {
+            201: { description: 'Vehicle created', content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } } },
+            400: { description: 'Validation error' },
+            401: { description: 'Unauthorized' },
+          },
+        },
+      },
+      '/v1/vehicles/search': {
+        get: {
+          tags: ['Vehicles'],
+          summary: 'Search vehicles by make, model, year, category, or price range',
+          parameters: [
+            { in: 'query', name: 'make',         schema: { type: 'string' } },
+            { in: 'query', name: 'model',        schema: { type: 'string' } },
+            { in: 'query', name: 'year',         schema: { type: 'integer' } },
+            { in: 'query', name: 'availability', schema: { type: 'boolean' } },
+            { in: 'query', name: 'minPrice',     schema: { type: 'number' } },
+            { in: 'query', name: 'maxPrice',     schema: { type: 'number' } },
+          ],
+          responses: {
+            200: { description: 'Matching vehicles', content: { 'application/json': { schema: { type: 'array', items: { $ref: '#/components/schemas/Vehicle' } } } } },
             401: { description: 'Unauthorized' },
           },
         },
@@ -471,13 +304,10 @@ const options: swaggerJsdoc.Options = {
       '/v1/vehicles/{id}': {
         get: {
           tags: ['Vehicles'],
-          summary: 'Get a vehicle by ID',
-          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          summary: 'Get a single vehicle by ID',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } }],
           responses: {
-            200: {
-              description: 'Vehicle found',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
-            },
+            200: { description: 'Vehicle found', content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } } },
             401: { description: 'Unauthorized' },
             404: { description: 'Not found' },
           },
@@ -485,18 +315,10 @@ const options: swaggerJsdoc.Options = {
         put: {
           tags: ['Vehicles'],
           summary: 'Update a vehicle',
-          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/UpdateVehicleBody' } },
-            },
-          },
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/UpdateVehicleBody' } } } },
           responses: {
-            200: {
-              description: 'Vehicle updated',
-              content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } },
-            },
+            200: { description: 'Vehicle updated', content: { 'application/json': { schema: { $ref: '#/components/schemas/Vehicle' } } } },
             400: { description: 'Validation error' },
             401: { description: 'Unauthorized' },
             404: { description: 'Not found' },
@@ -504,26 +326,55 @@ const options: swaggerJsdoc.Options = {
         },
         delete: {
           tags: ['Vehicles'],
-          summary: 'Delete a vehicle',
-          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
+          summary: 'Delete a vehicle — Admin only',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } }],
           responses: {
-            204: { description: 'Deleted' },
+            204: { description: 'Deleted successfully' },
             401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden — admin role required', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
             404: { description: 'Not found' },
           },
         },
       },
+      '/v1/vehicles/{id}/purchase': {
+        post: {
+          tags: ['Vehicles'],
+          summary: 'Purchase a vehicle — decreases stock by 1',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } }],
+          responses: {
+            201: { description: 'Purchase completed', content: { 'application/json': { schema: { $ref: '#/components/schemas/PurchaseRecord' } } } },
+            401: { description: 'Unauthorized' },
+            404: { description: 'Vehicle not found' },
+            409: { description: 'Vehicle not available for purchase (out of stock)', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+          },
+        },
+      },
+      '/v1/vehicles/{id}/restock': {
+        post: {
+          tags: ['Vehicles'],
+          summary: 'Restock a vehicle — adds quantity to current stock (Admin only)',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/RestockBody' } } } },
+          responses: {
+            200: { description: 'Stock updated', content: { 'application/json': { schema: { $ref: '#/components/schemas/InventoryItem' } } } },
+            400: { description: 'Validation error' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden — admin role required', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+            404: { description: 'Vehicle not found' },
+          },
+        },
+      },
+
+      // ════════════════════════════════════════════════════════════════════════
+      // INVENTORY
+      // ════════════════════════════════════════════════════════════════════════
+
       '/v1/inventory': {
         get: {
           tags: ['Inventory'],
-          summary: 'Get current inventory status',
+          summary: 'Get full inventory status with aggregate totals',
           responses: {
-            200: {
-              description: 'Inventory status',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/InventoryStatus' } },
-              },
-            },
+            200: { description: 'Inventory status', content: { 'application/json': { schema: { $ref: '#/components/schemas/InventoryStatus' } } } },
             401: { description: 'Unauthorized' },
           },
         },
@@ -531,48 +382,62 @@ const options: swaggerJsdoc.Options = {
       '/v1/inventory/{id}': {
         patch: {
           tags: ['Inventory'],
-          summary: 'Update stock quantity for a vehicle',
-          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string' } }],
-          requestBody: {
-            required: true,
-            content: {
-              'application/json': { schema: { $ref: '#/components/schemas/StockUpdateBody' } },
-            },
-          },
+          summary: 'Set absolute stock quantity for a vehicle — Admin only',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/StockUpdateBody' } } } },
           responses: {
-            200: {
-              description: 'Stock updated',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/InventoryItem' } },
-              },
-            },
+            200: { description: 'Stock updated', content: { 'application/json': { schema: { $ref: '#/components/schemas/InventoryItem' } } } },
             400: { description: 'Validation error' },
             401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden — admin role required' },
             404: { description: 'Vehicle not found' },
           },
         },
       },
+      '/v1/inventory/{id}/restock': {
+        post: {
+          tags: ['Inventory'],
+          summary: 'Restock a vehicle via inventory route — adds quantity to current stock (Admin only)',
+          parameters: [{ in: 'path', name: 'id', required: true, schema: { type: 'string', format: 'uuid' } }],
+          requestBody: { required: true, content: { 'application/json': { schema: { $ref: '#/components/schemas/RestockBody' } } } },
+          responses: {
+            200: { description: 'Stock updated', content: { 'application/json': { schema: { $ref: '#/components/schemas/InventoryItem' } } } },
+            400: { description: 'Validation error' },
+            401: { description: 'Unauthorized' },
+            403: { description: 'Forbidden — admin role required', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
+            404: { description: 'Vehicle not found' },
+          },
+        },
+      },
+
+      // ════════════════════════════════════════════════════════════════════════
+      // PURCHASES
+      // ════════════════════════════════════════════════════════════════════════
+
       '/v1/purchases': {
         post: {
           tags: ['Purchases'],
-          summary: 'Purchase a vehicle',
+          summary: 'Purchase a vehicle via purchase route (body-based vehicleId)',
           requestBody: {
             required: true,
             content: {
-              'application/json': { schema: { $ref: '#/components/schemas/PurchaseBody' } },
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  required: ['vehicleId'],
+                  properties: {
+                    vehicleId: { type: 'string', format: 'uuid', example: 'a3f1c2d4-5e6b-7890-abcd-ef1234567890' },
+                  },
+                },
+              },
             },
           },
           responses: {
-            201: {
-              description: 'Purchase completed',
-              content: {
-                'application/json': { schema: { $ref: '#/components/schemas/PurchaseRecord' } },
-              },
-            },
+            201: { description: 'Purchase completed', content: { 'application/json': { schema: { $ref: '#/components/schemas/PurchaseRecord' } } } },
             400: { description: 'Validation error' },
             401: { description: 'Unauthorized' },
             404: { description: 'Vehicle not found' },
-            409: { description: 'Vehicle not available for purchase' },
+            409: { description: 'Vehicle not available', content: { 'application/json': { schema: { $ref: '#/components/schemas/ErrorResponse' } } } },
           },
         },
       },
