@@ -39,6 +39,7 @@ model Vehicle {
   updatedAt     DateTime   @updatedAt
   inventory     Inventory?
   purchases     Purchase[]
+  category  String   @default("Sedan")
 
   @@map("vehicles")
 }

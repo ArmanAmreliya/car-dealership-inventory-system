@@ -24,6 +24,7 @@ export interface UserDTO {
  * Vehicle DTO
  */
 export interface VehicleDTO {
+  stockQuantity: number;
   id: string;
   vin: string;
   make: string;

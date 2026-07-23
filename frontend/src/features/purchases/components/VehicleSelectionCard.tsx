@@ -28,6 +28,7 @@ export function VehicleSelectionCard({
   onSelect,
 }: VehicleSelectionCardProps) {
   const imageUrl = resolveVehicleImage(vehicle);
+  const outOfStock = (vehicle.stockQuantity ?? 0) === 0;
 
   const formattedPrice = new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -41,13 +42,16 @@ export function VehicleSelectionCard({
 
   return (
     <motion.div
-      whileHover={{ y: -4, transition: { duration: 0.15 } }}
-      whileTap={{ scale: 0.98 }}
-      onClick={() => onSelect(vehicle)}
-      className={`group relative flex flex-col overflow-hidden rounded-2xl border transition-all cursor-pointer bg-white ${isSelected
-        ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-lg shadow-blue-500/5'
-        : 'border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-md'
-        }`}
+      whileHover={outOfStock ? {} : { y: -4, transition: { duration: 0.15 } }}
+      whileTap={outOfStock ? {} : { scale: 0.98 }}
+      onClick={() => !outOfStock && onSelect(vehicle)}
+      className={`group relative flex flex-col overflow-hidden rounded-2xl border transition-all bg-white ${
+        outOfStock
+          ? 'cursor-not-allowed opacity-60 border-slate-200'
+          : isSelected
+          ? 'cursor-pointer border-blue-600 ring-2 ring-blue-600/20 shadow-lg shadow-blue-500/5'
+          : 'cursor-pointer border-slate-200/80 hover:border-slate-300 shadow-sm hover:shadow-md'
+      }`}
     >
       {/* Selection Check Indicator */}
       {isSelected && (
@@ -106,13 +110,19 @@ export function VehicleSelectionCard({
         <div className="mt-5">
           <button
             type="button"
-            className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold transition-all ${isSelected
-              ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
-              : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/80'
-              }`}
+            disabled={outOfStock}
+            className={`w-full inline-flex items-center justify-center gap-2 rounded-xl py-2.5 px-4 text-xs font-bold transition-all disabled:cursor-not-allowed disabled:opacity-50 ${
+              outOfStock
+                ? 'bg-slate-100 text-slate-400 border border-slate-200'
+                : isSelected
+                ? 'bg-blue-600 text-white shadow-sm hover:bg-blue-700'
+                : 'bg-slate-50 text-slate-700 hover:bg-blue-50 hover:text-blue-600 border border-slate-200/80'
+            }`}
           >
-            {isSelected ? 'Vehicle Selected' : 'Select Vehicle'}
-            <ArrowRight className={`h-3.5 w-3.5 transition-transform ${isSelected ? 'translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
+            {outOfStock ? 'Out of Stock' : isSelected ? 'Vehicle Selected' : 'Select Vehicle'}
+            {!outOfStock && (
+              <ArrowRight className={`h-3.5 w-3.5 transition-transform ${isSelected ? 'translate-x-0.5' : 'group-hover:translate-x-0.5'}`} />
+            )}
           </button>
         </div>
       </div>

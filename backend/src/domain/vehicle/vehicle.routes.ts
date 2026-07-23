@@ -12,6 +12,8 @@ import { VehicleController } from './vehicle.controller';
 import { UploadController } from './upload.controller';
 import { InventoryService } from '../inventory/inventory.service';
 import { InventoryController } from '../inventory/inventory.controller';
+import { PurchaseService } from '../purchase/purchase.service';
+import { PurchaseController } from '../purchase/purchase.controller';
 
 export const createVehicleRouter = (
   vehicleRepository: IVehicleRepository = new VehicleRepository(),
@@ -21,6 +23,7 @@ export const createVehicleRouter = (
   const vehicleController = new VehicleController(vehicleService);
   const uploadController = new UploadController();
   const inventoryController = new InventoryController(new InventoryService(vehicleRepository));
+  const purchaseController = new PurchaseController(new PurchaseService(vehicleRepository));
 
   router.get('/upload-signature', authenticate, (req: Request, res: Response, next: NextFunction) =>
     uploadController.getSignature(req as AuthenticatedRequest, res, next),
@@ -46,6 +49,17 @@ export const createVehicleRouter = (
     vehicleController.list(req as AuthenticatedRequest, res, next),
   );
 
+  // POST /vehicles/:id/purchase — inject vehicleId from URL param into body
+  router.post(
+    '/:id/purchase',
+    authenticate,
+    (req: Request, res: Response, next: NextFunction) => {
+      req.body = { ...req.body, vehicleId: req.params.id };
+      return purchaseController.purchase(req, res, next);
+    },
+  );
+
+  // POST /vehicles/:id/restock — admin only, map quantity → stockQuantity
   router.post(
     '/:id/restock',
     authenticate,
