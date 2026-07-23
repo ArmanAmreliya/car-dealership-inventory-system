@@ -22,6 +22,7 @@ import {
   InventoryItemDTO,
   InventoryResponse,
   UpdateStockArgs,
+  RestockArgs
 } from '../types/inventory.types';
 
 // ── Query key factory ──────────────────────────────────────────────────────
@@ -145,6 +146,17 @@ export function useUpdateStock(): UseMutationResult<
       // ── 3. Hard-refetch both caches from the server ──────────────────────
       queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.all, refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: vehicleRootKey, refetchType: 'all' });
+    },
+  });
+}
+
+export function useRestock(): UseMutationResult<InventoryItemDTO, AxiosError, RestockArgs> {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, data }: RestockArgs) => inventoryService.restock(id, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.all });
+      queryClient.invalidateQueries({ queryKey: vehicleRootKey });
     },
   });
 }

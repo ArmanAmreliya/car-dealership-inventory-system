@@ -1,9 +1,10 @@
 /**
  * Inventory Service
  *
- * Wraps the two inventory endpoints exposed by the backend:
- *   GET  /api/v1/inventory          – list all items with aggregate totals
- *   PATCH /api/v1/inventory/:id     – update stock quantity for one item
+ * Wraps the inventory endpoints exposed by the backend:
+ *   GET   /api/v1/inventory              – list all items with aggregate totals
+ *   PATCH /api/v1/inventory/:id          – set stock quantity for one item
+ *   POST  /api/v1/inventory/:id/restock  – add quantity to current stock (admin only)
  *
  * Uses the shared Axios client so JWT injection and 401 handling
  * are applied automatically via the global request/response interceptors.
@@ -15,7 +16,10 @@ import {
   InventoryItemDTO,
   InventoryResponse,
   UpdateStockInput,
+  RestockInput,
 } from '../types/inventory.types';
+
+// ── Helpers ────────────────────────────────────────────────────────────────
 
 /**
  * Pick the first non-empty string from a list of candidates.
@@ -51,23 +55,19 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
   const vehicleId = rawItem.vehicleId || rawItem.id || id;
 
   // ── Vehicle scalar fields (nested object takes priority over flat fields) ─
-  const make  = firstNonEmpty(rawItem.vehicle?.make,  rawItem.make)  ?? '';
-  const model = firstNonEmpty(rawItem.vehicle?.model, rawItem.model) ?? '';
-  const vin   = firstNonEmpty(rawItem.vehicle?.vin,   rawItem.vin)   ?? '';
-  const color = firstNonEmpty(rawItem.vehicle?.color, rawItem.color);
-  const year  = rawItem.vehicle?.year  ?? rawItem.year  ?? 0;
-  const price = rawItem.vehicle?.price ?? rawItem.price ?? 0;
+  const make    = firstNonEmpty(rawItem.vehicle?.make,  rawItem.make)  ?? '';
+  const model   = firstNonEmpty(rawItem.vehicle?.model, rawItem.model) ?? '';
+  const vin     = firstNonEmpty(rawItem.vehicle?.vin,   rawItem.vin)   ?? '';
+  const color   = firstNonEmpty(rawItem.vehicle?.color, rawItem.color);
+  const year    = rawItem.vehicle?.year    ?? rawItem.year    ?? 0;
+  const price   = rawItem.vehicle?.price   ?? rawItem.price   ?? 0;
   const mileage = rawItem.vehicle?.mileage ?? rawItem.mileage;
 
-  // ── imageUrl: preserve the Cloudinary URL from whichever shape is returned ─
-  // Priority: nested vehicle.imageUrl → flat imageUrl at root level → undefined
-  // We must NOT fall back to '' here; an undefined imageUrl lets
-  // resolveVehicleImage use the make-based Unsplash image instead of
-  // rendering a broken <img> with an empty src.
-  const imageUrl = firstNonEmpty(
-    rawItem.vehicle?.imageUrl,
-    rawItem.imageUrl,
-  );
+  // ── imageUrl ─────────────────────────────────────────────────────────────
+  // Priority: nested vehicle.imageUrl → flat imageUrl → undefined
+  // Do NOT fall back to '' — undefined lets resolveVehicleImage use the
+  // make-based Unsplash image instead of a broken empty <img> src.
+  const imageUrl = firstNonEmpty(rawItem.vehicle?.imageUrl, rawItem.imageUrl);
 
   // ── Timestamps ───────────────────────────────────────────────────────────
   const createdAt =
@@ -77,9 +77,7 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
     firstNonEmpty(rawItem.vehicle?.updatedAt, rawItem.updatedAt) ??
     new Date().toISOString();
 
-  // ── Reconstruct vehicle object ───────────────────────────────────────────
-  // Spread rawItem.vehicle first so any extra fields the backend may add
-  // in the future (trim, color, vehicleImages, etc.) are preserved.
+  // ── Reconstruct vehicle sub-object ───────────────────────────────────────
   const vehicle: VehicleDTO = {
     ...(rawItem.vehicle ?? {}),
     id: vehicleId,
@@ -88,7 +86,7 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
     model,
     year,
     price,
-    ...(mileage !== undefined && { mileage }),
+    ...(mileage  !== undefined && { mileage }),
     ...(color    !== undefined && { color }),
     ...(imageUrl !== undefined && { imageUrl }),
     createdAt,
@@ -96,8 +94,7 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
   };
 
   // ── Stock / availability ─────────────────────────────────────────────────
-  // Backend flat response uses `stockQuantity`; nested PATCH responses may
-  // use `quantity`. Accept both, in that priority order.
+  // Flat response uses `stockQuantity`; PATCH response may use `quantity`.
   const quantity =
     typeof rawItem.stockQuantity === 'number'
       ? rawItem.stockQuantity
@@ -126,33 +123,37 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
   };
 }
 
-/**
- * Inventory API service
- */
+// ── Service ────────────────────────────────────────────────────────────────
+
 export const inventoryService = {
   /**
    * Fetch the full inventory list with aggregate totals.
+   * GET /v1/inventory
    */
   getInventory: async (): Promise<InventoryResponse> => {
     const response = await apiClient.get<any>('/v1/inventory');
     const data = response.data;
-    const rawItems = Array.isArray(data?.items) ? data.items : Array.isArray(data) ? data : [];
+    const rawItems = Array.isArray(data?.items)
+      ? data.items
+      : Array.isArray(data)
+      ? data
+      : [];
     const items = rawItems.map(normalizeInventoryItem);
     return {
       ...data,
       items,
       totalVehicles: data?.totalVehicles ?? items.length,
-      availableVehicles: data?.availableVehicles ?? items.filter((i: InventoryItemDTO) => i.available).length,
+      availableVehicles:
+        data?.availableVehicles ??
+        items.filter((i: InventoryItemDTO) => i.available).length,
     };
   },
 
   /**
-   * Update the stock quantity for a single inventory item.
+   * Set the stock quantity for a single inventory item (absolute value).
+   * PATCH /v1/inventory/:id
    */
-  updateStock: async (
-    id: string,
-    data: UpdateStockInput
-  ): Promise<InventoryItemDTO> => {
+  updateStock: async (id: string, data: UpdateStockInput): Promise<InventoryItemDTO> => {
     const qty = data.stockQuantity;
     const payload = {
       quantity: qty,
@@ -160,11 +161,7 @@ export const inventoryService = {
       available: qty > 0,
       ...data,
     };
-    const response = await apiClient.patch<any>(
-      `/v1/inventory/${id}`,
-      payload
-    );
-    // If backend returns a response without the full object, fall back to updated item structure
+    const response = await apiClient.patch<any>(`/v1/inventory/${id}`, payload);
     const resData = response.data || {};
     return normalizeInventoryItem({
       ...resData,
@@ -173,5 +170,14 @@ export const inventoryService = {
       stockQuantity: typeof resData.stockQuantity === 'number' ? resData.stockQuantity : qty,
       available: qty > 0,
     });
+  },
+
+  /**
+   * Add quantity to a vehicle's current stock (admin only).
+   * POST /v1/inventory/:id/restock
+   */
+  restock: async (id: string, data: RestockInput): Promise<InventoryItemDTO> => {
+    const response = await apiClient.post<any>(`/v1/inventory/${id}/restock`, data);
+    return normalizeInventoryItem(response.data);
   },
 };

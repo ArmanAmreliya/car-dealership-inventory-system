@@ -4,7 +4,10 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { InventoryItemDTO } from '../types/inventory.types';
 import { paths } from '../../../routes/paths';
 import { resolveVehicleImage } from '../../../utils/vehicleImage';
-import { Edit, Eye, Car } from 'lucide-react';
+import { Edit, Eye, Car, Package } from 'lucide-react';
+import { useIsAdmin } from '../../../hooks/useIsAdmin';
+import { useRestock } from '../hooks/useInventory';
+import { toast } from 'sonner';
 
 interface InventoryTableProps {
   items: InventoryItemDTO[];
@@ -19,6 +22,9 @@ export function InventoryTable({ items, isLoading = false, onEditItem }: Invento
   const toggleFeatured = (id: string) => {
     setFeaturedMap((prev) => ({ ...prev, [id]: !prev[id] }));
   };
+
+  const isAdmin = useIsAdmin();
+  const restock = useRestock();
 
   if (isLoading) {
     return (
@@ -193,7 +199,32 @@ export function InventoryTable({ items, isLoading = false, onEditItem }: Invento
                           <Edit className="h-3 w-3" />
                           <span>Edit</span>
                         </button>
-
+                        
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            disabled={restock.isPending}
+                            onClick={() =>
+                              restock.mutate(
+                                { id: item.vehicleId, data: { quantity: 1 } },
+                                {
+                                  onSuccess: () =>
+                                    toast.success(`Restocked +1`, {
+                                      description: `${make} ${model} · new stock: ${quantity + 1}`,
+                                    }),
+                                  onError: () =>
+                                    toast.error('Restock Failed', {
+                                      description: 'Check your connection and try again.',
+                                    }),
+                                }
+                              )
+                            }
+                            className="inline-flex items-center gap-1 rounded-lg border border-teal-200 bg-teal-50 px-2.5 py-1 text-xs font-bold text-teal-700 hover:bg-teal-100 hover:border-teal-300 disabled:opacity-40 transition-colors shadow-2xs"
+                          >
+                            <Package className="h-3 w-3" />
+                            <span>+1</span>
+                          </button>
+                        )}
                         <button
                           type="button"
                           onClick={() => navigate(paths.vehicleDetail(item.vehicleId))}

@@ -90,3 +90,15 @@ export interface InventoryFilterState {
   manufacturer: string;
   sortBy: SortOption;
 }
+
+// ── Restock Vehicles ──────────────────────────────────────────────────────
+ 
+export interface RestockInput {
+  quantity: number;
+}
+
+export interface RestockArgs {
+  id: string;
+  data: RestockInput;
+}
+
