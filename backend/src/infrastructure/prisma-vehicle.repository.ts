@@ -2,9 +2,12 @@
  * PrismaVehicleRepository
  *
  * Implements IVehicleRepository against the Render PostgreSQL database via
- * Prisma Client.  Every method falls back to the in-memory VehicleRepository
- * when the DB is unreachable so the app stays functional during cold-starts
- * or network hiccups.
+ * Prisma Client.
+ *
+ * Write operations (save, update, delete) throw on DB failure — silent
+ * in-memory fallback on writes causes data loss on server restart.
+ * Read operations (findAll, findById) fall back to in-memory so the app
+ * stays readable during cold-starts or transient network issues.
  *
  * Inventory sync:
  *   On save   → an Inventory row is upserted automatically (quantity 1, available true).
@@ -16,6 +19,7 @@ import { prisma } from './prisma';
 import { VehicleRepository } from '../domain/vehicle/vehicle.repository';
 import type { IVehicleRepository } from '../domain/vehicle/vehicle.repository';
 import type { Vehicle, VehicleFilters, VehicleUpdate } from '../domain/vehicle/vehicle.types';
+import { AppError } from '../common/errors/AppError';
 
 // ── helpers ────────────────────────────────────────────────────────────────
 
@@ -57,11 +61,10 @@ export class PrismaVehicleRepository implements IVehicleRepository {
   private readonly fallback = new VehicleRepository();
 
   nextId(): string {
-    // crypto.randomUUID is available in Node 14.17+
     return crypto.randomUUID();
   }
 
-  // ── save ────────────────────────────────────────────────────────────────
+  // ── save (WRITE — no fallback, throws on failure) ────────────────────────
 
   async save(vehicle: Vehicle): Promise<void> {
     try {
@@ -100,12 +103,12 @@ export class PrismaVehicleRepository implements IVehicleRepository {
         },
       });
     } catch (err) {
-      console.error('[PrismaVehicleRepository] save failed — using in-memory fallback:', err);
-      this.fallback.save(vehicle);
+      console.error('[PrismaVehicleRepository] save failed:', err);
+      throw new AppError('Database unavailable. Please try again shortly.', 503);
     }
   }
 
-  // ── findAll ──────────────────────────────────────────────────────────────
+  // ── findAll (READ — fallback to memory on failure) ───────────────────────
 
   async findAll(filters?: VehicleFilters): Promise<Vehicle[]> {
     try {
@@ -120,7 +123,7 @@ export class PrismaVehicleRepository implements IVehicleRepository {
     }
   }
 
-  // ── findById ─────────────────────────────────────────────────────────────
+  // ── findById (READ — fallback to memory on failure) ──────────────────────
 
   async findById(id: string): Promise<Vehicle | null> {
     try {
@@ -132,7 +135,7 @@ export class PrismaVehicleRepository implements IVehicleRepository {
     }
   }
 
-  // ── update ───────────────────────────────────────────────────────────────
+  // ── update (WRITE — no fallback, throws on failure) ──────────────────────
 
   async update(id: string, fields: VehicleUpdate): Promise<Vehicle | null> {
     try {
@@ -162,22 +165,22 @@ export class PrismaVehicleRepository implements IVehicleRepository {
 
       return vehicle;
     } catch (err: any) {
-      if (err?.code === 'P2025') return null; // record not found
-      console.error('[PrismaVehicleRepository] update failed — using in-memory fallback:', err);
-      return this.fallback.update(id, fields);
+      if (err?.code === 'P2025') return null; // record not found — not a DB failure
+      console.error('[PrismaVehicleRepository] update failed:', err);
+      throw new AppError('Database unavailable. Please try again shortly.', 503);
     }
   }
 
-  // ── delete ───────────────────────────────────────────────────────────────
+  // ── delete (WRITE — no fallback, throws on failure) ──────────────────────
 
   async delete(id: string): Promise<boolean> {
     try {
       await prisma.vehicle.delete({ where: { id } });
       return true;
     } catch (err: any) {
-      if (err?.code === 'P2025') return false;
-      console.error('[PrismaVehicleRepository] delete failed — using in-memory fallback:', err);
-      return this.fallback.delete(id);
+      if (err?.code === 'P2025') return false; // record not found — not a DB failure
+      console.error('[PrismaVehicleRepository] delete failed:', err);
+      throw new AppError('Database unavailable. Please try again shortly.', 503);
     }
   }
 }
