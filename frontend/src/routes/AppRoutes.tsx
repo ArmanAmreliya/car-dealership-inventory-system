@@ -15,7 +15,7 @@ import { NotFoundPage } from '../pages/NotFoundPage';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { App } from '../app/App';
 import { paths } from './paths';
-import { AdminRoute } from '@/components/guards/AdminRoute';
+import { AdminRoute } from '../components/guards/AdminRoute';
 
 export const appRouter = createBrowserRouter([
   // ── Public: landing page ────────────────────────────────────────────────
