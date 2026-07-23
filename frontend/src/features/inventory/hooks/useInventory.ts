@@ -88,37 +88,67 @@ export function useUpdateStock(): UseMutationResult<
       inventoryService.updateStock(id, data),
 
     onSuccess: (updatedItem) => {
-      // Optimistically patch the cached list so the UI updates immediately
+      const updatedVehicleId = updatedItem.vehicleId || updatedItem.id;
+      const newQuantity = updatedItem.quantity;
+      const newAvailable = updatedItem.available;
+
+      // ── 1. Patch inventory cache ─────────────────────────────────────────
+      // Updates the raw inventory list (used by useInventory()).
       queryClient.setQueryData<InventoryResponse>(
         inventoryQueryKeys.list(),
         (prev) => {
           if (!prev) return prev;
+          const updatedItems = prev.items.map((item) => {
+            const isMatch =
+              item.id === updatedItem.id ||
+              item.vehicleId === updatedVehicleId ||
+              item.id === updatedVehicleId;
+            if (!isMatch) return item;
+            return {
+              ...item,
+              quantity: newQuantity,
+              available: newAvailable,
+              // Preserve the full vehicle object (imageUrl etc.) from cache
+              vehicle: item.vehicle
+                ? { ...item.vehicle }
+                : updatedItem.vehicle,
+            };
+          });
           return {
             ...prev,
-            items: prev.items.map((item) => {
-              const isMatch =
-                item.id === updatedItem.id ||
-                item.vehicleId === updatedItem.id ||
-                item.vehicleId === updatedItem.vehicleId ||
-                item.id === updatedItem.vehicleId;
-              return isMatch
-                ? {
-                    ...item,
-                    ...updatedItem,
-                    quantity: updatedItem.quantity,
-                    available: updatedItem.available,
-                    vehicle: item.vehicle || updatedItem.vehicle,
-                  }
-                : item;
-            }),
+            items: updatedItems,
+            availableVehicles: updatedItems.filter((i) => i.available).length,
           };
         }
       );
 
-      // Refetch to get fresh aggregate totals from the server immediately
-      queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.all, refetchType: 'all' });
+      // ── 2. Patch vehicles cache ──────────────────────────────────────────
+      // InventoryPage derives its display list from useVehicles(), so we
+      // must update that cache too, otherwise the card/table keeps showing
+      // the stale quantity until the next full refetch.
+      // The vehicles cache is an array of VehicleDTO — find the matching
+      // entry by id and update isAvailable (and stockQuantity if present).
+      queryClient.setQueriesData<unknown>(
+        { queryKey: vehicleRootKey },
+        (prev) => {
+          if (!Array.isArray(prev)) return prev;
+          return prev.map((v: any) => {
+            if (v?.id !== updatedVehicleId) return v;
+            return {
+              ...v,
+              isAvailable: newAvailable,
+              // stockQuantity is not part of VehicleDTO officially but the
+              // backend now returns it; store it so InventoryPage merge can
+              // pick it up as the quantity source of truth.
+              stockQuantity: newQuantity,
+            };
+          });
+        }
+      );
 
-      // Keep vehicle queries in sync (availability flag may have changed)
+      // ── 3. Hard-refetch both caches from the server ──────────────────────
+      // This reconciles aggregate totals and any other in-flight changes.
+      queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.all, refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: vehicleRootKey, refetchType: 'all' });
     },
   });

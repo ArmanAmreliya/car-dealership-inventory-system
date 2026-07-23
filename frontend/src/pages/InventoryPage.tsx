@@ -101,8 +101,16 @@ export function InventoryPage() {
     return vehicles.map((vehicle) => {
       const stockItem = stockByVehicleId.get(vehicle.id);
 
+      // stockQuantity from inventory item takes priority; fall back to any
+      // stockQuantity the vehicles cache carries (patched by useUpdateStock),
+      // then default to 1 for newly created vehicles.
       const quantity =
-        typeof stockItem?.quantity === 'number' ? stockItem.quantity : 1;
+        typeof stockItem?.quantity === 'number'
+          ? stockItem.quantity
+          : typeof (vehicle as any).stockQuantity === 'number'
+          ? (vehicle as any).stockQuantity
+          : 1;
+
       const available =
         typeof stockItem?.available === 'boolean'
           ? stockItem.available

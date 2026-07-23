@@ -96,11 +96,13 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
   };
 
   // ── Stock / availability ─────────────────────────────────────────────────
+  // Backend flat response uses `stockQuantity`; nested PATCH responses may
+  // use `quantity`. Accept both, in that priority order.
   const quantity =
-    typeof rawItem.quantity === 'number'
-      ? rawItem.quantity
-      : typeof rawItem.stockQuantity === 'number'
+    typeof rawItem.stockQuantity === 'number'
       ? rawItem.stockQuantity
+      : typeof rawItem.quantity === 'number'
+      ? rawItem.quantity
       : rawItem.isAvailable === false
       ? 0
       : 1;
