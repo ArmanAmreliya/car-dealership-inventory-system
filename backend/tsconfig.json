@@ -13,6 +13,7 @@
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
+    "baseUrl": ".",
     "paths": {
       "@app/*": ["src/app/*"],
       "@config/*": ["src/config/*"],

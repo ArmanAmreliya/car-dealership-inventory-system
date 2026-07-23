@@ -10,6 +10,8 @@ export interface Vehicle {
   imageUrl?: string;
   createdAt: Date;
   isAvailable?: boolean;
+  /** Actual stock quantity stored per vehicle. Defaults to 1 on creation. */
+  stockQuantity?: number;
 }
 
 export interface VehicleUpdate {
@@ -21,6 +23,7 @@ export interface VehicleUpdate {
   color?: string;
   imageUrl?: string;
   isAvailable?: boolean;
+  stockQuantity?: number;
 }
 
 export interface VehicleFilters {

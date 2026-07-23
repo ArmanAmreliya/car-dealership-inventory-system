@@ -27,6 +27,7 @@ export class VehicleService {
       mileage: data.mileage ?? 0,
       color: data.color ?? '',
       imageUrl: data.imageUrl,
+      stockQuantity: 1,
       createdAt: new Date(),
     };
     this.vehicleRepository.save(vehicle);

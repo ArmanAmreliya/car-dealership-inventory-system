@@ -11,9 +11,20 @@ function toInventoryItem(vehicle: {
   price: number;
   createdAt?: Date;
   isAvailable?: boolean;
+  stockQuantity?: number;
 }): InventoryItem {
   const isAvailable = vehicle.isAvailable ?? true;
-  const dateStr = vehicle.createdAt ? new Date(vehicle.createdAt).toISOString() : new Date().toISOString();
+  // Use the stored stockQuantity when present; only fall back to the
+  // binary 1/0 derived from isAvailable for vehicles that predate this field.
+  const stockQuantity =
+    typeof vehicle.stockQuantity === 'number'
+      ? vehicle.stockQuantity
+      : isAvailable
+      ? 1
+      : 0;
+  const dateStr = vehicle.createdAt
+    ? new Date(vehicle.createdAt).toISOString()
+    : new Date().toISOString();
   return {
     id: vehicle.id,
     vehicleId: vehicle.id,
@@ -22,10 +33,10 @@ function toInventoryItem(vehicle: {
     year: vehicle.year,
     vin: vehicle.vin,
     price: vehicle.price,
-    stockQuantity: isAvailable ? 1 : 0,
+    stockQuantity,
     isAvailable,
     createdAt: dateStr,
-    updatedAt: dateStr,
+    updatedAt: new Date().toISOString(),
   };
 }
 
@@ -54,7 +65,14 @@ export class InventoryService {
     }
 
     const isAvailable = update.stockQuantity > 0;
-    const vehicle = await this.vehicleRepository.update(vehicleId, { isAvailable });
+
+    // Persist both the real quantity AND the derived availability flag so
+    // that getStatus() returns the correct stockQuantity on subsequent reads.
+    const vehicle = await this.vehicleRepository.update(vehicleId, {
+      isAvailable,
+      stockQuantity: update.stockQuantity,
+    });
+
     if (!vehicle) {
       throw new AppError(`Vehicle with ID "${vehicleId}" not found`, 404);
     }
