@@ -82,21 +82,49 @@ I used GitHub Copilot as a development assistant throughout the project to help 
 
 All generated suggestions were manually reviewed, adapted to the existing architecture, and validated through the project’s test and build workflows before being kept.
 
-## Testing
+## Test Report
 
-Backend:
+The project was verified using automated tests and quality checks before deployment.
+
+### Backend
+
+Run:
 
 ```bash
 cd backend
-npm test
+pnpm test
 ```
 
-Frontend verification:
+**Result**
+
+```text
+Test Suites: 16 passed, 16 total
+Tests:       82 passed, 82 total
+Snapshots:   0 total
+Status:      ✅ PASS
+```
+
+### Frontend
+
+Run:
 
 ```bash
 cd frontend
 pnpm lint
 pnpm build
+```
+
+**Result**
+
+- ✅ Lint checks passed
+- ✅ Production build completed successfully
+
+### API Documentation
+
+Swagger documentation is available at:
+
+```text
+https://car-dealership-inventory-system-420s.onrender.com/api/docs
 ```
 
 ## Architecture
