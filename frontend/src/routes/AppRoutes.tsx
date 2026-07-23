@@ -1,5 +1,6 @@
-import { createBrowserRouter } from 'react-router-dom';
+import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '../components/guards/ProtectedRoute';
+import { PublicOnlyRoute } from '../components/guards/PublicOnlyRoute';
 import { LoginPage } from '../pages/LoginPage';
 import { RegisterPage } from '../pages/RegisterPage';
 import { DashboardPage } from '../pages/DashboardPage';
@@ -12,22 +13,35 @@ import { PurchasesPage } from '../pages/PurchasesPage';
 import { CreatePurchasePage } from '../pages/CreatePurchasePage';
 import { NotFoundPage } from '../pages/NotFoundPage';
 import { DashboardLayout } from '../layouts/DashboardLayout';
-import { paths } from './paths';
 import { App } from '../app/App';
+import { paths } from './paths';
 
 export const appRouter = createBrowserRouter([
-  {
-    path: paths.login,
-    element: <LoginPage />,
-  },
-  {
-    path: paths.register,
-    element: <RegisterPage />,
-  },
+  // ── Public: landing page ────────────────────────────────────────────────
   {
     path: paths.root,
     element: <App />,
   },
+
+  // ── Public-only: redirect to dashboard if already signed in ─────────────
+  {
+    path: paths.login,
+    element: (
+      <PublicOnlyRoute>
+        <LoginPage />
+      </PublicOnlyRoute>
+    ),
+  },
+  {
+    path: paths.register,
+    element: (
+      <PublicOnlyRoute>
+        <RegisterPage />
+      </PublicOnlyRoute>
+    ),
+  },
+
+  // ── Protected: require authentication ───────────────────────────────────
   {
     path: paths.dashboard,
     element: (
@@ -92,7 +106,7 @@ export const appRouter = createBrowserRouter([
     path: paths.purchases,
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Purchase History">
+        <DashboardLayout pageTitle="Vehicle Acquisition">
           <PurchasesPage />
         </DashboardLayout>
       </ProtectedRoute>
@@ -108,6 +122,8 @@ export const appRouter = createBrowserRouter([
       </ProtectedRoute>
     ),
   },
+
+  // ── Error / catch-all ────────────────────────────────────────────────────
   {
     path: paths.notFound,
     element: <NotFoundPage />,
@@ -117,4 +133,3 @@ export const appRouter = createBrowserRouter([
     element: <NotFoundPage />,
   },
 ]);
-
