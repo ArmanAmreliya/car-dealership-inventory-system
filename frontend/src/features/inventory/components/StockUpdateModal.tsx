@@ -112,7 +112,7 @@ export function StockUpdateModal({ item, onClose }: StockUpdateModalProps) {
   // ── submit ───────────────────────────────────────────────────────────────
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isInvalid || isUnchanged) return;
+    if (isInvalid) return;
 
     reset(); // clear any previous error
 
@@ -131,7 +131,7 @@ export function StockUpdateModal({ item, onClose }: StockUpdateModalProps) {
           });
           toast.success(
             `Stock updated — ${vehicleLabel} is now ${quantity} unit${quantity !== 1 ? 's' : ''}`,
-            { description: `${deltaLabel(delta)} · ${reason}` }
+            { description: `${isUnchanged ? 'Confirmed at same quantity' : deltaLabel(delta)} · ${reason}` }
           );
           onClose();
         },
@@ -418,7 +418,7 @@ export function StockUpdateModal({ item, onClose }: StockUpdateModalProps) {
 
                 <button
                   type="submit"
-                  disabled={isPending || isInvalid || isUnchanged}
+                  disabled={isPending || isInvalid}
                   className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-[#55E6D9] shadow-md hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
                 >
                   {isPending ? (

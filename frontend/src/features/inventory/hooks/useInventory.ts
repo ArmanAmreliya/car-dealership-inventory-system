@@ -126,25 +126,27 @@ export function useUpdateStock(): UseMutationResult<
       // InventoryPage derives its display list from useVehicles(), so we
       // must update that cache too, otherwise the card/table keeps showing
       // the stale quantity until the next full refetch.
-      // The vehicles cache is an array of VehicleDTO — find the matching
-      // entry by id and update isAvailable (and stockQuantity if present).
-      queryClient.setQueriesData<unknown>(
-        { queryKey: vehicleRootKey },
-        (prev) => {
-          if (!Array.isArray(prev)) return prev;
-          return prev.map((v: any) => {
-            if (v?.id !== updatedVehicleId) return v;
-            return {
-              ...v,
-              isAvailable: newAvailable,
-              // stockQuantity is not part of VehicleDTO officially but the
-              // backend now returns it; store it so InventoryPage merge can
-              // pick it up as the quantity source of truth.
-              stockQuantity: newQuantity,
-            };
-          });
-        }
-      );
+      //
+      // setQueriesData is v5-only — use getQueriesData + setQueryData loop
+      // for compatibility with the current TanStack Query version.
+      const vehicleQueryEntries = queryClient.getQueriesData<unknown>({
+        queryKey: vehicleRootKey,
+      });
+      for (const [queryKey, cacheData] of vehicleQueryEntries) {
+        if (!Array.isArray(cacheData)) continue;
+        const patched = cacheData.map((v: any) => {
+          if (v?.id !== updatedVehicleId) return v;
+          return {
+            ...v,
+            isAvailable: newAvailable,
+            // stockQuantity is not part of VehicleDTO officially but the
+            // backend now returns it; store it so InventoryPage merge can
+            // pick it up as the quantity source of truth.
+            stockQuantity: newQuantity,
+          };
+        });
+        queryClient.setQueryData(queryKey, patched);
+      }
 
       // ── 3. Hard-refetch both caches from the server ──────────────────────
       // This reconciles aggregate totals and any other in-flight changes.
