@@ -17,33 +17,85 @@ import {
   UpdateStockInput,
 } from '../types/inventory.types';
 
+/**
+ * Pick the first non-empty string from a list of candidates.
+ * Returning undefined (not empty string) lets resolveVehicleImage fall
+ * through to the make-based Unsplash fallback correctly.
+ */
+function firstNonEmpty(...candidates: (string | null | undefined)[]): string | undefined {
+  for (const c of candidates) {
+    if (typeof c === 'string' && c.trim().length > 0) return c.trim();
+  }
+  return undefined;
+}
+
+/**
+ * normalizeInventoryItem
+ *
+ * Handles two backend response shapes:
+ *
+ *   A) Flat  – the /v1/inventory endpoint returns fields at the root:
+ *              { id, vehicleId, make, model, year, vin, price, imageUrl,
+ *                stockQuantity, isAvailable, createdAt, updatedAt }
+ *
+ *   B) Nested – future-proof / PATCH response may include a nested vehicle
+ *               object: { id, vehicleId, vehicle: { imageUrl, ... }, ... }
+ *
+ * The resulting InventoryItemDTO always carries a fully populated `vehicle`
+ * sub-object so that InventoryCardView / InventoryTable can read imageUrl,
+ * make, model, price, etc. without extra lookups.
+ */
 export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
+  // ── IDs ──────────────────────────────────────────────────────────────────
   const id = rawItem.id || rawItem.vehicleId || '';
   const vehicleId = rawItem.vehicleId || rawItem.id || id;
-  const make = rawItem.vehicle?.make || rawItem.make || '';
-  const model = rawItem.vehicle?.model || rawItem.model || '';
-  const year = rawItem.vehicle?.year || rawItem.year || 0;
-  const price = rawItem.vehicle?.price || rawItem.price || 0;
-  const vin = rawItem.vehicle?.vin || rawItem.vin || '';
-  const imageUrl = rawItem.vehicle?.imageUrl || rawItem.imageUrl;
-  const color = rawItem.vehicle?.color || rawItem.color;
-  const mileage = rawItem.vehicle?.mileage || rawItem.mileage;
 
+  // ── Vehicle scalar fields (nested object takes priority over flat fields) ─
+  const make  = firstNonEmpty(rawItem.vehicle?.make,  rawItem.make)  ?? '';
+  const model = firstNonEmpty(rawItem.vehicle?.model, rawItem.model) ?? '';
+  const vin   = firstNonEmpty(rawItem.vehicle?.vin,   rawItem.vin)   ?? '';
+  const color = firstNonEmpty(rawItem.vehicle?.color, rawItem.color);
+  const year  = rawItem.vehicle?.year  ?? rawItem.year  ?? 0;
+  const price = rawItem.vehicle?.price ?? rawItem.price ?? 0;
+  const mileage = rawItem.vehicle?.mileage ?? rawItem.mileage;
+
+  // ── imageUrl: preserve the Cloudinary URL from whichever shape is returned ─
+  // Priority: nested vehicle.imageUrl → flat imageUrl at root level → undefined
+  // We must NOT fall back to '' here; an undefined imageUrl lets
+  // resolveVehicleImage use the make-based Unsplash image instead of
+  // rendering a broken <img> with an empty src.
+  const imageUrl = firstNonEmpty(
+    rawItem.vehicle?.imageUrl,
+    rawItem.imageUrl,
+  );
+
+  // ── Timestamps ───────────────────────────────────────────────────────────
+  const createdAt =
+    firstNonEmpty(rawItem.vehicle?.createdAt, rawItem.createdAt) ??
+    new Date().toISOString();
+  const updatedAt =
+    firstNonEmpty(rawItem.vehicle?.updatedAt, rawItem.updatedAt) ??
+    new Date().toISOString();
+
+  // ── Reconstruct vehicle object ───────────────────────────────────────────
+  // Spread rawItem.vehicle first so any extra fields the backend may add
+  // in the future (trim, color, vehicleImages, etc.) are preserved.
   const vehicle: VehicleDTO = {
-    ...(rawItem.vehicle || {}),
+    ...(rawItem.vehicle ?? {}),
     id: vehicleId,
     vin,
     make,
     model,
     year,
     price,
-    mileage,
-    color,
-    imageUrl: imageUrl || rawItem.vehicle?.imageUrl || rawItem.imageUrl || '',
-    createdAt: rawItem.vehicle?.createdAt || rawItem.createdAt || new Date().toISOString(),
-    updatedAt: rawItem.vehicle?.updatedAt || rawItem.updatedAt || new Date().toISOString(),
+    ...(mileage !== undefined && { mileage }),
+    ...(color    !== undefined && { color }),
+    ...(imageUrl !== undefined && { imageUrl }),
+    createdAt,
+    updatedAt,
   };
 
+  // ── Stock / availability ─────────────────────────────────────────────────
   const quantity =
     typeof rawItem.quantity === 'number'
       ? rawItem.quantity
@@ -59,9 +111,6 @@ export function normalizeInventoryItem(rawItem: any): InventoryItemDTO {
       : typeof rawItem.isAvailable === 'boolean'
       ? rawItem.isAvailable
       : quantity > 0;
-
-  const createdAt = rawItem.createdAt || rawItem.vehicle?.createdAt || new Date().toISOString();
-  const updatedAt = rawItem.updatedAt || rawItem.vehicle?.updatedAt || new Date().toISOString();
 
   return {
     id: id || vehicleId,
