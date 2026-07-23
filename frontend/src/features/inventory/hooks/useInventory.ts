@@ -87,13 +87,16 @@ export function useUpdateStock(): UseMutationResult<
     mutationFn: ({ id, data }: UpdateStockArgs) =>
       inventoryService.updateStock(id, data),
 
-    onSuccess: (updatedItem) => {
+    onSuccess: async (updatedItem) => {
       const updatedVehicleId = updatedItem.vehicleId || updatedItem.id;
       const newQuantity = updatedItem.quantity;
       const newAvailable = updatedItem.available;
 
+      // Cancel any in-flight refetches so they don't overwrite our patch
+      await queryClient.cancelQueries({ queryKey: inventoryQueryKeys.all });
+      await queryClient.cancelQueries({ queryKey: vehicleRootKey });
+
       // ── 1. Patch inventory cache ─────────────────────────────────────────
-      // Updates the raw inventory list (used by useInventory()).
       queryClient.setQueryData<InventoryResponse>(
         inventoryQueryKeys.list(),
         (prev) => {
@@ -108,7 +111,6 @@ export function useUpdateStock(): UseMutationResult<
               ...item,
               quantity: newQuantity,
               available: newAvailable,
-              // Preserve the full vehicle object (imageUrl etc.) from cache
               vehicle: item.vehicle
                 ? { ...item.vehicle }
                 : updatedItem.vehicle,
@@ -123,12 +125,7 @@ export function useUpdateStock(): UseMutationResult<
       );
 
       // ── 2. Patch vehicles cache ──────────────────────────────────────────
-      // InventoryPage derives its display list from useVehicles(), so we
-      // must update that cache too, otherwise the card/table keeps showing
-      // the stale quantity until the next full refetch.
-      //
-      // setQueriesData is v5-only — use getQueriesData + setQueryData loop
-      // for compatibility with the current TanStack Query version.
+      // getQueriesData + setQueryData loop (setQueriesData is v5-only)
       const vehicleQueryEntries = queryClient.getQueriesData<unknown>({
         queryKey: vehicleRootKey,
       });
@@ -139,9 +136,6 @@ export function useUpdateStock(): UseMutationResult<
           return {
             ...v,
             isAvailable: newAvailable,
-            // stockQuantity is not part of VehicleDTO officially but the
-            // backend now returns it; store it so InventoryPage merge can
-            // pick it up as the quantity source of truth.
             stockQuantity: newQuantity,
           };
         });
@@ -149,7 +143,6 @@ export function useUpdateStock(): UseMutationResult<
       }
 
       // ── 3. Hard-refetch both caches from the server ──────────────────────
-      // This reconciles aggregate totals and any other in-flight changes.
       queryClient.invalidateQueries({ queryKey: inventoryQueryKeys.all, refetchType: 'all' });
       queryClient.invalidateQueries({ queryKey: vehicleRootKey, refetchType: 'all' });
     },

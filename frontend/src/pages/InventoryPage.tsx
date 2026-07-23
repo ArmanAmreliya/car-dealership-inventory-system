@@ -86,10 +86,13 @@ export function InventoryPage() {
   const inventoryItems = inventoryData?.items ?? [];
 
   // ── Merge vehicles + inventory ───────────────────────────────────────────
-  // Build the canonical item list by joining on vehicleId.
-  // Vehicles from /v1/vehicles carry the correct imageUrl (Cloudinary).
-  // Inventory items from /v1/inventory carry stock/availability data.
-  // We only show vehicles that exist in the API — no static fallbacks.
+  // Vehicles from /v1/vehicles → source of truth for imageUrl, make, model etc.
+  // Inventory items from /v1/inventory → source of truth for quantity/availability.
+  //
+  // Priority for quantity resolution:
+  //   1. inventoryItems cache (patched immediately on stock update)
+  //   2. vehicle.stockQuantity (patched into vehicles cache by useUpdateStock)
+  //   3. Default 1
   const allItems = useMemo<InventoryItemDTO[]>(() => {
     if (vehicles.length === 0) return [];
 
@@ -101,9 +104,9 @@ export function InventoryPage() {
     return vehicles.map((vehicle) => {
       const stockItem = stockByVehicleId.get(vehicle.id);
 
-      // stockQuantity from inventory item takes priority; fall back to any
-      // stockQuantity the vehicles cache carries (patched by useUpdateStock),
-      // then default to 1 for newly created vehicles.
+      // Use the inventory cache quantity as the primary source.
+      // Fall back to stockQuantity patched onto the vehicle cache entry,
+      // then to 1 for brand-new vehicles with no inventory record yet.
       const quantity =
         typeof stockItem?.quantity === 'number'
           ? stockItem.quantity
@@ -111,10 +114,12 @@ export function InventoryPage() {
           ? (vehicle as any).stockQuantity
           : 1;
 
+      // Derive availability from quantity so it stays consistent
       const available =
         typeof stockItem?.available === 'boolean'
           ? stockItem.available
           : quantity > 0;
+
       const reserved = stockItem?.reserved ?? false;
       const createdAt = stockItem?.createdAt ?? vehicle.createdAt;
       const updatedAt = stockItem?.updatedAt ?? vehicle.updatedAt;
@@ -122,8 +127,6 @@ export function InventoryPage() {
       return {
         id: stockItem?.id ?? vehicle.id,
         vehicleId: vehicle.id,
-        // Attach the full vehicle object so InventoryCardView / InventoryTable
-        // can read imageUrl, make, model, price, etc. directly from it.
         vehicle,
         quantity,
         available,
@@ -420,9 +423,14 @@ export function InventoryPage() {
           onClose={() => {
             setIsEditDrawerOpen(false);
             setEditingItem(null);
-          } } onSuccess={function (): void {
-            throw new Error('Function not implemented.');
-          } }        />
+          }}
+          onSuccess={() => {
+            setIsEditDrawerOpen(false);
+            setEditingItem(null);
+            refetchInventory();
+            refetchVehicles();
+          }}
+        />
       )}
 
       {/* ── Filter Drawer ───────────────────────────────────────────────── */}
