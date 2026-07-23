@@ -45,16 +45,16 @@ describe('VehicleService.list()', () => {
     vehicleService = new VehicleService(mockRepository);
   });
 
-  it('should return all vehicles when no filters are provided', () => {
-    mockRepository.findAll.mockReturnValue(mockVehicles);
+  it('should return all vehicles when no filters are provided', async () => {
+    mockRepository.findAll.mockResolvedValue(mockVehicles);
 
-    const result = vehicleService.list();
+    const result = await vehicleService.list();
 
     expect(mockRepository.findAll).toHaveBeenCalledWith(undefined);
     expect(result).toEqual(mockVehicles);
   });
 
-  it('should pass filters to the repository when provided', () => {
+  it('should pass filters to the repository when provided', async () => {
     const filters: VehicleFilters = {
       make: 'Toyota',
       model: 'Camry',
@@ -63,9 +63,9 @@ describe('VehicleService.list()', () => {
       minPrice: 20000,
       maxPrice: 30000,
     };
-    mockRepository.findAll.mockReturnValue([mockVehicles[0]]);
+    mockRepository.findAll.mockResolvedValue([mockVehicles[0]]);
 
-    const result = vehicleService.list(filters);
+    const result = await vehicleService.list(filters);
 
     expect(mockRepository.findAll).toHaveBeenCalledWith(filters);
     expect(result).toEqual([mockVehicles[0]]);

@@ -5,9 +5,9 @@ import type { StockUpdate } from './inventory.types';
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
-  getStatus = (_req: Request, res: Response, next: NextFunction): void => {
+  getStatus = async (_req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
-      const status = this.inventoryService.getStatus();
+      const status = await this.inventoryService.getStatus();
       res.status(200).json(status);
     } catch (err) {
       next(err);

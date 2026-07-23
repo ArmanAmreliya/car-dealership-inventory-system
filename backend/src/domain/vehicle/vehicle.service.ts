@@ -34,7 +34,7 @@ export class VehicleService {
     return vehicle;
   }
 
-  list(filters?: VehicleFilters): Vehicle[] {
+  async list(filters?: VehicleFilters): Promise<Vehicle[]> {
     return this.vehicleRepository.findAll(filters);
   }
 

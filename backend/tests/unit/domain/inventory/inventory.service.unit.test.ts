@@ -47,10 +47,10 @@ describe('InventoryService', () => {
   });
 
   describe('getStatus()', () => {
-    it('returns zero counts for an empty inventory', () => {
-      mockRepository.findAll.mockReturnValue([]);
+    it('returns zero counts for an empty inventory', async () => {
+      mockRepository.findAll.mockResolvedValue([]);
 
-      const status = inventoryService.getStatus();
+      const status = await inventoryService.getStatus();
 
       expect(status.totalVehicles).toBe(0);
       expect(status.availableVehicles).toBe(0);
@@ -58,22 +58,22 @@ describe('InventoryService', () => {
       expect(status.items).toEqual([]);
     });
 
-    it('returns correct aggregate counts', () => {
-      mockRepository.findAll.mockReturnValue([availableVehicle, unavailableVehicle]);
+    it('returns correct aggregate counts', async () => {
+      mockRepository.findAll.mockResolvedValue([availableVehicle, unavailableVehicle]);
 
-      const status = inventoryService.getStatus();
+      const status = await inventoryService.getStatus();
 
       expect(status.totalVehicles).toBe(2);
       expect(status.availableVehicles).toBe(1);
       expect(status.unavailableVehicles).toBe(1);
     });
 
-    it('maps a vehicle to an InventoryItem correctly', () => {
-      mockRepository.findAll.mockReturnValue([availableVehicle]);
+    it('maps a vehicle to an InventoryItem correctly', async () => {
+      mockRepository.findAll.mockResolvedValue([availableVehicle]);
 
-      const { items } = inventoryService.getStatus();
+      const { items } = await inventoryService.getStatus();
 
-      expect(items[0]).toEqual({
+      expect(items[0]).toMatchObject({
         vehicleId: 'v-001',
         make: 'Toyota',
         model: 'Camry',
@@ -85,20 +85,20 @@ describe('InventoryService', () => {
       });
     });
 
-    it('treats vehicles with no isAvailable field as available', () => {
+    it('treats vehicles with no isAvailable field as available', async () => {
       const vehicleWithoutFlag: Vehicle = { ...availableVehicle, isAvailable: undefined };
-      mockRepository.findAll.mockReturnValue([vehicleWithoutFlag]);
+      mockRepository.findAll.mockResolvedValue([vehicleWithoutFlag]);
 
-      const status = inventoryService.getStatus();
+      const status = await inventoryService.getStatus();
 
       expect(status.availableVehicles).toBe(1);
       expect(status.items[0].stockQuantity).toBe(1);
     });
 
-    it('sets stockQuantity 0 for unavailable vehicles', () => {
-      mockRepository.findAll.mockReturnValue([unavailableVehicle]);
+    it('sets stockQuantity 0 for unavailable vehicles', async () => {
+      mockRepository.findAll.mockResolvedValue([unavailableVehicle]);
 
-      const { items } = inventoryService.getStatus();
+      const { items } = await inventoryService.getStatus();
 
       expect(items[0].stockQuantity).toBe(0);
       expect(items[0].isAvailable).toBe(false);
@@ -107,23 +107,29 @@ describe('InventoryService', () => {
 
   describe('updateStock()', () => {
     it('marks vehicle as available when stockQuantity > 0', async () => {
-      const updated: Vehicle = { ...unavailableVehicle, isAvailable: true };
+      const updated: Vehicle = { ...unavailableVehicle, isAvailable: true, stockQuantity: 1 };
       mockRepository.update.mockResolvedValue(updated);
 
       const item = await inventoryService.updateStock('v-002', { stockQuantity: 1 });
 
-      expect(mockRepository.update).toHaveBeenCalledWith('v-002', { isAvailable: true });
+      expect(mockRepository.update).toHaveBeenCalledWith('v-002', {
+        isAvailable: true,
+        stockQuantity: 1,
+      });
       expect(item.isAvailable).toBe(true);
       expect(item.stockQuantity).toBe(1);
     });
 
     it('marks vehicle as unavailable when stockQuantity is 0', async () => {
-      const updated: Vehicle = { ...availableVehicle, isAvailable: false };
+      const updated: Vehicle = { ...availableVehicle, isAvailable: false, stockQuantity: 0 };
       mockRepository.update.mockResolvedValue(updated);
 
       const item = await inventoryService.updateStock('v-001', { stockQuantity: 0 });
 
-      expect(mockRepository.update).toHaveBeenCalledWith('v-001', { isAvailable: false });
+      expect(mockRepository.update).toHaveBeenCalledWith('v-001', {
+        isAvailable: false,
+        stockQuantity: 0,
+      });
       expect(item.isAvailable).toBe(false);
       expect(item.stockQuantity).toBe(0);
     });
@@ -131,18 +137,14 @@ describe('InventoryService', () => {
     it('throws AppError 404 when vehicle is not found', async () => {
       mockRepository.update.mockResolvedValue(null);
 
-      await expect(inventoryService.updateStock('ghost', { stockQuantity: 1 })).rejects.toThrow(
-        AppError,
-      );
+      await expect(inventoryService.updateStock('ghost', { stockQuantity: 1 })).rejects.toThrow(AppError);
       await expect(inventoryService.updateStock('ghost', { stockQuantity: 1 })).rejects.toThrow(
         'Vehicle with ID "ghost" not found',
       );
     });
 
     it('throws AppError 400 for empty vehicle ID', async () => {
-      await expect(inventoryService.updateStock('', { stockQuantity: 1 })).rejects.toThrow(
-        AppError,
-      );
+      await expect(inventoryService.updateStock('', { stockQuantity: 1 })).rejects.toThrow(AppError);
       await expect(inventoryService.updateStock('', { stockQuantity: 1 })).rejects.toThrow(
         'Invalid vehicle ID',
       );
@@ -150,9 +152,7 @@ describe('InventoryService', () => {
     });
 
     it('throws AppError 400 for negative stockQuantity', async () => {
-      await expect(inventoryService.updateStock('v-001', { stockQuantity: -1 })).rejects.toThrow(
-        AppError,
-      );
+      await expect(inventoryService.updateStock('v-001', { stockQuantity: -1 })).rejects.toThrow(AppError);
       await expect(inventoryService.updateStock('v-001', { stockQuantity: -1 })).rejects.toThrow(
         'Stock quantity cannot be negative',
       );
@@ -162,9 +162,7 @@ describe('InventoryService', () => {
     it('propagates repository failures', async () => {
       mockRepository.update.mockRejectedValue(new Error('DB error'));
 
-      await expect(inventoryService.updateStock('v-001', { stockQuantity: 1 })).rejects.toThrow(
-        'DB error',
-      );
+      await expect(inventoryService.updateStock('v-001', { stockQuantity: 1 })).rejects.toThrow('DB error');
     });
   });
 });

@@ -43,8 +43,8 @@ function toInventoryItem(vehicle: {
 export class InventoryService {
   constructor(private readonly vehicleRepository: IVehicleRepository) {}
 
-  getStatus(): InventoryStatus {
-    const vehicles = this.vehicleRepository.findAll();
+  async getStatus(): Promise<InventoryStatus> {
+    const vehicles = await this.vehicleRepository.findAll();
     const items = vehicles.map(toInventoryItem);
 
     return {
