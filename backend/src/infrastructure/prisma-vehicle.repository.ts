@@ -33,6 +33,7 @@ function toVehicle(row: any): Vehicle {
     price:         row.price,
     mileage:       row.mileage       ?? 0,
     color:         row.color         ?? '',
+    category:      row.category      ?? undefined,
     imageUrl:      row.imageUrl      ?? undefined,
     isAvailable:   row.isAvailable   ?? true,
     stockQuantity: row.stockQuantity ?? 1,
@@ -79,6 +80,7 @@ export class PrismaVehicleRepository implements IVehicleRepository {
           price:         vehicle.price,
           mileage:       vehicle.mileage       ?? 0,
           color:         vehicle.color         ?? '',
+          category:      vehicle.category      ?? 'Sedan',
           imageUrl:      vehicle.imageUrl      ?? null,
           isAvailable:   vehicle.isAvailable   ?? true,
           stockQuantity: vehicle.stockQuantity ?? 1,
@@ -97,6 +99,7 @@ export class PrismaVehicleRepository implements IVehicleRepository {
           price:         vehicle.price,
           mileage:       vehicle.mileage       ?? 0,
           color:         vehicle.color         ?? '',
+          category:      vehicle.category      ?? 'Sedan',
           imageUrl:      vehicle.imageUrl      ?? null,
           isAvailable:   vehicle.isAvailable   ?? true,
           stockQuantity: vehicle.stockQuantity ?? 1,
@@ -146,6 +149,7 @@ export class PrismaVehicleRepository implements IVehicleRepository {
       if (fields.price         !== undefined) data.price         = fields.price;
       if (fields.mileage       !== undefined) data.mileage       = fields.mileage;
       if (fields.color         !== undefined) data.color         = fields.color;
+      if (fields.category      !== undefined) data.category      = fields.category;
       if (fields.imageUrl      !== undefined) data.imageUrl      = fields.imageUrl;
       if (fields.isAvailable   !== undefined) data.isAvailable   = fields.isAvailable;
       if (fields.stockQuantity !== undefined) data.stockQuantity = fields.stockQuantity;

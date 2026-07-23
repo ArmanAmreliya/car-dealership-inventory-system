@@ -10,6 +10,7 @@ export interface CreateVehicleData {
   vin: string;
   mileage?: number;
   color?: string;
+  category?: string;
   imageUrl?: string;
 }
 
@@ -26,6 +27,7 @@ export class VehicleService {
       vin: data.vin,
       mileage: data.mileage ?? 0,
       color: data.color ?? '',
+      category: data.category,
       imageUrl: data.imageUrl,
       stockQuantity: 1,
       createdAt: new Date(),

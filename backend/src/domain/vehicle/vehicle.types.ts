@@ -7,6 +7,7 @@ export interface Vehicle {
   vin: string;
   mileage: number;
   color: string;
+  category?: string;
   imageUrl?: string;
   createdAt: Date;
   isAvailable?: boolean;
@@ -21,6 +22,7 @@ export interface VehicleUpdate {
   price?: number;
   mileage?: number;
   color?: string;
+  category?: string;
   imageUrl?: string;
   isAvailable?: boolean;
   stockQuantity?: number;
