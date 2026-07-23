@@ -18,6 +18,7 @@ import { useVehicle } from '../features/vehicles/hooks/useVehicle';
 import { useDeleteVehicle } from '../features/vehicles/hooks/useVehicles';
 import { PageLoader } from '../components/common/PageLoader';
 import { paths } from '../routes/paths';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 
 export function VehicleDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -26,6 +27,7 @@ export function VehicleDetailPage() {
 
   const { data: vehicle, isLoading, error: fetchError } = useVehicle(id ?? '');
   const { mutate: deleteVehicle, isPending: isDeleting, error: deleteError } = useDeleteVehicle();
+  const isAdmin = useIsAdmin();
 
   const extractMessage = (err: unknown): string | null => {
     if (err == null) return null;
@@ -175,6 +177,7 @@ export function VehicleDetailPage() {
                 </svg>
                 Edit Vehicle
               </button>
+              {isAdmin && (
               <button
                 type="button"
                 onClick={() => setIsDeleteDialogOpen(true)}
@@ -185,6 +188,7 @@ export function VehicleDetailPage() {
                 </svg>
                 Delete
               </button>
+              )}
             </div>
           </div>
 
