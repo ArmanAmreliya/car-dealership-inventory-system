@@ -167,6 +167,7 @@ export function VehicleDetailPage() {
 
             {/* Action buttons */}
             <div className="flex shrink-0 gap-3">
+              {isAdmin && (
               <button
                 type="button"
                 onClick={() => navigate(paths.vehicleEdit(id))}
@@ -177,6 +178,7 @@ export function VehicleDetailPage() {
                 </svg>
                 Edit Vehicle
               </button>
+              )}
               {isAdmin && (
               <button
                 type="button"

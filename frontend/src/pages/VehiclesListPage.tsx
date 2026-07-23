@@ -197,7 +197,7 @@ export function VehiclesListPage() {
               <VehicleGridCard
                 key={vehicle.id}
                 vehicle={vehicle}
-                onEditRequest={handleEditQuick}
+                onEditRequest={isAdmin ? handleEditQuick : undefined}
                 onInventoryRequest={() => navigate(paths.inventory)}
                 onImageGalleryRequest={(v) => setGalleryVehicle(v)}
               />

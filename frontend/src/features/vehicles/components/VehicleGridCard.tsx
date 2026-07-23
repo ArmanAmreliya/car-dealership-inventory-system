@@ -5,6 +5,7 @@ import { Eye, Edit3, Calendar, Gauge, Tag } from 'lucide-react';
 import { VehicleDTO } from '../../../api/api';
 import { paths } from '../../../routes/paths';
 import { resolveVehicleImage } from '../../../utils/vehicleImage';
+import { useIsAdmin } from '../../../hooks/useIsAdmin';
 
 interface VehicleGridCardProps {
   vehicle: VehicleDTO;
@@ -53,6 +54,7 @@ export function VehicleGridCard({
   onImageGalleryRequest,
 }: VehicleGridCardProps) {
   const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
   const [imgLoaded, setImgLoaded] = useState(false);
   const badge = deriveStatusBadge(vehicle);
   const imageUrl = resolveVehicleImage(vehicle);
@@ -143,7 +145,7 @@ export function VehicleGridCard({
             Inspect
           </button>
 
-          {onEditRequest && (
+          {isAdmin && onEditRequest && (
             <button
               type="button"
               onClick={() => onEditRequest(vehicle)}
