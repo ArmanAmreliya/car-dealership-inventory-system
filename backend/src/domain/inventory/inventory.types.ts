@@ -22,3 +22,7 @@ export interface InventoryStatus {
 export interface StockUpdate {
   stockQuantity: number;
 }
+
+export interface RestockInput {
+  quantity: number;
+}

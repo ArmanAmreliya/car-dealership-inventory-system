@@ -1,5 +1,5 @@
 import type { IVehicleRepository } from '../vehicle/vehicle.repository';
-import type { InventoryItem, InventoryStatus, StockUpdate } from './inventory.types';
+import type { InventoryItem, InventoryStatus, StockUpdate, RestockInput } from './inventory.types';
 import { AppError } from '../../common/errors/AppError';
 
 function toInventoryItem(vehicle: {
@@ -71,6 +71,34 @@ export class InventoryService {
     const vehicle = await this.vehicleRepository.update(vehicleId, {
       isAvailable,
       stockQuantity: update.stockQuantity,
+    });
+
+    if (!vehicle) {
+      throw new AppError(`Vehicle with ID "${vehicleId}" not found`, 404);
+    }
+
+    return toInventoryItem(vehicle);
+  }
+
+  async restock(vehicleId: string, input: RestockInput): Promise<InventoryItem> {
+    if (!vehicleId || vehicleId.trim() === '') {
+      throw new AppError('Invalid vehicle ID', 400);
+    }
+
+    // Fetch current vehicle to read existing stockQuantity
+    const existing = await this.vehicleRepository.findById(vehicleId);
+
+    if (!existing) {
+      throw new AppError(`Vehicle with ID "${vehicleId}" not found`, 404);
+    }
+
+    // Add to current stock (read-modify-write)
+    const newStock = (existing.stockQuantity ?? 0) + input.quantity;
+    const isAvailable = newStock > 0;
+
+    const vehicle = await this.vehicleRepository.update(vehicleId, {
+      stockQuantity: newStock,
+      isAvailable,
     });
 
     if (!vehicle) {

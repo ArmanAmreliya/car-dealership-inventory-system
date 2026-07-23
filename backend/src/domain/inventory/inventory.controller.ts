@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { InventoryService } from './inventory.service';
-import type { StockUpdate } from './inventory.types';
+import type { StockUpdate, RestockInput } from './inventory.types';
 
 export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
@@ -17,6 +17,15 @@ export class InventoryController {
   updateStock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
     try {
       const item = await this.inventoryService.updateStock(req.params.id, req.body as StockUpdate);
+      res.status(200).json(item);
+    } catch (err) {
+      next(err);
+    }
+  };
+
+  restock = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
+      const item = await this.inventoryService.restock(req.params.id, req.body as RestockInput);
       res.status(200).json(item);
     } catch (err) {
       next(err);
