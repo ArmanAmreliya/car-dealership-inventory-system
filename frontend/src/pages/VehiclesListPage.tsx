@@ -15,7 +15,7 @@ import { useVehicles, useDeleteVehicle } from '../features/vehicles/hooks/useVeh
 import { VehicleFilters } from '../features/vehicles/types/vehicle.types';
 import { VehicleDTO } from '../api/api';
 import { paths } from '../routes/paths';
-import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 
 export function VehiclesListPage() {
   const navigate = useNavigate();
