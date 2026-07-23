@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from 'react-router-dom';
+import { createBrowserRouter } from 'react-router-dom';
 import { ProtectedRoute } from '../components/guards/ProtectedRoute';
 import { PublicOnlyRoute } from '../components/guards/PublicOnlyRoute';
 import { LoginPage } from '../pages/LoginPage';
@@ -15,6 +15,7 @@ import { NotFoundPage } from '../pages/NotFoundPage';
 import { DashboardLayout } from '../layouts/DashboardLayout';
 import { App } from '../app/App';
 import { paths } from './paths';
+import { AdminRoute } from '@/components/guards/AdminRoute';
 
 export const appRouter = createBrowserRouter([
   // ── Public: landing page ────────────────────────────────────────────────
@@ -66,9 +67,11 @@ export const appRouter = createBrowserRouter([
     path: paths.vehiclesNew,
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="New Vehicle">
-          <VehicleCreatePage />
-        </DashboardLayout>
+        <AdminRoute>
+          <DashboardLayout pageTitle="New Vehicle">
+            <VehicleCreatePage />
+          </DashboardLayout>
+        </AdminRoute>
       </ProtectedRoute>
     ),
   },
@@ -86,9 +89,11 @@ export const appRouter = createBrowserRouter([
     path: '/vehicles/:id/edit',
     element: (
       <ProtectedRoute>
-        <DashboardLayout pageTitle="Edit Vehicle">
-          <VehicleEditPage />
-        </DashboardLayout>
+        <AdminRoute>
+          <DashboardLayout pageTitle="Edit Vehicle">
+            <VehicleEditPage />
+          </DashboardLayout>
+        </AdminRoute>
       </ProtectedRoute>
     ),
   },

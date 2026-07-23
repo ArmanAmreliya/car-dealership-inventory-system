@@ -15,6 +15,7 @@ import { useVehicles, useDeleteVehicle } from '../features/vehicles/hooks/useVeh
 import { VehicleFilters } from '../features/vehicles/types/vehicle.types';
 import { VehicleDTO } from '../api/api';
 import { paths } from '../routes/paths';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 export function VehiclesListPage() {
   const navigate = useNavigate();
@@ -49,6 +50,7 @@ export function VehiclesListPage() {
   // ── Delete dialog state ─────────────────────────────────────────────────────
   const [deleteTarget, setDeleteTarget] = useState<VehicleDTO | null>(null);
   const { mutate: deleteVehicle, isPending: isDeleting, error: deleteError } = useDeleteVehicle();
+  const isAdmin = useIsAdmin();
 
   const extractMessage = (err: unknown): string | null => {
     if (err == null) return null;
@@ -112,6 +114,7 @@ export function VehiclesListPage() {
 
         <div className="flex items-center gap-3">
           <ViewToggle mode={viewMode} onModeChange={handleViewModeChange} />
+          { isAdmin && (
           <button
             type="button"
             onClick={() => navigate(paths.vehiclesNew)}
@@ -120,6 +123,7 @@ export function VehiclesListPage() {
             <PlusCircle className="h-4 w-4" />
             Add Vehicle
           </button>
+          )}
         </div>
       </div>
 
