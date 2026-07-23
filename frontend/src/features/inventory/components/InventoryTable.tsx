@@ -191,6 +191,7 @@ export function InventoryTable({ items, isLoading = false, onEditItem }: Invento
                     {/* Actions */}
                     <td className="px-4 py-3 text-right">
                       <div className="inline-flex items-center justify-end gap-1.5">
+                        {isAdmin && (
                         <button
                           type="button"
                           onClick={() => onEditItem?.(item)}
@@ -199,6 +200,7 @@ export function InventoryTable({ items, isLoading = false, onEditItem }: Invento
                           <Edit className="h-3 w-3" />
                           <span>Edit</span>
                         </button>
+                        )}
                         
                         {isAdmin && (
                           <button

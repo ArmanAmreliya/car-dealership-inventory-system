@@ -18,6 +18,7 @@ import { InventoryEditDrawer } from '../features/inventory/components/InventoryE
 import { InventoryFilterDrawer } from '../features/inventory/components/InventoryFilterDrawer';
 import { useInventory } from '../features/inventory/hooks/useInventory';
 import { useVehicles } from '../features/vehicles/hooks/useVehicles';
+import { useIsAdmin } from '../hooks/useIsAdmin';
 import {
   InventoryFilterState,
   InventoryItemDTO,
@@ -52,6 +53,8 @@ function formatCurrency(value: number) {
 
 export function InventoryPage() {
   const navigate = useNavigate();
+
+  const isAdmin = useIsAdmin();
 
   // ── Data fetching ────────────────────────────────────────────────────────
   // useVehicles is the source of truth for imageUrl (Cloudinary), make, model, etc.
@@ -289,7 +292,8 @@ export function InventoryPage() {
           </p>
         </div>
 
-        {/* Header CTA */}
+        {/* Header CTA — admin only */}
+        {isAdmin && (
         <button
           type="button"
           onClick={() => navigate(paths.vehiclesNew)}
@@ -298,6 +302,7 @@ export function InventoryPage() {
           <Plus className="h-4 w-4 stroke-[2.5]" />
           Add Vehicle
         </button>
+        )}
       </div>
 
       {/* ── Stats Row ───────────────────────────────────────────────────── */}

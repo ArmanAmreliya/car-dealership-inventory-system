@@ -5,6 +5,7 @@ import { InventoryItemDTO } from '../types/inventory.types';
 import { StockUpdateModal } from './StockUpdateModal';
 import { paths } from '../../../routes/paths';
 import { resolveVehicleImage } from '../../../utils/vehicleImage';
+import { useIsAdmin } from '../../../hooks/useIsAdmin';
 import {
   Car,
   Edit,
@@ -25,6 +26,7 @@ interface InventoryCardViewProps {
 
 export function InventoryCardView({ items, isLoading = false, onEditItem }: InventoryCardViewProps) {
   const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
   const [updateModalTarget, setUpdateModalTarget] = useState<InventoryItemDTO | null>(null);
 
   if (isLoading) {
@@ -188,6 +190,7 @@ export function InventoryCardView({ items, isLoading = false, onEditItem }: Inve
 
                 {/* Card Action Bar */}
                 <div className="border-t border-slate-100 bg-slate-50/60 p-2.5 flex items-center justify-between gap-1.5">
+                  {isAdmin && (
                   <button
                     type="button"
                     onClick={() => onEditItem?.(item)}
@@ -196,7 +199,9 @@ export function InventoryCardView({ items, isLoading = false, onEditItem }: Inve
                     <Edit className="h-3.5 w-3.5" />
                     <span>Edit</span>
                   </button>
+                  )}
 
+                  {isAdmin && (
                   <button
                     type="button"
                     onClick={() => setUpdateModalTarget(item)}
@@ -205,6 +210,7 @@ export function InventoryCardView({ items, isLoading = false, onEditItem }: Inve
                   >
                     Stock ({quantity})
                   </button>
+                  )}
 
                   <button
                     type="button"
